@@ -177,8 +177,17 @@ namespace QualityEverything
             Scribe_Values.Look(ref maxApparelQuality, "maxApparelQuality", 6);
 
             Scribe_Values.Look(ref weaponQuality, "weaponQuality", false);
-            Scribe_Values.Look(ref minWeaponQuality, "minWeapoQuality", 0);
-            Scribe_Values.Look(ref maxWeaponQuality, "maxWeapoQuality", 6);
+            Scribe_Values.Look(ref minWeaponQuality, "minWeaponQuality", 0);
+            Scribe_Values.Look(ref maxWeaponQuality, "maxWeaponQuality", 6);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                int legacyMinWeaponQuality = minWeaponQuality;
+                int legacyMaxWeaponQuality = maxWeaponQuality;
+                Scribe_Values.Look(ref legacyMinWeaponQuality, "minWeapoQuality", minWeaponQuality);
+                Scribe_Values.Look(ref legacyMaxWeaponQuality, "maxWeapoQuality", maxWeaponQuality);
+                minWeaponQuality = legacyMinWeaponQuality;
+                maxWeaponQuality = legacyMaxWeaponQuality;
+            }
 
             Scribe_Values.Look(ref shellQuality, "shellQuality", true);
             Scribe_Values.Look(ref minShellQuality, "minShellQuality", 0);

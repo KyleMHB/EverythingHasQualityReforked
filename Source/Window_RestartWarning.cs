@@ -12,7 +12,7 @@ namespace QualityEverything
 {
     public class Window_RestartWarning : Window
     {
-        static string label;
+        private readonly string label;
 
         public Window_RestartWarning(string text)
         {

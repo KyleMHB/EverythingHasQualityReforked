@@ -1,0 +1,9 @@
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\bin\Release\QualityEverything.dll
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\bin\Release\QualityEverything.pdb
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\bin\Release\0Harmony.dll
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\bin\Release\0Harmony.pdb
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Release\QualityEverything.csproj.AssemblyReference.cache
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Release\QualityEverything.csproj.CoreCompileInputs.cache
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Release\QualityE.2E65720C.Up2Date
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Release\QualityEverything.dll
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Release\QualityEverything.pdb

@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using RimWorld;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
-using RimWorld;
-using Verse.Sound;
 using Verse;
 
 namespace QualityEverything
@@ -20,6 +19,21 @@ namespace QualityEverything
         private static Listing_Standard listing = new Listing_Standard();
         public static ModSettings_QEverything settings;
         private static int currentTab;
+
+        // One search string per customization tab (tab 4 shares one across its
+        // two side-by-side columns per design).
+        private static string stuffSearch = string.Empty;
+        private static string bldgSearch = string.Empty;
+        private static string weapAppSearch = string.Empty;
+        private static string otherSearch = string.Empty;
+
+        // Per-dict caches. Hold pre-partitioned, pre-sorted, pre-filtered
+        // entries so DoSettingsWindowContents doesn't rebuild them every frame.
+        private static readonly QualityListCache stuffCache = new QualityListCache();
+        private static readonly QualityListCache bldgCache = new QualityListCache();
+        private static readonly QualityListCache weapCache = new QualityListCache();
+        private static readonly QualityListCache appCache = new QualityListCache();
+        private static readonly QualityListCache otherCache = new QualityListCache();
 
         public Mod_QEverything(ModContentPack content) : base(content)
         {
@@ -145,16 +159,16 @@ namespace QualityEverything
             string labelWork = "QEverything.Min".Translate() + ((QualityCategory)ModSettings_QEverything.minWorkQuality).ToString();
             string minWorkBuffer = ModSettings_QEverything.minWorkQuality.ToString();
             Mod_SettingsUtility.LabeledIntEntry(listing.GetRect(24f), labelWork, ref ModSettings_QEverything.minWorkQuality, ref minWorkBuffer, 1, 0, 2);
-            
+
 
             string labelSecurity = "QEverything.Min".Translate() + ((QualityCategory)ModSettings_QEverything.minSecurityQuality).ToString();
             string minSecurityBuffer = ModSettings_QEverything.minSecurityQuality.ToString();
-            Mod_SettingsUtility.LabeledIntEntry(listing.GetRect(24f), labelSecurity, ref ModSettings_QEverything.minSecurityQuality, ref minSecurityBuffer, 1, 0, 2);            
+            Mod_SettingsUtility.LabeledIntEntry(listing.GetRect(24f), labelSecurity, ref ModSettings_QEverything.minSecurityQuality, ref minSecurityBuffer, 1, 0, 2);
 
             string labelConstruction = "QEverything.Min".Translate() + ((QualityCategory)ModSettings_QEverything.minEdificeQuality).ToString();
             string minConstructionBuffer = ModSettings_QEverything.minEdificeQuality.ToString();
             Mod_SettingsUtility.LabeledIntEntry(listing.GetRect(24f), labelConstruction, ref ModSettings_QEverything.minEdificeQuality, ref minConstructionBuffer, 1, 0, 2);
-            
+
             string labelStuff = "QEverything.Min".Translate() + ((QualityCategory)ModSettings_QEverything.minStuffQuality).ToString();
             string minStuffBuffer = ModSettings_QEverything.minStuffQuality.ToString();
             Mod_SettingsUtility.LabeledIntEntry(listing.GetRect(24f), labelStuff, ref ModSettings_QEverything.minStuffQuality, ref minStuffBuffer, 1, 0, 2);
@@ -341,408 +355,283 @@ namespace QualityEverything
 
         public static void DoCustomizeStuff(Rect rect)
         {
-            {
-                listing.Begin(new Rect(5f, 110f, rect.width * .33f - 5f, 30f));
-                if (!ModSettings_QEverything.indivStuff)
-                {
-                    if (listing.ButtonTextLabeled("QEverything.Resources".Translate(), "QEverything.Enable".Translate()))
-                    {
-                        Mod_SettingsUtility.PopulateStuff();
-                        ModSettings_QEverything.indivStuff = true;
-                    }
-                }
-                else if (listing.ButtonTextLabeled("QEverything.Resources".Translate(), "QEverything.Disable".Translate()))
-                {
-                    ModSettings_QEverything.indivStuff = false;
-                }
-                listing.End();
-                List<string> keyList = ModSettings_QEverything.stuffDict.Keys.ToList<string>();
-                keyList.Sort();
+            DrawEnableAndBulkRow(rect, "QEverything.Resources".Translate(), ref ModSettings_QEverything.indivStuff,
+                Mod_SettingsUtility.PopulateStuff, ModSettings_QEverything.stuffDict);
 
-                listing.Begin(new Rect(rect.width * .33f + 5f, 110f, rect.width * .33f - 5f, 30f));
-                if (listing.ButtonText("QEverything.Select".Translate(), null))
-                {
-                    for (int i = 0; i < keyList.Count; i++)
-                    {
-                        ModSettings_QEverything.stuffDict[keyList[i]] = true;
-                    }
-                }
-                listing.End();
-                listing.Begin(new Rect(rect.width * .66f + 5f, 110f, rect.width * .33f - 5f, 30f));
-                if (listing.ButtonText("QEverything.Deselect".Translate(), null))
-                {
-                    for (int j = 0; j < keyList.Count; j++)
-                    {
-                        ModSettings_QEverything.stuffDict[keyList[j]] = false;
-                    }
-                }
-                listing.End();
+            listing.Begin(new Rect(0f, 140f, rect.width, 10f));
+            listing.GapLine();
+            listing.End();
 
-                listing.Begin(new Rect(0f, 140f, rect.width, 10f));
-                listing.GapLine();
-                listing.End();
-                listing.Begin(new Rect(5f, 150f, rect.width * .5f - 10f, 38f));
-                listing.Label("QEverything.Textiles".Translate());
-                listing.GapLine();
-                listing.End();
-                listing.Begin(new Rect(rect.width * .5f + 5f, 150f, rect.width * .5f - 10f, 38f));
-                listing.Label("QEverything.OtherRes".Translate());
-                listing.GapLine();
-                listing.End();
-                if (ModSettings_QEverything.indivStuff)
-                {
-                    List<string> list = new List<string>();
-                    List<string> other = new List<string>();
-                    bool value;
-                    //Log.Message("lists created");
-                    for (int k = 0; k < ModSettings_QEverything.stuffDict.Count; k++)
-                    {
-                        //Log.Message("Filling lists");
-                        string key2 = keyList[k];
-                        ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(key2);
-                        if (def != null)
-                        {
-                            if (def.IsLeather || def.IsWithinCategory(ThingCategoryDefOf.Textiles))
-                            {
-                                list.Add(key2);
-                            }
-                            else other.Add(key2);
-                        }
-                    }
-                    //Log.Message("Displaying first scroll");
-                    Rect scrollRect = new Rect(5f, 190f, rect.width * .5f - 10f, rect.height - 110f);
-                    Rect viewRect = new Rect(0f, 0f, scrollRect.width - 30f, list.Count * 24f);
-                    Widgets.BeginScrollView(scrollRect, ref texScroll, viewRect, true);
-                    listing.Begin(viewRect);
-                    string key;
-                    for (int m = 0; m < list.Count; m++)
-                    {
-                        key = list[m];
-                        value = ModSettings_QEverything.stuffDict[key];
-                        listing.CheckboxLabeled(key.CapitalizeFirst(), ref value);
-                        ModSettings_QEverything.stuffDict[key] = value;
-                    }
-                    listing.End();
-                    Widgets.EndScrollView();
-                    //Log.Message("Displaying second scroll");
-                    Rect scrollRect2 = new Rect(rect.width * .5f + 5f, 190f, rect.width * .5f - 10f, rect.height - 110f);
-                    Rect viewRect2 = new Rect(0f, 0f, scrollRect2.width - 30f, other.Count * 24f);
-                    Widgets.BeginScrollView(scrollRect2, ref resScroll, viewRect2, true);
-                    listing.Begin(viewRect2);
-                    for (int n = 0; n < other.Count; n++)
-                    {
-                        key = other[n];
-                        value = ModSettings_QEverything.stuffDict[key];
-                        listing.CheckboxLabeled(key.CapitalizeFirst(), ref value);
-                        ModSettings_QEverything.stuffDict[key] = value;
-                    }
-                    listing.End();
-                    Widgets.EndScrollView();
-                }
-            }
+            if (!ModSettings_QEverything.indivStuff) return;
+
+            DrawSearchBar(rect, ref stuffSearch);
+            DrawColumnHeaders(rect, "QEverything.Textiles".Translate(), "QEverything.OtherRes".Translate());
+
+            stuffCache.EnsureBuilt(
+                ModSettings_QEverything.stuffDict,
+                stuffSearch,
+                IsStuffTextile);
+
+            DrawPartitionedScrollLists(rect, stuffCache, ModSettings_QEverything.stuffDict,
+                ref texScroll, ref resScroll);
+        }
+
+        private static bool IsStuffTextile(ThingDef def)
+        {
+            return def.IsLeather || def.IsWithinCategory(ThingCategoryDefOf.Textiles);
         }
 
         public static void DoCustomizeBuildings(Rect rect)
         {
-            listing.Begin(new Rect(5f, 110f, rect.width * .33f - 5f, 30f));
-            if (!ModSettings_QEverything.indivBuildings)
-            {
-                if (listing.ButtonTextLabeled("QEverything.Buildings".Translate(), "QEverything.Enable".Translate()))
-                {
-                    Mod_SettingsUtility.PopulateBuildings();
-                    ModSettings_QEverything.indivBuildings = true;
-                    //Log.Message("Building dictionary has " + ModSettings_QFramework.bldgDict.Count + " buildings.");
-                }
-            }
-            else if (listing.ButtonTextLabeled("QEverything.Buildings".Translate(), "QEverything.Disable".Translate()))
-            {
-                ModSettings_QEverything.indivBuildings = false;
-            }
-            listing.End();
-            List<string> keyList = ModSettings_QEverything.bldgDict.Keys.ToList<string>();
-            keyList.Sort();
-            string key;
-            listing.Begin(new Rect(rect.width * .33f + 5f, 110f, rect.width * .33f - 5f, 30f));
-            if (listing.ButtonText("QEverything.Select".Translate(), null))
-            {
-                for (int i = 0; i < keyList.Count; i++)
-                {
-                    key = keyList[i];
-                    ModSettings_QEverything.bldgDict[key] = true;
-                }
-            }
-            listing.End();
-            listing.Begin(new Rect(rect.width * .66f + 5f, 110f, rect.width * .33f - 5f, 30f));
-            if (listing.ButtonText("QEverything.Deselect".Translate(), null))
-            {
-                for (int j = 0; j < keyList.Count; j++)
-                {
-                    key = keyList[j];
-                    ModSettings_QEverything.bldgDict[key] = false;
-                }
-            }
-            listing.End();
+            DrawEnableAndBulkRow(rect, "QEverything.Buildings".Translate(), ref ModSettings_QEverything.indivBuildings,
+                Mod_SettingsUtility.PopulateBuildings, ModSettings_QEverything.bldgDict);
+
             listing.Begin(new Rect(0f, 140f, rect.width, 10f));
             listing.GapLine();
             listing.End();
-            listing.Begin(new Rect(5f, 150f, rect.width * .5f - 10f, 38f));
-            listing.Label("QEverything.Furniture".Translate());
-            listing.GapLine();
-            listing.End();
-            listing.Begin(new Rect(rect.width * .5f + 5f, 150f, rect.width * .5f - 10f, 38f));
-            listing.Label("QEverything.Power".Translate());
-            listing.GapLine();
-            listing.End();
-            if (ModSettings_QEverything.indivBuildings)
-            {
-                List<string> list = new List<string>();
-                List<string> other = new List<string>();
-                bool value;
-                for (int k = 0; k < ModSettings_QEverything.bldgDict.Count; k++)
-                {
-                    string key2 = keyList[k];
-                    ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(key2);
-                    if (def != null)
-                    {
-                        if (def.IsWithinCategory(ThingCategoryDef.Named("BuildingsFurniture"))
-                            || def.IsWithinCategory(ThingCategoryDef.Named("BuildingsProduction"))
-                            || def.IsWithinCategory(ThingCategoryDefOf.BuildingsArt))
-                        {
-                            list.Add(key2);
-                        }
-                        else other.Add(key2);
-                    }
-                }
-                Rect scrollRect = new Rect(5f, 190f, rect.width * .5f - 10f, rect.height - 110f);
-                Rect viewRect = new Rect(0f, 0f, scrollRect.width - 30f, list.Count * 24f);
-                Widgets.BeginScrollView(scrollRect, ref bldgScroll, viewRect, true);
-                listing.Begin(viewRect);
-                for (int m = 0; m < list.Count; m++)
-                {
-                    key = list[m];
-                    value = ModSettings_QEverything.bldgDict[key];
-                    listing.CheckboxLabeled(key.CapitalizeFirst(), ref value);
-                    ModSettings_QEverything.bldgDict[key] = value;
-                }
-                listing.End();
-                Widgets.EndScrollView();
-                Rect scrollRect2 = new Rect(rect.width * .5f + 5f, 190f, rect.width * .5f - 10f, rect.height - 110f);
-                Rect viewRect2 = new Rect(0f, 0f, scrollRect2.width - 30f, other.Count * 24f);
-                Widgets.BeginScrollView(scrollRect2, ref bldgScroll2, viewRect2, true);
-                listing.Begin(viewRect2);
-                for (int n = 0; n < other.Count; n++)
-                {
-                    key = other[n];
-                    value = ModSettings_QEverything.bldgDict[key];
-                    listing.CheckboxLabeled(key.CapitalizeFirst(), ref value);
-                    ModSettings_QEverything.bldgDict[key] = value;
-                }
-                listing.End();
-                Widgets.EndScrollView();
-            }
+
+            if (!ModSettings_QEverything.indivBuildings) return;
+
+            DrawSearchBar(rect, ref bldgSearch);
+            DrawColumnHeaders(rect, "QEverything.Furniture".Translate(), "QEverything.Power".Translate());
+
+            bldgCache.EnsureBuilt(
+                ModSettings_QEverything.bldgDict,
+                bldgSearch,
+                IsBuildingFurnitureOrProduction);
+
+            DrawPartitionedScrollLists(rect, bldgCache, ModSettings_QEverything.bldgDict,
+                ref bldgScroll, ref bldgScroll2);
+        }
+
+        private static bool IsBuildingFurnitureOrProduction(ThingDef def)
+        {
+            return QualityDefUtility.IsBuildingFurnitureOrProduction(def);
         }
 
         public static void DoCustomizeWeapons(Rect rect)
         {
-            Rect firstCol = new Rect(5f, 110f, rect.width * .48f, rect.height);
-            listing.Begin(firstCol);
-            if (!ModSettings_QEverything.indivWeapons)
-            {
-                if (listing.ButtonTextLabeled("QEverything.WeapShells".Translate(), "QEverything.Enable".Translate()))
-                {
-                    Mod_SettingsUtility.PopulateWeapons();
-                    ModSettings_QEverything.indivWeapons = true;
-                    //Log.Message("Weapon dictionary has " + ModSettings_QFramework.weapDict.Count + " items.");
-                }
-                //listing.GapLine();
-            }
-            else
-            {
-                if (listing.ButtonTextLabeled("QEverything.WeapShells".Translate(), "QEverything.Disable".Translate()))
-                {
-                    ModSettings_QEverything.indivWeapons = false;
-                    //Log.Message("Weapon dictionary has " + ModSettings_QFramework.weapDict.Count + " items.");
-                }
-            }
-            List<string> weapons = new List<string>(ModSettings_QEverything.weapDict.Keys);
-            weapons.Sort();
-            string weap;
-            if (listing.ButtonText("QEverything.Select".Translate(), null))
-            {
-                for (int b1 = 0; b1 < weapons.Count; b1++)
-                {
-                    weap = weapons[b1];
-                    ModSettings_QEverything.weapDict[weap] = true;
-                }
-            }
-            if (listing.ButtonText("QEverything.Deselect".Translate(), null))
-            {
-                for (int b2 = 0; b2 < weapons.Count; b2++)
-                {
-                    weap = weapons[b2];
-                    ModSettings_QEverything.weapDict[weap] = false;
-                }
-            }
-            listing.GapLine();
-            listing.End();
+            DrawStackedColumnButtons(
+                new Rect(5f, 110f, rect.width * .48f, rect.height),
+                "QEverything.WeapShells".Translate(),
+                ref ModSettings_QEverything.indivWeapons,
+                Mod_SettingsUtility.PopulateWeapons,
+                ModSettings_QEverything.weapDict);
+
+            DrawStackedColumnButtons(
+                new Rect(rect.width * .5f, 110f, rect.width * .48f, rect.height),
+                "QEverything.Clothing".Translate(),
+                ref ModSettings_QEverything.indivApparel,
+                Mod_SettingsUtility.PopulateApparel,
+                ModSettings_QEverything.appDict);
+
+            if (!ModSettings_QEverything.indivWeapons && !ModSettings_QEverything.indivApparel) return;
+
+            // Shared search bar across both columns (single search per tab).
+            SearchableListUI.DrawSearchBar(
+                new Rect(5f, 222f, rect.width - 10f, SearchableListUI.SearchBarHeight),
+                ref weapAppSearch);
+
+            float scrollY = 255f;
+            float scrollHeight = rect.height - 145f;
+
             if (ModSettings_QEverything.indivWeapons)
             {
-                Rect scrollRect = new Rect(5f, 220f, rect.width * .48f, rect.height - 110f);
-                Rect viewRect = new Rect(0f, 0f, scrollRect.width - 30f, weapons.Count * 24f);
-                Widgets.BeginScrollView(scrollRect, ref weapScroll, viewRect, true);
-                listing.Begin(viewRect);
-                for (int b3 = 0; b3 < ModSettings_QEverything.weapDict.Count; b3++)
-                {
-                    weap = weapons[b3];
-                    bool weapQual = ModSettings_QEverything.weapDict[weap];
-                    listing.CheckboxLabeled(weap.CapitalizeFirst(), ref weapQual);
-                    ModSettings_QEverything.weapDict[weap] = weapQual;
-                }
-                listing.End();
-                Widgets.EndScrollView();
+                weapCache.EnsureBuilt(ModSettings_QEverything.weapDict, weapAppSearch, null);
+                SearchableListUI.DrawVirtualizedCheckboxList(
+                    new Rect(5f, scrollY, rect.width * .48f, scrollHeight),
+                    ref weapScroll,
+                    weapCache.FilteredLeft,
+                    ModSettings_QEverything.weapDict);
             }
 
-            Rect secondCol = new Rect(rect.width * .5f, 110f, rect.width * .48f, rect.height);
-            listing.Begin(secondCol);
-            if (!ModSettings_QEverything.indivApparel)
-            {
-                if (listing.ButtonTextLabeled("QEverything.Clothing".Translate(), "QEverything.Enable".Translate()))
-                {
-                    Mod_SettingsUtility.PopulateApparel();
-                    ModSettings_QEverything.indivApparel = true;
-                }
-            }
-            else
-            {
-                if (listing.ButtonTextLabeled("QEverything.Clothing".Translate(), "QEverything.Disable".Translate()))
-                {
-                    ModSettings_QEverything.indivApparel = false;
-                }
-            }
-            List<string> apparel = new List<string>(ModSettings_QEverything.appDict.Keys);
-            apparel.Sort();
-            string app;
-            if (listing.ButtonText("QEverything.Select".Translate(), null))
-            {
-                for (int b1 = 0; b1 < apparel.Count; b1++)
-                {
-                    app = apparel[b1];
-                    ModSettings_QEverything.appDict[app] = true;
-                }
-            }
-            if (listing.ButtonText("QEverything.Deselect".Translate(), null))
-            {
-                for (int b2 = 0; b2 < apparel.Count; b2++)
-                {
-                    app = apparel[b2];
-                    ModSettings_QEverything.appDict[app] = false;
-                }
-            }
-            listing.GapLine();
-            listing.End();
             if (ModSettings_QEverything.indivApparel)
             {
-                Rect scrollRect = new Rect(rect.width * .5f, 220f, rect.width * .48f, rect.height - 110f);
-                Rect viewRect = new Rect(0f, 0f, scrollRect.width - 30f, apparel.Count * 24f);
-                Widgets.BeginScrollView(scrollRect, ref appScroll, viewRect, true);
-                listing.Begin(viewRect);
-                for (int b3 = 0; b3 < ModSettings_QEverything.appDict.Count; b3++)
-                {
-                    app = apparel[b3];
-                    bool appQual = ModSettings_QEverything.appDict[app];
-                    listing.CheckboxLabeled(app.CapitalizeFirst(), ref appQual);
-                    ModSettings_QEverything.appDict[app] = appQual;
-                }
-                listing.End();
-                Widgets.EndScrollView();
+                appCache.EnsureBuilt(ModSettings_QEverything.appDict, weapAppSearch, null);
+                SearchableListUI.DrawVirtualizedCheckboxList(
+                    new Rect(rect.width * .5f, scrollY, rect.width * .48f, scrollHeight),
+                    ref appScroll,
+                    appCache.FilteredLeft,
+                    ModSettings_QEverything.appDict);
             }
         }
 
         public static void DoCustomizeOther(Rect rect)
         {
+            // Tab 5 diverges slightly: original had a single "Enable/Disable"
+            // button at column 1 with no Select/Deselect buttons at the top.
+            // Keep that behavior — bulk toggles aren't offered here, so we only
+            // draw the enable button.
+            listing.Begin(new Rect(5f, 110f, rect.width * .33f - 5f, 30f));
+            if (!ModSettings_QEverything.indivOther)
             {
-                listing.Begin(new Rect(5f, 110f, rect.width * .33f - 5f, 30f));
-                if (!ModSettings_QEverything.indivOther)
+                if (listing.ButtonText("QEverything.Enable".Translate(), null))
                 {
-                    if (listing.ButtonText("QEverything.Enable".Translate(), null))
-                    {
-                        Mod_SettingsUtility.PopulateOther();
-                        ModSettings_QEverything.indivOther = true;
-                        //Log.Message("Other dictionary has " + ModSettings_QFramework.otherDict.Count + " buildings.");
-                    }
+                    Mod_SettingsUtility.PopulateOther();
+                    ModSettings_QEverything.indivOther = true;
                 }
-                else if (listing.ButtonText("QEverything.Disable".Translate(), null))
+            }
+            else if (listing.ButtonText("QEverything.Disable".Translate(), null))
+            {
+                ModSettings_QEverything.indivOther = false;
+            }
+            listing.End();
+
+            listing.Begin(new Rect(0f, 140f, rect.width, 10f));
+            listing.GapLine();
+            listing.End();
+
+            if (!ModSettings_QEverything.indivOther) return;
+
+            DrawSearchBar(rect, ref otherSearch);
+            DrawColumnHeaders(rect, "QEverything.Food".Translate(), "QEverything.OtherFood".Translate());
+
+            otherCache.EnsureBuilt(
+                ModSettings_QEverything.otherDict,
+                otherSearch,
+                IsFoodPartition);
+
+            DrawPartitionedScrollLists(rect, otherCache, ModSettings_QEverything.otherDict,
+                ref foodScroll, ref otherScroll);
+        }
+
+        private static bool IsFoodPartition(ThingDef def)
+        {
+            return QualityDefUtility.IsFoodPartition(def);
+        }
+
+        // Shared layout helpers — used by the partitioned customization tabs
+        // (Stuff, Buildings, Other). Y-coordinates are absolute within the
+        // settings window, matching the original layout intent.
+
+        private const float SearchBarY = 150f;
+        private const float ColumnHeaderY = 183f;
+        private const float ScrollY = 223f;
+        private const float ScrollBottomReserve = 143f;
+
+        private static void DrawEnableAndBulkRow(
+            Rect rect,
+            string label,
+            ref bool indivFlag,
+            Action populate,
+            Dictionary<string, bool> dict)
+        {
+            listing.Begin(new Rect(5f, 110f, rect.width * .33f - 5f, 30f));
+            if (!indivFlag)
+            {
+                if (listing.ButtonTextLabeled(label, "QEverything.Enable".Translate()))
                 {
-                    ModSettings_QEverything.indivOther = false;
+                    populate();
+                    indivFlag = true;
                 }
-                listing.End();
-                List<string> keyList = new List<string>(ModSettings_QEverything.otherDict.Keys);
-                keyList.Sort();
-                string key;
-                listing.Begin(new Rect(0f, 140f, rect.width, 10f));
-                listing.GapLine();
-                listing.End();
-                listing.Begin(new Rect(5f, 150f, rect.width * .5f - 10f, 38f));
-                listing.Label("QEverything.Food".Translate());
-                listing.GapLine();
-                listing.End();
-                listing.Begin(new Rect(rect.width * .5f + 5f, 150f, rect.width * .5f - 10f, 38f));
-                listing.Label("QEverything.OtherFood".Translate());
-                listing.GapLine();
-                listing.End();
-                if (ModSettings_QEverything.indivOther)
+            }
+            else if (listing.ButtonTextLabeled(label, "QEverything.Disable".Translate()))
+            {
+                indivFlag = false;
+            }
+            listing.End();
+
+            listing.Begin(new Rect(rect.width * .33f + 5f, 110f, rect.width * .33f - 5f, 30f));
+            if (listing.ButtonText("QEverything.Select".Translate(), null))
+            {
+                SetAllValues(dict, true);
+            }
+            listing.End();
+
+            listing.Begin(new Rect(rect.width * .66f + 5f, 110f, rect.width * .33f - 5f, 30f));
+            if (listing.ButtonText("QEverything.Deselect".Translate(), null))
+            {
+                SetAllValues(dict, false);
+            }
+            listing.End();
+        }
+
+        private static void DrawStackedColumnButtons(
+            Rect colRect,
+            string label,
+            ref bool indivFlag,
+            Action populate,
+            Dictionary<string, bool> dict)
+        {
+            listing.Begin(colRect);
+            if (!indivFlag)
+            {
+                if (listing.ButtonTextLabeled(label, "QEverything.Enable".Translate()))
                 {
-                    List<string> list = new List<string>();
-                    List<string> other = new List<string>();
-                    bool value;
-                    //Log.Message("lists created");
-                    for (int k = 0; k < ModSettings_QEverything.otherDict.Count; k++)
-                    {
-                        //Log.Message("Filling lists");
-                        key = keyList[k];
-                        ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(key);
-                        if (def != null)
-                        {
-                            if (def.IsDrug)
-                            {
-                                other.Add(key);
-                            }
-                            else if (def.IsNutritionGivingIngestible)
-                            {
-                                list.Add(key);
-                            }
-                            else other.Add(key);
-                        }
-                    }
-                    //Log.Message("Displaying first scroll");
-                    Rect scrollRect = new Rect(5f, 190f, rect.width * .5f - 10f, rect.height - 110f);
-                    Rect viewRect = new Rect(0f, 0f, scrollRect.width - 30f, list.Count * 24f);
-                    Widgets.BeginScrollView(scrollRect, ref foodScroll, viewRect, true);
-                    listing.Begin(viewRect);
-                    for (int m = 0; m < list.Count; m++)
-                    {
-                        key = list[m];
-                        value = ModSettings_QEverything.otherDict[key];
-                        listing.CheckboxLabeled(key.CapitalizeFirst(), ref value);
-                        ModSettings_QEverything.otherDict[key] = value;
-                    }
-                    listing.End();
-                    Widgets.EndScrollView();
-                    //Log.Message("Displaying second scroll");
-                    Rect scrollRect2 = new Rect(rect.width * .5f + 5f, 190f, rect.width * .5f - 10f, rect.height - 110f);
-                    Rect viewRect2 = new Rect(0f, 0f, scrollRect2.width - 30f, other.Count * 24f);
-                    Widgets.BeginScrollView(scrollRect2, ref otherScroll, viewRect2, true);
-                    listing.Begin(viewRect2);
-                    for (int n = 0; n < other.Count; n++)
-                    {
-                        key = other[n];
-                        value = ModSettings_QEverything.otherDict[key];
-                        listing.CheckboxLabeled(key.CapitalizeFirst(), ref value);
-                        ModSettings_QEverything.otherDict[key] = value;
-                    }
-                    listing.End();
-                    Widgets.EndScrollView();
+                    populate();
+                    indivFlag = true;
                 }
+            }
+            else if (listing.ButtonTextLabeled(label, "QEverything.Disable".Translate()))
+            {
+                indivFlag = false;
+            }
+
+            if (listing.ButtonText("QEverything.Select".Translate(), null))
+            {
+                SetAllValues(dict, true);
+            }
+            if (listing.ButtonText("QEverything.Deselect".Translate(), null))
+            {
+                SetAllValues(dict, false);
+            }
+            listing.GapLine();
+            listing.End();
+        }
+
+        private static void DrawSearchBar(Rect rect, ref string searchText)
+        {
+            SearchableListUI.DrawSearchBar(
+                new Rect(5f, SearchBarY, rect.width - 10f, SearchableListUI.SearchBarHeight),
+                ref searchText);
+        }
+
+        private static void DrawColumnHeaders(Rect rect, string leftHeader, string rightHeader)
+        {
+            listing.Begin(new Rect(5f, ColumnHeaderY, rect.width * .5f - 10f, 38f));
+            listing.Label(leftHeader);
+            listing.GapLine();
+            listing.End();
+
+            listing.Begin(new Rect(rect.width * .5f + 5f, ColumnHeaderY, rect.width * .5f - 10f, 38f));
+            listing.Label(rightHeader);
+            listing.GapLine();
+            listing.End();
+        }
+
+        private static void DrawPartitionedScrollLists(
+            Rect rect,
+            QualityListCache cache,
+            Dictionary<string, bool> dict,
+            ref Vector2 leftScroll,
+            ref Vector2 rightScroll)
+        {
+            float scrollHeight = rect.height - ScrollBottomReserve;
+
+            SearchableListUI.DrawVirtualizedCheckboxList(
+                new Rect(5f, ScrollY, rect.width * .5f - 10f, scrollHeight),
+                ref leftScroll,
+                cache.FilteredLeft,
+                dict);
+
+            SearchableListUI.DrawVirtualizedCheckboxList(
+                new Rect(rect.width * .5f + 5f, ScrollY, rect.width * .5f - 10f, scrollHeight),
+                ref rightScroll,
+                cache.FilteredRight,
+                dict);
+        }
+
+        // Bulk toggle helper. Takes a snapshot of keys so we aren't mutating
+        // the dict's value set while the enumerator is alive (safe per spec,
+        // but belt-and-suspenders).
+        private static void SetAllValues(Dictionary<string, bool> dict, bool value)
+        {
+            if (dict.Count == 0) return;
+            string[] keys = new string[dict.Count];
+            dict.Keys.CopyTo(keys, 0);
+            for (int i = 0; i < keys.Length; i++)
+            {
+                dict[keys[i]] = value;
             }
         }
     }

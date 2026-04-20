@@ -81,7 +81,10 @@ namespace QualityEverything
             bool foundStart = false;
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i].Calls(mEnd) && list[i + 1].opcode == OpCodes.Ret && list[i + 2].opcode == OpCodes.Ldloc_2)
+                if (i + 2 < list.Count
+                    && list[i].Calls(mEnd)
+                    && list[i + 1].opcode == OpCodes.Ret
+                    && list[i + 2].opcode == OpCodes.Ldloc_2)
                 {
                     //Log.Message("Found the start of the def matching conditional");
                     start = i + 2;

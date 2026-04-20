@@ -18,3 +18,8 @@ D:\Steam\steamapps\common\RimWorld\Mods\EverythingHasQuality\Source\obj\Debug\Qu
 D:\Steam\steamapps\common\RimWorld\Mods\EverythingHasQuality\Source\obj\Debug\QualityEverything.csproj.CoreCompileInputs.cache
 D:\Steam\steamapps\common\RimWorld\Mods\EverythingHasQuality\Source\obj\Debug\QualityEverything.dll
 D:\Steam\steamapps\common\RimWorld\Mods\EverythingHasQuality\Common\Assemblies\QualityEverything.dll
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Debug\QualityEverything.csproj.AssemblyReference.cache
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Debug\QualityEverything.csproj.CoreCompileInputs.cache
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Debug\QualityEverything.dll
+E:\Coding\Rimworld\EverythingHasQualityReforked\Common\Assemblies\QualityEverything.dll
+E:\Coding\Rimworld\EverythingHasQualityReforked\Source\obj\Debug\QualityE.2E65720C.Up2Date

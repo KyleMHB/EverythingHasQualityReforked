@@ -32,6 +32,7 @@ namespace QualityEverything
     [HarmonyPatch(typeof(InspirationWorker), "CommonalityFor")]
     class InspirationUtility
     {
+        [HarmonyPostfix]
         public static float Postfix(float __result, InspirationWorker __instance)
         {
             InspirationDef inspiration = __instance.def;
@@ -118,11 +119,11 @@ namespace QualityEverything
             else if (relevantSkill == SkillDefOf.Crafting)
             {
                 if (thingDef.IsDrug || thingDef.IsMedicine) return DefOf_QFramework.QF_Inspired_Chemistry;
-                if (thingDef.thingCategories.Contains(ThingCategoryDefOf.StoneBlocks)) return DefOf_QFramework.QF_Inspired_Stonecutting;
+                if (thingDef.thingCategories != null && thingDef.thingCategories.Contains(ThingCategoryDefOf.StoneBlocks)) return DefOf_QFramework.QF_Inspired_Stonecutting;
             }
             else if (relevantSkill == SkillDefOf.Cooking)
             {
-                if (thingDef.thingCategories.Contains(ThingCategoryDefOf.FoodMeals)) return DefOf_QFramework.QF_Inspired_Cooking;
+                if (thingDef.thingCategories != null && thingDef.thingCategories.Contains(ThingCategoryDefOf.Foods)) return DefOf_QFramework.QF_Inspired_Cooking;
                 else if (thingDef.IsMeat || thingDef.IsStuff) return DefOf_QFramework.QF_Inspired_Butchering;
             }
             else if (relevantSkill == SkillDefOf.Animals) return DefOf_QFramework.QF_Inspired_Gathering;

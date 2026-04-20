@@ -28,7 +28,14 @@ namespace QualityEverything
             {
                 stuffPatchRan = true;
                 MethodInfo mJump = AccessTools.FindIncludingInnerTypes(typeof(Toils_Haul), t => AccessTools.FirstMethod(t, m => m.Name.Contains("JumpIfAlsoCollectingNextTargetInQueue") && m.ReturnType == typeof(void)));
-                harmony.Patch(mJump, null, null, new HarmonyMethod(typeof(Quality_Construction), "CollectNextTarget_Transpiler"));
+                if (mJump != null)
+                {
+                    harmony.Patch(mJump, null, null, new HarmonyMethod(typeof(Quality_Construction), "CollectNextTarget_Transpiler"));
+                }
+                else
+                {
+                    Log.Error("QEverything: unable to find haul queue method for stuff stacking patch.");
+                }
 
                 Type fixes = typeof(TraderFixes);
                 harmony.Patch(AccessTools.Method(typeof(ThingWithComps), "PostGeneratedForTrader"), null, new HarmonyMethod(fixes, "TraderSilverFix"));

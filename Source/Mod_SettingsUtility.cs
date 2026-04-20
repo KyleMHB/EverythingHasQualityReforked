@@ -67,80 +67,66 @@ namespace QualityEverything
 
         public static void PopulateStuff()
         {
-            ThingDef def;
-            bool hasComp;
             for (int i = 0; i < DefDatabase<ThingDef>.AllDefsListForReading.Count; i++)
             {
-                def = DefDatabase<ThingDef>.AllDefsListForReading[i];
-                hasComp = def.HasComp(typeof(CompQuality));
-                if (def.IsStuff)
+                ThingDef def = DefDatabase<ThingDef>.AllDefsListForReading[i];
+                if (QualityDefUtility.GetBucket(def) == QualityBucket.Stuff)
                 {
-                    if (!ModSettings_QEverything.stuffDict.ContainsKey(def.defName)) ModSettings_QEverything.stuffDict.Add(def.defName, hasComp);
+                    ModSettings_QEverything.stuffDict[def.defName] = def.HasComp(typeof(CompQuality));
                 }
             }
         }
 
         public static void PopulateBuildings()
         {
-            ThingDef def;
-            bool hasComp;
             for (int i = 0; i < DefDatabase<ThingDef>.AllDefsListForReading.Count; i++)
             {
-                def = DefDatabase<ThingDef>.AllDefsListForReading[i];
-                hasComp = def.HasComp(typeof(CompQuality));
-                if (def.building != null)
+                ThingDef def = DefDatabase<ThingDef>.AllDefsListForReading[i];
+                QualityBucket bucket = QualityDefUtility.GetBucket(def);
+                if (bucket == QualityBucket.WorkBuilding
+                    || bucket == QualityBucket.SecurityBuilding
+                    || bucket == QualityBucket.Building)
                 {
-                    if (!def.IsBlueprint && !def.IsFrame && !ModSettings_QEverything.bldgDict.ContainsKey(def.defName)) ModSettings_QEverything.bldgDict.Add(def.defName, hasComp);
+                    ModSettings_QEverything.bldgDict[def.defName] = def.HasComp(typeof(CompQuality));
                 }
             }
         }
 
         public static void PopulateWeapons()
         {
-            ThingDef def;
-            bool hasComp;
             for (int i = 0; i < DefDatabase<ThingDef>.AllDefsListForReading.Count; i++)
             {
-                def = DefDatabase<ThingDef>.AllDefsListForReading[i];
-                hasComp = def.HasComp(typeof(CompQuality));
-                if ((def.IsWeapon || def.IsShell || def.IsWithinCategory(ThingCategoryDef.Named("Grenades"))) && !def.IsIngestible && !def.IsStuff)
+                ThingDef def = DefDatabase<ThingDef>.AllDefsListForReading[i];
+                QualityBucket bucket = QualityDefUtility.GetBucket(def);
+                if (bucket == QualityBucket.Weapon || bucket == QualityBucket.Shell)
                 {
-                    //Log.Message(def.defName + " is a weapon");
-                    if (!ModSettings_QEverything.weapDict.ContainsKey(def.defName)) ModSettings_QEverything.weapDict.Add(def.defName, hasComp);
+                    ModSettings_QEverything.weapDict[def.defName] = def.HasComp(typeof(CompQuality));
                 }
             }
         }
 
         public static void PopulateApparel()
         {
-            ThingDef def;
-            bool hasComp;
             for (int i = 0; i < DefDatabase<ThingDef>.AllDefsListForReading.Count; i++)
             {
-                def = DefDatabase<ThingDef>.AllDefsListForReading[i];
-                hasComp = def.HasComp(typeof(CompQuality));
-                if (def.IsApparel)
+                ThingDef def = DefDatabase<ThingDef>.AllDefsListForReading[i];
+                if (QualityDefUtility.GetBucket(def) == QualityBucket.Apparel)
                 {
-                    if (!ModSettings_QEverything.appDict.ContainsKey(def.defName)) ModSettings_QEverything.appDict.Add(def.defName, hasComp);
+                    ModSettings_QEverything.appDict[def.defName] = def.HasComp(typeof(CompQuality));
                 }
             }
         }
 
         public static void PopulateOther()
         {
-            ThingDef def;
-            bool hasComp;
             for (int i = 0; i < DefDatabase<ThingDef>.AllDefsListForReading.Count; i++)
             {
-                def = DefDatabase<ThingDef>.AllDefsListForReading[i];
-                hasComp = def.HasComp(typeof(CompQuality));
-                if (def.IsWithinCategory(ThingCategoryDefOf.Manufactured) || def.IsDrug || def.IsMedicine || def.IsIngestible)
+                ThingDef def = DefDatabase<ThingDef>.AllDefsListForReading[i];
+                if (QualityDefUtility.IsOtherCustomizationCandidate(def))
                 {
-                    if (def.IsStuff || def.IsCorpse || def.plant != null || def.IsShell) continue;
-                    else if (!ModSettings_QEverything.otherDict.ContainsKey(def.defName)) ModSettings_QEverything.otherDict.Add(def.defName, hasComp);
+                    ModSettings_QEverything.otherDict[def.defName] = def.HasComp(typeof(CompQuality));
                 }
             }
-            //Log.Message("Other dictionary has " + ModSettings_QFramework.otherDict.Count + " items");
         }
 
         public static void ApplySettingsChanges()
@@ -155,7 +141,7 @@ namespace QualityEverything
                 Find.WindowStack.Add(new Window_RestartWarning("QEverything.RestartStuff".Translate()));
                 return;
             }
-            Quality_CompPatch.DefPatch();
+            QualityCompSync.SyncAllDefs();
             Quality_CompPatch.ApplyNewQuality();
             Find.WindowStack.Add(new Window_RestartWarning("QEverything.Restart".Translate()));
         }
@@ -233,6 +219,17 @@ namespace QualityEverything
             ModSettings_QEverything.minShellQuality = 0;
             ModSettings_QEverything.maxShellQuality = 4;
 
+            ModSettings_QEverything.indivStuff = false;
+            ModSettings_QEverything.indivBuildings = false;
+            ModSettings_QEverything.indivWeapons = false;
+            ModSettings_QEverything.indivApparel = false;
+            ModSettings_QEverything.indivOther = false;
+            ModSettings_QEverything.stuffDict.Clear();
+            ModSettings_QEverything.bldgDict.Clear();
+            ModSettings_QEverything.weapDict.Clear();
+            ModSettings_QEverything.appDict.Clear();
+            ModSettings_QEverything.otherDict.Clear();
+
             ModSettings_QEverything.multSupplyFactor = true;
             ModSettings_QEverything.awfulSupplyFactor = .8f;
             ModSettings_QEverything.poorSupplyFactor = .9f;
@@ -242,24 +239,6 @@ namespace QualityEverything
             ModSettings_QEverything.masterSupplyFactor = 1.3f;
             ModSettings_QEverything.legSupplyFactor = 1.4f;
 
-        //FixSilver();
-    }
-
-        /*public static void FixSilver()
-        {
-            Log.Message("Fixing Silver");
-            ThingDef silver = ThingDefOf.Silver;
-            if (!silver.HasComp(typeof(CompQuality)))
-            {
-                return;
-            }
-            foreach (Map map in Find.Maps)
-            {
-                foreach (Thing thing in map.listerThings.ThingsMatching(ThingRequest.ForDef(ThingDefOf.Silver)))
-                {
-                    thing.TryGetComp<CompQuality>().SetQuality(QualityCategory.Normal, ArtGenerationContext.Outsider);
-                }
-            }
-        }*/
+        }
     }
 }

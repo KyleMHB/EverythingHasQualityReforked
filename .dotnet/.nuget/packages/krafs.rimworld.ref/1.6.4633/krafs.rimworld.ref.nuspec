@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Krafs.Rimworld.Ref</id>
+    <version>1.6.4633</version>
+    <title>RimRef</title>
+    <authors>krafs, Ludeon Studios</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/krafs/RimRef</projectUrl>
+    <description>RimWorld reference assemblies. Compile mods without referencing the game.</description>
+    <copyright>Ludeon Studios (c) 2025</copyright>
+    <tags>Rimworld, Mod</tags>
+  </metadata>
+</package>

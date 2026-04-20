@@ -18,15 +18,14 @@ namespace QualityEverything
         }
 
         //Only normal silver is currency
-        public static bool IsCurrencyFix(bool __result, Tradeable __instance)
+        public static void IsCurrencyFix(ref bool __result, Tradeable __instance)
         {
             if (__result && __instance.ThingDef == ThingDefOf.Silver && __instance.ThingDef.HasComp(typeof(CompQuality)))
             {
                 QualityCategory qc;
                 __instance.AnyThing.TryGetQuality(out qc);
-                return (qc == QualityCategory.Normal);
+                __result = qc == QualityCategory.Normal;
             }
-            return __result;
         }
 
         //Tradeable currency for a session can only be favor or normal quality silver
@@ -43,7 +42,12 @@ namespace QualityEverything
                 if (tradeable.ThingDef == ThingDefOf.Silver)
                 {
                     QualityCategory qc;
-                    if (tradeable.AnyThing.TryGetQuality(out qc) || qc == QualityCategory.Normal)
+                    if (tradeable.AnyThing == null)
+                    {
+                        continue;
+                    }
+
+                    if (!tradeable.AnyThing.TryGetQuality(out qc) || qc == QualityCategory.Normal)
                     {
                         __result = tradeable;
                         return false;
@@ -66,12 +70,15 @@ namespace QualityEverything
             return true;
         }
 
-        public static void SortSilver(ref float __result, ThingDef def)
-        { 
+        public static bool SortSilver(ref float __result, ThingDef def)
+        {
             if (def == ThingDefOf.Silver)
             {
                 __result = -20f;
-            }        
+                return false;
+            }
+
+            return true;
         }
     }
 }

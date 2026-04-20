@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Everything Has Quality [1.4 Fork]</name>
-	<author>pudy248</author>
+	<name>Everything Has Quality Reforked</name>
+	<author>kylohb</author>
   <supportedVersions>
-		<li>1.4</li>
+		<li>1.6</li>
   </supportedVersions>
   <packageId>Cozarkian.QualityFramework</packageId>
   <modDependencies>
@@ -14,6 +14,6 @@
 			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
   </modDependencies>
-  <description>(Almost) everything has quality. This mod provides configurable options for giving quality to buildings, materials, ingredients, meals, drugs and medicine. It is primarily intended for supporting Quality Expanded and other mods. However, it can be used alone to extend vanilla quality adjustments for market value and beauty to other items.</description>
+  <description>(Almost) everything has quality. This mod provides configurable options for giving quality to buildings, materials, ingredients, meals, drugs and medicine. It is primarily intended for supporting Quality Expanded and other mods. However, it can be used alone to extend vanilla quality adjustments for market value and beauty to other items.<br>Now with search functionality and less lag in the options menus</br></description>
 </ModMetaData>
 

@@ -21,7 +21,10 @@ namespace QualityEverything
             GenerateResourceQuality(harvested, worker, SkillDefOf.Plants);
         }
 
-        [HarmonyPatch(typeof(Mineable), "TrySpawnYield")]
+        [HarmonyPatch(
+            typeof(Mineable),
+            "TrySpawnYield",
+            new Type[] { typeof(Map), typeof(float), typeof(bool), typeof(Pawn) })]
         [HarmonyTranspiler]       
         static IEnumerable<CodeInstruction> MiningQuality(IEnumerable<CodeInstruction> instructions)
         {

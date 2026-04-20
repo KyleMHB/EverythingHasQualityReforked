@@ -17,6 +17,7 @@
 	<QEverything.Disable>Disable:</QEverything.Disable>
 	<QEverything.Select>Select All</QEverything.Select>
 	<QEverything.Deselect>Deselect All</QEverything.Deselect>
+	<QEverything.NoResults>No matches.</QEverything.NoResults>
 	<QEverything.Min>Min Quality: </QEverything.Min>
 	<QEverything.Max>Max Quality: </QEverything.Max>
 
