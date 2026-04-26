@@ -9,21 +9,24 @@ namespace QualityEverything
     {
         public static void LabeledIntEntry(Rect rect, string label, ref int value, ref string editBuffer, int multiplier, int min, int max)
         {
-            int num = (int)rect.width / 15;
             Widgets.Label(rect, label);
             if (Widgets.ButtonText(new Rect(rect.xMax - 90f, rect.yMin, 25f, rect.height), (-1 * multiplier).ToString(), true, true, true))
             {
-                value -= GenUI.CurrentAdjustmentMultiplier();
+                value -= multiplier * GenUI.CurrentAdjustmentMultiplier();
+                value = Mathf.Clamp(value, min, max);
                 editBuffer = value.ToString();
                 SoundDefOf.Checkbox_TurnedOff.PlayOneShotOnCamera(null);
             }
             if (Widgets.ButtonText(new Rect(rect.xMax - 30f, rect.yMin, 25f, rect.height), "+" + multiplier.ToString(), true, true, true))
             {
                 value += multiplier * GenUI.CurrentAdjustmentMultiplier();
+                value = Mathf.Clamp(value, min, max);
                 editBuffer = value.ToString();
                 SoundDefOf.Checkbox_TurnedOn.PlayOneShotOnCamera(null);
             }
             Widgets.TextFieldNumeric<int>(new Rect(rect.xMax - 60f, rect.yMin, 25f, rect.height), ref value, ref editBuffer, min, max);
+            value = Mathf.Clamp(value, min, max);
+            editBuffer = value.ToString();
         }
         public static void LabeledFloatEntry(Rect rect, string label, ref float value, ref string editBuffer, float multiplier, float largeMultiplier, float min, float max)
         {

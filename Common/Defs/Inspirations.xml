@@ -123,7 +123,7 @@
 		<baseCommonality>.5</baseCommonality>
     <beginLetter>[PAWN_pronoun] will harvest higher quality crops for the next 4 days.</beginLetter>
     <beginLetterDef>PositiveEvent</beginLetterDef>
-    <endMessage>{0} is no longer inspired (inspired harveting).</endMessage>
+    <endMessage>{0} is no longer inspired (inspired harvesting).</endMessage>
     <baseInspectLine>Inspired: Inspired harvesting</baseInspectLine>
     <requiredAnyNonDisabledWorkType>
       <li>Growing</li>

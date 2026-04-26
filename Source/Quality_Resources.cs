@@ -94,14 +94,15 @@ namespace QualityEverything
 
         public static void GenerateResourceQuality(Thing thing, Pawn worker = null, SkillDef relevantSkill = null)
         {
-            //Log.Message("Using skill for harvesting is " + ModSettings_QFramework.skilledHarvesting);
             CompQuality comp = thing.TryGetComp<CompQuality>();
             if (comp == null)
             {
                 return;
             }
-            //Log.Message("Choosing quality generator");
-            QualityCategory qc = QualityCategory.Normal;
+
+            int minQuality = QualityDefUtility.GetMinQuality(thing.def);
+            int maxQuality = QualityDefUtility.GetMaxQuality(thing.def);
+            QualityCategory qc;
             if (worker != null && relevantSkill != null &&
                ((relevantSkill == SkillDefOf.Mining && ModSettings_QEverything.skilledMining) || (relevantSkill == SkillDefOf.Plants && ModSettings_QEverything.skilledHarvesting) || (relevantSkill == SkillDefOf.Animals && ModSettings_QEverything.skilledAnimals)))
             {
@@ -109,7 +110,10 @@ namespace QualityEverything
             }
             else
             {
-                qc = QualityUtility.GenerateQuality(QualityGenerator.BaseGen);
+                int quality = (int)QualityUtility.GenerateQuality(QualityGenerator.BaseGen);
+                quality = quality < minQuality ? minQuality : quality;
+                quality = quality > maxQuality ? maxQuality : quality;
+                qc = (QualityCategory)quality;
             }
             comp.SetQuality(qc, ArtGenerationContext.Colony);
         }

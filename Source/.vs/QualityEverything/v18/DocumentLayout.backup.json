@@ -3,44 +3,16 @@
   "WorkspaceRootPath": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|e:\\coding\\rimworld\\everythinghasqualityreforked\\source\\quality_defutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:quality_defutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|e:\\coding\\rimworld\\everythinghasqualityreforked\\source\\window_restartwarning.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:window_restartwarning.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\mod_qeverything.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:mod_qeverything.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\quality_generator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:quality_generator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\quality_comppatch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:quality_comppatch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\inspirationutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|e:\\coding\\rimworld\\everythinghasqualityreforked\\source\\inspirationutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:inspirationutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\traderfixes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:traderfixes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|e:\\coding\\rimworld\\everythinghasqualityreforked\\source\\mod_searchablelist.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:mod_searchablelist.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\mod_settingsutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:mod_settingsutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|e:\\coding\\rimworld\\everythinghasqualityreforked\\source\\mod_qeverything.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2B0698B0-6484-421F-82FE-B58A2BB7CCC8}|QualityEverything.csproj|solutionrelative:mod_qeverything.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -62,125 +34,42 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Quality_DefUtility.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Quality_DefUtility.cs",
-              "RelativeDocumentMoniker": "Quality_DefUtility.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Quality_DefUtility.cs",
-              "RelativeToolTip": "Quality_DefUtility.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAADgvxwAAACTAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T16:43:14.962Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Window_RestartWarning.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Window_RestartWarning.cs",
-              "RelativeDocumentMoniker": "Window_RestartWarning.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Window_RestartWarning.cs",
-              "RelativeToolTip": "Window_RestartWarning.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Title": "Mod_SearchableList.cs",
+              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Mod_SearchableList.cs",
+              "RelativeDocumentMoniker": "Mod_SearchableList.cs",
+              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Mod_SearchableList.cs",
+              "RelativeToolTip": "Mod_SearchableList.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:34:59.574Z",
+              "WhenOpened": "2026-04-21T13:42:21.791Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Startup.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Startup.cs",
-              "RelativeDocumentMoniker": "Startup.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Startup.cs",
-              "RelativeToolTip": "Startup.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:34:55.465Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "AssemblyInfo.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Properties\\AssemblyInfo.cs",
-              "RelativeDocumentMoniker": "Properties\\AssemblyInfo.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Properties\\AssemblyInfo.cs",
-              "RelativeToolTip": "Properties\\AssemblyInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:32:06.428Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Quality_CompPatch.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Quality_CompPatch.cs",
-              "RelativeDocumentMoniker": "Quality_CompPatch.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Quality_CompPatch.cs",
-              "RelativeToolTip": "Quality_CompPatch.cs",
-              "ViewState": "AgIAAIUAAAAAAAAAAAAiwKEAAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:24:49.254Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "InspirationUtility.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\InspirationUtility.cs",
-              "RelativeDocumentMoniker": "InspirationUtility.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\InspirationUtility.cs",
-              "RelativeToolTip": "InspirationUtility.cs",
-              "ViewState": "AgIAAGcAAAAAAAAAAAAUwHwAAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:23:14.436Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "TraderFixes.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\TraderFixes.cs",
-              "RelativeDocumentMoniker": "TraderFixes.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\TraderFixes.cs",
-              "RelativeToolTip": "TraderFixes.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:13:04.503Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Quality_Generator.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Quality_Generator.cs",
-              "RelativeDocumentMoniker": "Quality_Generator.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Quality_Generator.cs",
-              "RelativeToolTip": "Quality_Generator.cs",
-              "ViewState": "AgIAAJIAAAAAAAAAAAArwKgAAABBAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:13:04.638Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Mod_SettingsUtility.cs",
-              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Mod_SettingsUtility.cs",
-              "RelativeDocumentMoniker": "Mod_SettingsUtility.cs",
-              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Mod_SettingsUtility.cs",
-              "RelativeToolTip": "Mod_SettingsUtility.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAAwBgAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:13:04.639Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
               "Title": "Mod_QEverything.cs",
               "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Mod_QEverything.cs",
               "RelativeDocumentMoniker": "Mod_QEverything.cs",
               "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\Mod_QEverything.cs",
               "RelativeToolTip": "Mod_QEverything.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-20T15:13:04.639Z"
+              "WhenOpened": "2026-04-21T13:42:19.528Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "InspirationUtility.cs",
+              "DocumentMoniker": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\InspirationUtility.cs",
+              "RelativeDocumentMoniker": "InspirationUtility.cs",
+              "ToolTip": "E:\\Coding\\Rimworld\\EverythingHasQualityReforked\\Source\\InspirationUtility.cs",
+              "RelativeToolTip": "InspirationUtility.cs",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-21T13:42:15.341Z",
+              "EditorCaption": ""
             }
           ]
         }

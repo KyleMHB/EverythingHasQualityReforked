@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <!--
+    Translation modders can depend on this base mod and override these fields
+    from their own mod using the same DefInjected/InspirationDef path.
+  -->
+
+  <QF_Inspired_Butchering.label>inspired butchering</QF_Inspired_Butchering.label>
+  <QF_Inspired_Butchering.beginLetter>[PAWN_pronoun] will produce higher quality cuts of meat and stronger leather for the next 4 days.</QF_Inspired_Butchering.beginLetter>
+  <QF_Inspired_Butchering.endMessage>{0} is no longer inspired (inspired butchering).</QF_Inspired_Butchering.endMessage>
+  <QF_Inspired_Butchering.baseInspectLine>Inspired: Inspired butchering</QF_Inspired_Butchering.baseInspectLine>
+
+  <QF_Inspired_Chemistry.label>inspired chemistry</QF_Inspired_Chemistry.label>
+  <QF_Inspired_Chemistry.beginLetter>[PAWN_pronoun] will produce higher quality drugs and medicines for the next 4 days.</QF_Inspired_Chemistry.beginLetter>
+  <QF_Inspired_Chemistry.endMessage>{0} is no longer inspired (inspired chemistry).</QF_Inspired_Chemistry.endMessage>
+  <QF_Inspired_Chemistry.baseInspectLine>Inspired: Inspired chemistry</QF_Inspired_Chemistry.baseInspectLine>
+
+  <QF_Inspired_Construction.label>inspired construction</QF_Inspired_Construction.label>
+  <QF_Inspired_Construction.beginLetter>[PAWN_pronoun] will construct higher quality buildings and work tables for the next 4 days.</QF_Inspired_Construction.beginLetter>
+  <QF_Inspired_Construction.endMessage>{0} is no longer inspired (inspired construction).</QF_Inspired_Construction.endMessage>
+  <QF_Inspired_Construction.baseInspectLine>Inspired: Inspired construction</QF_Inspired_Construction.baseInspectLine>
+
+  <QF_Inspired_Cooking.label>inspired cooking</QF_Inspired_Cooking.label>
+  <QF_Inspired_Cooking.beginLetter>[PAWN_pronoun] will produce better meals for the next 4 days.</QF_Inspired_Cooking.beginLetter>
+  <QF_Inspired_Cooking.endMessage>{0} is no longer inspired (inspired cooking).</QF_Inspired_Cooking.endMessage>
+  <QF_Inspired_Cooking.baseInspectLine>Inspired: Inspired cooking</QF_Inspired_Cooking.baseInspectLine>
+
+  <QF_Inspired_Gathering.label>inspired gathering</QF_Inspired_Gathering.label>
+  <QF_Inspired_Gathering.beginLetter>[PAWN_pronoun] will gather higher quality animal products and shear better wool for the next 4 days.</QF_Inspired_Gathering.beginLetter>
+  <QF_Inspired_Gathering.endMessage>{0} is no longer inspired (inspired gathering).</QF_Inspired_Gathering.endMessage>
+  <QF_Inspired_Gathering.baseInspectLine>Inspired: Inspired gathering</QF_Inspired_Gathering.baseInspectLine>
+
+  <QF_Inspired_Harvesting.label>inspired harvesting</QF_Inspired_Harvesting.label>
+  <QF_Inspired_Harvesting.beginLetter>[PAWN_pronoun] will harvest higher quality crops for the next 4 days.</QF_Inspired_Harvesting.beginLetter>
+  <QF_Inspired_Harvesting.endMessage>{0} is no longer inspired (inspired harvesting).</QF_Inspired_Harvesting.endMessage>
+  <QF_Inspired_Harvesting.baseInspectLine>Inspired: Inspired harvesting</QF_Inspired_Harvesting.baseInspectLine>
+
+  <QF_Inspired_Mining.label>inspired mining</QF_Inspired_Mining.label>
+  <QF_Inspired_Mining.beginLetter>[PAWN_pronoun] will mine higher quality ores for the next 4 days.</QF_Inspired_Mining.beginLetter>
+  <QF_Inspired_Mining.endMessage>{0} is no longer inspired (inspired mining).</QF_Inspired_Mining.endMessage>
+  <QF_Inspired_Mining.baseInspectLine>Inspired: Inspired mining</QF_Inspired_Mining.baseInspectLine>
+
+  <QF_Inspired_Stonecutting.label>inspired stonecutting</QF_Inspired_Stonecutting.label>
+  <QF_Inspired_Stonecutting.beginLetter>[PAWN_pronoun] will cut higher quality stone blocks for the next 4 days.</QF_Inspired_Stonecutting.beginLetter>
+  <QF_Inspired_Stonecutting.endMessage>{0} is no longer inspired (inspired stonecutting).</QF_Inspired_Stonecutting.endMessage>
+  <QF_Inspired_Stonecutting.baseInspectLine>Inspired: Inspired stonecutting</QF_Inspired_Stonecutting.baseInspectLine>
+</LanguageData>

@@ -75,5 +75,16 @@
       <Version>2.4.2</Version>
     </PackageReference>
   </ItemGroup>
+  <Target Name="DeployQualityEverythingDll" AfterTargets="Build">
+    <ItemGroup>
+      <QualityEverythingDeployDirectory Include="..\1.6\Assemblies" />
+      <QualityEverythingDeployDirectory Include="..\Common\Assemblies" />
+      <QualityEverythingDeployDirectory Include="bin\Release" Condition="'$(Configuration)' != 'Release'" />
+      <QualityEverythingDeploySource Include="@(QualityEverythingDeployDirectory->'$(TargetPath)')" />
+      <QualityEverythingDeployFile Include="@(QualityEverythingDeployDirectory->'%(Identity)\$(TargetFileName)')" />
+    </ItemGroup>
+    <MakeDir Directories="@(QualityEverythingDeployDirectory)" />
+    <Copy SourceFiles="@(QualityEverythingDeploySource)" DestinationFiles="@(QualityEverythingDeployFile)" SkipUnchangedFiles="true" />
+  </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
