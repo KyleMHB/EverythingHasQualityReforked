@@ -1,4 +1,4 @@
-# Everything Has Quality Reforked - Project Changes
+# Everything Has Quality Reforked - Changelog
 
 ## Gameplay And Quality Logic
 
@@ -55,9 +55,8 @@
 ## Documentation
 
 - Rewrote `README.md` for the refork, supported version, requirements, feature list, fork history, and issue tracker.
-- Added `CHANGELOG.md`.
 - Removed the old `ChangeLog.txt` in favor of current markdown changelog documentation.
-- Added this `change.md` as the consolidated project change summary.
+- Renamed the consolidated project change summary to `CHANGELOG.MD`.
 
 ## Build And Repository Cleanup
 
