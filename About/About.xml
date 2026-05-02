@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
 	<name>Everything Has Quality Reforked</name>
-	<author>kylohb</author>
+	<author>KyleMHB</author>
   <supportedVersions>
 		<li>1.6</li>
   </supportedVersions>
@@ -14,6 +14,6 @@
 			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
   </modDependencies>
-  <description>(Almost) everything has quality. This mod provides configurable options for giving quality to buildings, materials, ingredients, meals, drugs and medicine. It is primarily intended for supporting Quality Expanded and other mods. However, it can be used alone to extend vanilla quality adjustments for market value and beauty to other items. Now with search functionality, less lag in the options menus, stability and bugfixes.</description>
+  <description>Expands RimWorld quality support to more item types with configurable category and per-def controls.</description>
 </ModMetaData>
 
