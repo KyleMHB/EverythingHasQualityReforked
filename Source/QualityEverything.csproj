@@ -21,7 +21,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>..\Common\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -33,15 +34,4 @@
     <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4633" />
     <PackageReference Include="Lib.Harmony" Version="2.4.2" />
   </ItemGroup>
-
-  <Target Name="DeployQualityEverythingDll" AfterTargets="Build">
-    <ItemGroup>
-      <QualityEverythingDeployDirectory Include="..\1.6\Assemblies" />
-      <QualityEverythingDeployDirectory Include="..\Common\Assemblies" />
-      <QualityEverythingDeploySource Include="@(QualityEverythingDeployDirectory->'$(TargetPath)')" />
-      <QualityEverythingDeployFile Include="@(QualityEverythingDeployDirectory->'%(Identity)\$(TargetFileName)')" />
-    </ItemGroup>
-    <MakeDir Directories="@(QualityEverythingDeployDirectory)" />
-    <Copy SourceFiles="@(QualityEverythingDeploySource)" DestinationFiles="@(QualityEverythingDeployFile)" SkipUnchangedFiles="true" />
-  </Target>
 </Project>
