@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-08-28
+
+### Added
+
+- Added save-safe passive fermentation quality for vanilla fermenting barrels and compatible subclasses. Finished beer inherits the deterministic weighted-average quality of the wort accepted by the barrel when resource and ingredient quality influence is enabled.
+
+### Changed
+
+- Expanded the Steam Workshop description with fermentation behavior and guidance for performance, resource quality, turrets, colony mechs, organs, and enforced quality ranges.
+
 ## 2026-05-02
 
 ### Added

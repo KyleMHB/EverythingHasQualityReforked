@@ -11,6 +11,7 @@ Everything Has Quality Reforked expands RimWorld's quality system so more items 
 [*][b]Searchable settings lists[/b] for large modpacks with many defs.
 [*][b]Minimum and maximum quality limits[/b] for each supported category.
 [*][b]Material, work-table, skill, and inspiration options[/b] for production quality logic.
+[*][b]Passive fermentation quality[/b] so beer can inherit the weighted quality of the wort placed in its barrel.
 [*][b]RimWorld 1.6 support[/b] with updated load folders and metadata.
 [/list]
 
@@ -18,6 +19,8 @@ Everything Has Quality Reforked expands RimWorld's quality system so more items 
 Enable the mod, then open RimWorld's mod settings and select [b]Everything Has Quality[/b].
 
 Use the settings tabs to configure quality by category, adjust quality ranges, enable individual def customization, search long item lists, and apply category changes.
+
+When [b]Resources/Ingredients Affect Quality[/b] is enabled, fermented beer inherits the weighted-average quality of the wort accepted by the barrel. The barrel's own quality does not affect the result. Fermentation quality is saved with an active batch, and the finished beer still respects its configured minimum and maximum quality.
 
 This mod enables quality on more things, but it does [b]not[/b] make every quality-bearing item automatically scale every stat. For broader stat effects, use a compatible companion mod such as [b]Quality Expanded[/b].
 
@@ -43,6 +46,32 @@ You can configure:
 [*]Custom production inspirations for butchering, chemistry, construction, cooking, gathering, harvesting, mining, and stonecutting.
 [*]Individual def inclusion lists for supported categories.
 [/list]
+
+[h1]Frequently Asked Questions[/h1]
+
+[b]What performance impact should I expect?[/b]
+
+The large settings lists are searchable and cached to avoid repeatedly rebuilding and sorting them. Normal gameplay overhead depends on how broadly quality is enabled. Quality adds per-item state, and different qualities cannot share the same stack, so enabling it for many high-volume resources can create more stacks and more work for the game. Category controls and individual item overrides let you limit that cost.
+
+[b]How does resource quality affect crafted items?[/b]
+
+With [b]Resources/Ingredients Affect Quality[/b] enabled, quality-bearing ingredients are averaged by stack count and used as a supply-quality input for the crafted result. The supply quality multipliers control how strongly awful through legendary inputs affect normal crafting. Passive fermentation instead transfers the weighted-average wort quality directly because no pawn performs a crafting roll.
+
+[b]How do turret qualities work?[/b]
+
+Turret body quality and turret weapon quality are separate. Security-building quality affects the turret body. Weapon quality must be enabled separately for the gun, which rolls or receives quality independently; a legendary turret body does not automatically create a legendary turret gun.
+
+[b]Are mechanoids supported?[/b]
+
+Colony mechs that perform supported work use their fixed mech skill level when the mod generates a crafted item's quality. Mechanoid pawns themselves do not receive item quality.
+
+[b]Can organs or body parts have quality?[/b]
+
+Standard organs and body parts are not a supported quality category. Installed body parts become hediffs rather than inventory items, so meaningful organ quality requires a dedicated system that can preserve and apply that quality after surgery.
+
+[b]Are quality ranges enforced for generated resources?[/b]
+
+Yes. Quality values are constrained to RimWorld's awful-through-legendary range and then clamped to the configured category minimum and maximum. Harvested crops and other generated resources use the same category limits.
 
 [hr][/hr]
 
