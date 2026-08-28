@@ -12,6 +12,7 @@ This project is a fork of a fork of Cozarkian's original Everything Has Quality.
 - **Individual def overrides** for resources, buildings, weapons, apparel, and other items.
 - **Searchable settings lists** for large modpacks with many defs.
 - **Material and work-table quality factors** for production quality calculations.
+- **Passive fermentation quality** that transfers the weighted-average quality of a full wort batch to the finished beer when material quality influence is enabled.
 - **Skill and inspiration options** for butchering, chemistry, construction, cooking, gathering, harvesting, mining, and stonecutting.
 - **RimWorld 1.6 packaging** through `LoadFolders.xml`, `1.6`, and `Common`.
 
@@ -42,7 +43,9 @@ Use the settings tabs to:
 - enable individual def customization for specific resources, buildings, weapons, apparel, and other items
 - search long settings lists when working with large modpacks
 
-This mod enables quality on more things, but it does not make every quality-bearing item automatically scale every stat. For broader stat scaling, use a compatible companion mod such as Quality Expanded.
+When **Resources/Ingredients Affect Quality** is enabled, a full fermenting-barrel batch records the weighted-average quality of the wort it accepts and applies that quality to the finished beer. The active batch data is saved, the barrel's own quality does not affect the result, and the configured quality bounds still apply.
+
+This mod enables quality on more things, but it does not make every quality-bearing item automatically scale every stat. Broader stat scaling requires a separate mod and should be checked for compatibility with your current mod list.
 
 ## Configuration
 
@@ -72,7 +75,15 @@ Build command:
 dotnet build .\Source\QualityEverything.csproj -c Debug /p:UseSharedCompilation=false
 ```
 
-The Debug build writes `QualityEverything.dll` to `Common\Assemblies`, copies it to `1.6\Assemblies`, and also keeps a release-style output copy through the project deploy target.
+The Debug build writes `QualityEverything.dll` to `Common\Assemblies`. It does not copy the assembly to `1.6\Assemblies`.
+
+For the repository's full Release deployment workflow, run:
+
+```powershell
+.\deploy.ps1
+```
+
+The deployment script uses the shared `..\_Shared\RimWorldModTools.ps1` tooling to build the Release configuration and package the `About`, `Common`, and `1.6` folders.
 
 ## Testing and Validation
 

@@ -19,7 +19,7 @@ Enable the mod, then open RimWorld's mod settings and select [b]Everything Has Q
 
 When [b]Resources/Ingredients Affect Quality[/b] is enabled, fermented beer inherits the weighted-average quality of the wort accepted by the barrel. The barrel's own quality does not affect the result. Fermentation quality is saved with an active batch, and finished beer respects its configured minimum and maximum quality.
 
-This mod enables quality on more things, but it does [b]not[/b] make every quality-bearing item automatically scale every stat. A separate compatible mod is required for broader quality-based stat effects.
+This mod enables quality on more things, but it does [b]not[/b] make every quality-bearing item automatically scale every stat. Broader stat scaling requires a separate mod and should be checked for compatibility with your current mod list.
 
 [h1]Settings and Configuration[/h1]
 Use RimWorld's mod options under [b]Everything Has Quality[/b] to configure:
