@@ -84,7 +84,7 @@ dotnet build .\Source\QualityEverything.csproj -c Debug /p:UseSharedCompilation=
 
 There is no separate automated test suite in this repository.
 
-## Contributing & Forking Policy
+## Contributing and Forking Policy
 
 > Contributions, issues, and feature requests are welcome.
 >
@@ -92,6 +92,11 @@ There is no separate automated test suite in this repository.
 
 ## Links
 
+
+Support me on Ko-fi. This does not imply endorsement by the original authors.
+
+[![Support me on Ko-fi](https://img.shields.io/badge/Support_me_on_Ko--fi-72a4f2?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/I7L525WMJ6)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KyleMHB/EverythingHasQualityReforked)
 - **Steam Workshop:** [Everything Has Quality Reforked](https://steamcommunity.com/sharedfiles/filedetails/?id=3710884766)
 - **Source Repository:** [KyleMHB/EverythingHasQualityReforked](https://github.com/KyleMHB/EverythingHasQualityReforked)
 - **Issue Tracker:** [GitHub Issues](https://github.com/KyleMHB/EverythingHasQualityReforked/issues)
