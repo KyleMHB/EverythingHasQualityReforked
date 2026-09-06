@@ -75,12 +75,9 @@ Compared with the upstream versions, this refork adds searchable cached settings
 [*]Harmony by Brrainz and pardeike.
 [/list]
 
-[h1]License and Forking Policy[/h1]
+[h1]License[/h1]
 This refork inherits the original Everything Has Quality MIT license.
 
-If your fork primarily consists of bug fixes or feature additions that align with the core vision of this mod, I reserve the right to request that your changes be submitted as a Pull Request to my existing codebase rather than being published as a completely separate standalone release.
-
-This is a project request, not an additional restriction on the MIT license.
 
 [h1]Links[/h1]
 Support me on Ko-fi. This does not imply endorsement by the original authors.

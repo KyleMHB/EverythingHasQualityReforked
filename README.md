@@ -95,11 +95,9 @@ dotnet build .\Source\QualityEverything.csproj -c Debug /p:UseSharedCompilation=
 
 There is no separate automated test suite in this repository.
 
-## Contributing and Forking Policy
+## Contributing
 
 > Contributions, issues, and feature requests are welcome.
->
-> **Forking Policy:** If your fork primarily consists of bug fixes or feature additions that align with the core vision of this project, I reserve the right to request that your changes be submitted as a Pull Request to this existing codebase rather than being published as a completely separate standalone release, package, listing, or distribution.
 
 ## Links
 
