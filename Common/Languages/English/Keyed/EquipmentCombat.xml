@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.EquipmentCombat.GearAvailable>Scales only existing beneficial offsets for curated work, movement, medical, social or psyfocus stats. Zero offsets and penalties stay unchanged; native stat limits still apply.</QEverything.EquipmentCombat.GearAvailable>
+  <QEverything.EquipmentCombat.NoContribution>No supported beneficial definition offset in this group. Unknown stats, trait-only bonuses and existing native or custom quality-aware stat parts are left unchanged.</QEverything.EquipmentCombat.NoContribution>
+  <QEverything.EquipmentCombat.Conflict>The native consumer is missing or another mod intercepts it. This adapter leaves the consumer unchanged to avoid duplicate scaling.</QEverything.EquipmentCombat.Conflict>
+  <QEverything.EquipmentCombat.NativeCurve>The stat already has a native quality curve or custom worker/part. Its existing provider keeps control.</QEverything.EquipmentCombat.NativeCurve>
+  <QEverything.EquipmentCombat.NotApplicable>This item does not use a supported native consumer. Turret gun definitions use turret cooldown only and are excluded from both weapon cooldown effects.</QEverything.EquipmentCombat.NotApplicable>
+  <QEverything.EquipmentCombat.CombatAvailable>Uses the actual weapon cooldown, native turret burst cooldown or damaging-trap stat. Native attack damage, accuracy, cooldown factors and trap variance remain in control.</QEverything.EquipmentCombat.CombatAvailable>
+  <QEverything.EquipmentCombat.TrapExplanation>Trap quality damage: x{0}</QEverything.EquipmentCombat.TrapExplanation>
+  <QEverything.EquipmentCombat.CooldownExplanation>Weapon quality cooldown: {0}</QEverything.EquipmentCombat.CooldownExplanation>
+</LanguageData>
