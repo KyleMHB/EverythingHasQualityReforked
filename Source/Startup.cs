@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using RimWorld;
@@ -16,19 +16,27 @@ namespace QualityEverything
 
         static Startup()
         {
+            // The extra queue hop follows callbacks queued by other startup constructors.
+            // Providers that enqueue further work or cache defs still need runtime verification.
+            LongEventHandler.ExecuteWhenFinished(() => LongEventHandler.ExecuteWhenFinished(Initialize));
+        }
+
+        private static void Initialize()
+        {
+            QualityProgression.Initialize();
             QualityCatalog.Build();
-            RunHarmony(); 
-            Quality_CompPatch.DefPatch(); 
+            RunHarmony();
+            Quality_CompPatch.DefPatch();
             QualityDurabilityProduction.Register();
             QualityEnergyEffects.Register();
             QualityConsumableEffects.Register();
             QualityEquipmentCombat.Register();
             QualityLinkedFurniture.Register();
+            QualityNativeOutput.Register();
         }
 
         public static void RunHarmony()
         {
-            //Log.Message("QEverything: Starting harmony");
             Harmony harmony = new Harmony("rimworld.qualityframework");
             if (QualityCatalog.AnyAssigned(QualityBucket.Stuff))
             {
@@ -43,12 +51,14 @@ namespace QualityEverything
                     Log.Error("QEverything: unable to find haul queue method for stuff stacking patch.");
                 }
 
+            }
+            if (QualityCatalog.Assigned(ThingDefOf.Silver))
+            {
                 Type fixes = typeof(TraderFixes);
                 harmony.Patch(AccessTools.Method(typeof(ThingWithComps), "PostGeneratedForTrader"), null, new HarmonyMethod(fixes, "TraderSilverFix"));
                 harmony.Patch(AccessTools.PropertyGetter(typeof(Tradeable), "IsCurrency"), null, new HarmonyMethod(fixes, "IsCurrencyFix"));
                 harmony.Patch(AccessTools.PropertyGetter(typeof(TradeDeal), "CurrencyTradeable"), new HarmonyMethod(fixes, "QualityCurrencyTradeable"));
                 harmony.Patch(AccessTools.Method(typeof(Tradeable), "InitPriceDataIfNeeded"), new HarmonyMethod(fixes, "SilverValueFix"));
-                //harmony.Patch(AccessTools.Method(typeof(Dialog_Trade), "CacheTradeables"), null, new HarmonyMethod(fixes, "SortSilver"));
                 harmony.Patch(AccessTools.Method(typeof(TransferableUIUtility), "DefaultListOrderPriority", new Type[] { typeof(ThingDef) }), new HarmonyMethod(fixes, "SortSilver"));
             }
             harmony.PatchAll(Assembly.GetExecutingAssembly());

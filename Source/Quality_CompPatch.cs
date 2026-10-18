@@ -11,7 +11,7 @@ namespace QualityEverything
         [HarmonyPrefix]
         public static void ApplyQualityLimits(CompQuality __instance, ref QualityCategory q)
         {
-            if (__instance?.parent == null || !QualityDefUtility.ShouldReceiveQuality(__instance.parent.def)) return;
+            if (QualityNativeOutput.PreserveBounds || __instance?.parent == null || !QualityDefUtility.ShouldReceiveQuality(__instance.parent.def)) return;
             int minQuality = QualityDefUtility.GetMinQuality(__instance.parent.def);
             int maxQuality = QualityDefUtility.GetMaxQuality(__instance.parent.def);
             if ((int)q < minQuality) q = (QualityCategory)minQuality;
