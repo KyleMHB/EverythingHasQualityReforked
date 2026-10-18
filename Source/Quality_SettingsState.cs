@@ -184,11 +184,11 @@ namespace QualityEverything
         public static string Reason(EffectId id) => reasons.TryGetValue(id, out var reason) ? reason : "QEverything.Options.AdapterPending".Translate().ToString();
         public static float Factor(EffectId id, Thing thing)
         {
+            int index = (int)id;
+            if (index < 0 || index >= effectKeys.Length || !QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(effectKeys[index], out var effect) || !effect.Enabled) return 1f;
             if (thing == null || !Available(id) || UnsupportedReason(id, thing.def) != null || !QualityCatalog.Participates(thing.def)) return 1f;
             var quality = thing.TryGetComp<CompQuality>();
             if (quality == null) return 1f;
-            int index = (int)id;
-            if (index < 0 || index >= effectKeys.Length || !QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(effectKeys[index], out var effect) || !effect.Enabled) return 1f;
             int tier = (int)quality.Quality;
             return tier >= 0 && tier < effect.Factors.Length ? effect.Factors[tier] : 1f;
         }

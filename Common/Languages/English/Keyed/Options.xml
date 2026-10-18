@@ -168,4 +168,15 @@
   <QEverything.Options.PatchStatusHelp>Production call replacements report whether their expected IL pattern matched at startup. A missing entry has not reported a result.</QEverything.Options.PatchStatusHelp>
   <QEverything.Options.PatchVerified>Expected call pattern verified</QEverything.Options.PatchVerified>
   <QEverything.Options.NativeFallback>Pattern unsupported; original behavior retained</QEverything.Options.NativeFallback>
+  <QEverything.Options.ProgressionPreview>Apply the mild curves to available effects and replace assignment and effect item rules below with Exclude in this draft? Other rules stay as they are. Edit these exceptions under Quality Rules. Save and restart to activate. Native factory and Processor quality policies stay in control, including Normal outputs. This does not certify full-pack compatibility or change research, content or load order.</QEverything.Options.ProgressionPreview>
+  <QEverything.Options.ProgressionStatus>The Progression preset is an explicit draft edit. Factory and Processor adapters preserve their native output choices. Research, content and load order remain under the pack's control. Full-pack runtime checks remain pending.</QEverything.Options.ProgressionStatus>
+  <QEverything.Options.HygieneAbsent>Dubs Bad Hygiene is not active. No hygiene exclusions will be added.</QEverything.Options.HygieneAbsent>
+  <QEverything.Options.HygieneUnknown>Dubs Bad Hygiene QualityComps could not be read. No hygiene exclusions will be guessed.</QEverything.Options.HygieneUnknown>
+  <QEverything.Options.HygieneEnabled>Dubs Bad Hygiene QualityComps is enabled. No hygiene exclusions will be added.</QEverything.Options.HygieneEnabled>
+  <QEverything.Options.HygieneDisabled>Dubs Bad Hygiene QualityComps is disabled. The preset excludes its own content definitions.</QEverything.Options.HygieneDisabled>
+  <QEverything.Options.NativeOutputAbsent>Provider is not active.</QEverything.Options.NativeOutputAbsent>
+  <QEverything.Options.NativeOutputUnknown>Native output adapter unavailable. This mod's configured bounds may still apply to the provider's SetQuality calls.</QEverything.Options.NativeOutputUnknown>
+  <QEverything.Options.NativeOutputSupported>Native output bounds exemption registered. Runtime verification remains pending.</QEverything.Options.NativeOutputSupported>
+  <QEverything.Options.ImproveThisUnavailable>Improve This component injection is unavailable. Its optional properties and consumers have not been verified in this installation. Existing native components are preserved.</QEverything.Options.ImproveThisUnavailable>
+  <QEverything.Options.ConsumableCacheUnavailable>Quality-change stat cache invalidation is unavailable. This effect remains inactive.</QEverything.Options.ConsumableCacheUnavailable>
 </LanguageData>

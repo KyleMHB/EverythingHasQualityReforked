@@ -14,12 +14,16 @@ namespace QualityEverything
     internal static class QualityConsumableEffects
     {
         internal static readonly Harmony Harmony = new Harmony("rimworld.qualityframework.consumables");
+        private static readonly Dictionary<ThingDef, List<StatDef>> activeStats = new Dictionary<ThingDef, List<StatDef>>();
         public static void Register()
         {
             AddStat(StatDefOf.Nutrition, EffectId.FoodNutrition);
             AddStat(StatDefOf.FoodPoisonChanceFixedHuman, EffectId.FoodPoisoningRisk);
             QualityMedicineEffects.Register();
             QualityDrugEffects.Register();
+            if (!Patch(AccessTools.Method(typeof(CompQuality), nameof(CompQuality.SetQuality)), prefix: nameof(BeforeQuality), postfix: nameof(AfterQuality)))
+                foreach (var effect in new[] { EffectId.FoodNutrition, EffectId.FoodPoisoningRisk, EffectId.MedicinePotency })
+                    QualityEffects.SetCapability(effect, false, "QEverything.Options.ConsumableCacheUnavailable".Translate());
         }
         internal static bool Patch(MethodBase target, string prefix = null, string postfix = null, string transpiler = null, Type owner = null)
         {
@@ -33,13 +37,32 @@ namespace QualityEverything
             }
             catch (Exception e) { Log.Error("QEverything: consumable adapter unavailable for " + target + ": " + e.Message); return false; }
         }
+        private static void BeforeQuality(CompQuality __instance, out QualityCategory? __state)
+        {
+            __state = __instance.parent != null && activeStats.ContainsKey(__instance.parent.def) ? __instance.Quality : (QualityCategory?)null;
+        }
+        private static void AfterQuality(CompQuality __instance, QualityCategory? __state)
+        {
+            if (__state == null || __state.Value == __instance.Quality || !activeStats.TryGetValue(__instance.parent.def, out var stats)) return;
+            foreach (var stat in stats) stat.Worker.ClearCacheForThing(__instance.parent);
+        }
         internal static void AddStat(StatDef stat, EffectId effect)
         {
             bool conflict = stat?.parts?.Any(p => p is StatPart_Quality || p is QualityConsumableStatPart) == true;
             if (stat != null && !conflict)
             {
                 if (stat.parts == null) stat.parts = new List<StatPart>();
-                stat.parts.Add(new QualityConsumableStatPart { parentStat = stat, Effect = effect });
+                var part = new QualityConsumableStatPart { parentStat = stat, Effect = effect };
+                // Inherent risk scales before native rotting applies its independent floor.
+                if (effect == EffectId.FoodPoisoningRisk) stat.parts.Insert(0, part);
+                else stat.parts.Add(part);
+                if (QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(effect.ToString(), out var settings) && settings.Enabled)
+                    foreach (var entry in QualityCatalog.Entries)
+                    {
+                        if (!QualityCatalog.Participates(entry.Def) || (effect == EffectId.MedicinePotency ? !entry.Def.IsMedicine : entry.Def.ingestible == null)) continue;
+                        if (!activeStats.TryGetValue(entry.Def, out var stats)) activeStats[entry.Def] = stats = new List<StatDef>();
+                        stats.Add(stat);
+                    }
             }
             QualityEffects.SetCapability(effect, stat != null && !conflict,
                 (conflict ? "QEverything.Consumables.StatConflict" : "QEverything.Consumables.StatSupported").Translate().ToString());

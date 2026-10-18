@@ -330,7 +330,7 @@ namespace QualityEverything
             float third = (rect.width - 12) / 3;
             if (Widgets.ButtonText(new Rect(rect.x, rect.y, third, 30), T("Rules"))) { effects = false; return; }
             if (Widgets.ButtonText(new Rect(rect.x + third + 6, rect.y, third, 30), T("MildPreset"))) PreviewPreset();
-            if (Widgets.ButtonText(new Rect(rect.x + 2 * (third + 6), rect.y, third, 30), T("ProgressionPreset"))) Find.WindowStack.Add(new Dialog_MessageBox(T("ProgressionPending")));
+            if (Widgets.ButtonText(new Rect(rect.x + 2 * (third + 6), rect.y, third, 30), T("ProgressionPreset"))) PreviewProgression();
             rect.y += 38; rect.height -= 38;
             var ids = (EffectId[])Enum.GetValues(typeof(EffectId));
             var view = new Rect(0, 0, rect.width - 18, ids.Length * 132 + 95);
@@ -356,6 +356,21 @@ namespace QualityEverything
             Widgets.Label(new Rect(0, y, view.width * .7f, 28), T("LinkedPenaltyCap"));
             FloatField(new Rect(view.width * .72f, y, view.width * .25f, 28), "linkedPenalty", Draft.LinkedFurniturePenaltyCap, v => Draft.LinkedFurniturePenaltyCap = v);
             Widgets.EndScrollView();
+        }
+
+        private void PreviewProgression()
+        {
+            string preview = T("ProgressionPreview") + "\n" + QualityProgression.HygieneStatus.Translate() + "\n" +
+                string.Join("\n", QualityProgression.Exclusions.Select(d => d.LabelCap + " [" + d.defName + "]")) + "\n" +
+                string.Join("\n", QualityNativeOutput.Status) + "\n" +
+                string.Join("\n", Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(QualityEffects.Available)
+                    .Select(id => T("Effect." + id) + ": " + string.Join(" / ", QualityEffectCatalog.Curve(id).Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))));
+            Confirm(preview, () =>
+            {
+                QualityProgression.Apply(Draft);
+                foreach (string key in buffers.Keys.Where(k => k.StartsWith("effect:")).ToArray()) buffers.Remove(key);
+                QualitySettingsState.Changed();
+            });
         }
 
         private void PreviewPreset()
@@ -414,7 +429,8 @@ namespace QualityEverything
         {
             if (compatibilityLines == null || compatibilityRevision != QualitySettingsState.Revision)
             {
-                var lines = new List<string> { T("CompatibilityIntro"), T("StorageOmitted"), T("BionicsDeferred"), T("ProgressionPending"), T("PatchStatusHelp") };
+                var lines = new List<string> { T("CompatibilityIntro"), T("StorageOmitted"), T("BionicsDeferred"), T("ProgressionStatus"), QualityProgression.HygieneStatus.Translate().ToString(), T("PatchStatusHelp"), T("ImproveThisUnavailable") };
+                lines.AddRange(QualityNativeOutput.Status);
                 lines.AddRange(QualityPatchUtility.Statuses.OrderBy(p => p.Key).Select(p => p.Key + ": " + T(p.Value ? "PatchVerified" : "NativeFallback")));
                 lines.AddRange(Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Select(id => T("Effect." + id) + ": " + (QualityEffects.Available(id) ? T("Available") : T("Unavailable")) + " / " + QualityEffects.Reason(id)));
                 lines.Add(T("InactiveLegacy") + ": " + Draft.InactiveLegacy.Count);
