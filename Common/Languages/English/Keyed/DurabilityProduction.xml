@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Durability.NotApplicable>This item does not use this supported durability or production stat.</QEverything.Durability.NotApplicable>
+  <QEverything.Durability.NativeCurve>The stat already has a quality curve; its existing provider takes precedence.</QEverything.Durability.NativeCurve>
+  <QEverything.Durability.Available>Uses the item's native stat path. Existing quality curves take precedence.</QEverything.Durability.Available>
+  <QEverything.Durability.Explanation>{0}: x{1}</QEverything.Durability.Explanation>
+</LanguageData>
