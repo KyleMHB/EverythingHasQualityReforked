@@ -9,8 +9,9 @@ namespace QualityEverything
 {
     internal static class QualityDurabilityProduction
     {
-        private static readonly Dictionary<EffectId, StatDef> stats = new Dictionary<EffectId, StatDef>();
         private static readonly Dictionary<EffectId, HashSet<ThingDef>> targets = new Dictionary<EffectId, HashSet<ThingDef>>();
+        private static readonly Dictionary<ThingDef, List<StatDef>> activeStats = new Dictionary<ThingDef, List<StatDef>>();
+        private static readonly HashSet<ThingDef> activeDurability = new HashSet<ThingDef>();
         private static readonly Dictionary<Thing, int> creating = new Dictionary<Thing, int>();
         private static bool registered;
         private static readonly EffectId[] durabilityIds = { EffectId.BuildingDurability, EffectId.WeaponDurability, EffectId.ApparelDurability };
@@ -44,7 +45,6 @@ namespace QualityEverything
 
         private static void Add(EffectId id, StatDef stat)
         {
-            stats[id] = stat;
             var eligible = targets[id] = new HashSet<ThingDef>();
             // A native/custom quality part owns its curve. Unknown quality-named parts are conservatively protected too.
             bool existingQuality = stat.parts?.Any(p => !(p is StatPart_OptionalQuality) && (p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0)) == true;
@@ -61,6 +61,13 @@ namespace QualityEverything
                     continue;
                 }
                 eligible.Add(entry.Def);
+                if (QualityCatalog.Participates(entry.Def) && QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(id.ToString(), out var effect) && effect.Enabled &&
+                    entry.Def.comps?.Any(p => p?.compClass != null && typeof(CompQuality).IsAssignableFrom(p.compClass)) == true)
+                {
+                    if (!activeStats.TryGetValue(entry.Def, out var affected)) activeStats[entry.Def] = affected = new List<StatDef>();
+                    if (!affected.Contains(stat)) affected.Add(stat);
+                    if (durabilityIds.Contains(id)) activeDurability.Add(entry.Def);
+                }
             }
             QualityEffects.SetCapability(id, !existingQuality, (existingQuality ? "QEverything.Durability.NativeCurve" : "QEverything.Durability.Available").Translate());
             if (existingQuality) return;
@@ -72,10 +79,11 @@ namespace QualityEverything
         private static bool SupportedDurability(Thing thing) => thing != null && durabilityIds.Any(id => targets.TryGetValue(id, out var set) && set.Contains(thing.def));
         private static bool Durable(Thing thing) => SupportedDurability(thing) && thing.TryGetComp<CompQuality>() != null;
 
-        private static void Clear(Thing thing)
+        private static void ClearActive(Thing thing)
         {
             // Clear immutable as well as short-lived stat caches before observing a new maximum.
-            foreach (var stat in stats.Values.Distinct()) stat.Worker.ClearCacheForThing(thing);
+            if (thing != null && activeStats.TryGetValue(thing.def, out var affected))
+                foreach (var stat in affected) stat.Worker.ClearCacheForThing(thing);
         }
 
         [HarmonyPatch(typeof(ThingWithComps), nameof(ThingWithComps.PostMake))]
@@ -83,7 +91,7 @@ namespace QualityEverything
         {
             private static void Prefix(ThingWithComps __instance, out bool __state)
             {
-                __state = registered && __instance.TryGetComp<CompQuality>() == null && !creating.ContainsKey(__instance);
+                __state = registered && activeDurability.Contains(__instance.def) && __instance.TryGetComp<CompQuality>() == null && !creating.ContainsKey(__instance);
                 if (__state) creating[__instance] = __instance.MaxHitPoints;
             }
             private static void Postfix(ThingWithComps __instance, bool __state)
@@ -91,7 +99,7 @@ namespace QualityEverything
                 if (!__state || !creating.TryGetValue(__instance, out int baseline)) return;
                 if (Durable(__instance) && !__instance.Destroyed)
                 {
-                    Clear(__instance);
+                    StatDefOf.MaxHitPoints.Worker.ClearCacheForThing(__instance);
                     __instance.HitPoints = QualityCondition.Remap(__instance.HitPoints, baseline, __instance.MaxHitPoints);
                 }
             }
@@ -106,7 +114,7 @@ namespace QualityEverything
         {
             public QualityCategory Quality;
             public int Hp, Maximum;
-            public bool Remap;
+            public bool Remap, Affected;
         }
 
         [HarmonyPatch(typeof(CompQuality), nameof(CompQuality.SetQuality))]
@@ -116,18 +124,20 @@ namespace QualityEverything
             {
                 var thing = __instance.parent;
                 __state = new QualityChange { Quality = __instance.Quality };
-                if (!registered) return;
-                Clear(thing);
-                __state.Remap = Durable(thing) && !creating.ContainsKey(thing) && !thing.Destroyed && thing.HitPoints > 0;
+                if (!registered || thing == null || !activeStats.ContainsKey(thing.def)) return;
+                __state.Affected = true;
+                ClearActive(thing);
+                __state.Remap = activeDurability.Contains(thing.def) && Durable(thing) && !creating.ContainsKey(thing) && !thing.Destroyed && thing.HitPoints > 0;
                 if (__state.Remap) { __state.Hp = thing.HitPoints; __state.Maximum = thing.MaxHitPoints; }
             }
             // Read actual final quality, allowing other patches to constrain the incoming tier.
             [HarmonyPriority(Priority.Last)]
             private static void Postfix(CompQuality __instance, QualityChange __state)
             {
-                if (!registered || __state.Quality == __instance.Quality) return;
+                if (!__state.Affected || __state.Quality == __instance.Quality) return;
                 var thing = __instance.parent;
-                Clear(thing);
+                if (thing == null) return;
+                ClearActive(thing);
                 if (__state.Remap && !thing.Destroyed && thing.HitPoints > 0)
                     thing.HitPoints = QualityCondition.Remap(__state.Hp, __state.Maximum, thing.MaxHitPoints);
             }
@@ -140,7 +150,7 @@ namespace QualityEverything
             {
                 if (!registered || Scribe.mode != LoadSaveMode.PostLoadInit || !SupportedDurability(__instance) || __instance.Destroyed) return;
                 // Includes held items and removal of mod-added quality support. Restart changes never repair.
-                Clear(__instance);
+                StatDefOf.MaxHitPoints.Worker.ClearCacheForThing(__instance);
                 __instance.HitPoints = QualityCondition.ClampLoaded(__instance.HitPoints, __instance.MaxHitPoints);
             }
         }
@@ -161,4 +171,3 @@ namespace QualityEverything
         }
     }
 }
-
