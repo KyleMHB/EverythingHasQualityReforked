@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Energy.OtherGeneration>QualityPower already supplies generator quality scaling.</QEverything.Energy.OtherGeneration>
+  <QEverything.Energy.OtherCapacity>QualityPower already owns battery capacity accounting.</QEverything.Energy.OtherCapacity>
+  <QEverything.Energy.OtherEfficiency>QualityPower replaces battery acceptance using its own efficiency calculation.</QEverything.Energy.OtherEfficiency>
+  <QEverything.Energy.CustomComponent>Custom battery component has unverified energy consumers.</QEverything.Energy.CustomComponent>
+  <QEverything.Energy.InvalidCapacity>Battery maximum is not a finite positive value.</QEverything.Energy.InvalidCapacity>
+  <QEverything.Energy.CustomRenderer>Custom battery renderer has an unverified capacity display.</QEverything.Energy.CustomRenderer>
+  <QEverything.Energy.InvalidEfficiency>Battery efficiency is outside the supported range above 0 and at most 100%.</QEverything.Energy.InvalidEfficiency>
+</LanguageData>

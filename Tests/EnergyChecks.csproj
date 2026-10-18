@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup><ItemGroup><Compile Include="EnergyChecks.cs"/><Compile Include="../Source/Quality_EnergyCalculation.cs" Link="Quality_EnergyCalculation.cs"/></ItemGroup></Project>
