@@ -19,8 +19,8 @@
   <QEverything.Options.ResetConfirm>Reset assignment, effects and production to fresh-install defaults in the draft? Saved settings change only when you save.</QEverything.Options.ResetConfirm>
   <QEverything.Options.ResetScope>Reset selected scope</QEverything.Options.ResetScope>
   <QEverything.Options.ResetScopeConfirm>Clear the matching item overrides and the selected branch rule, or restore the selected group default? Other rules remain unchanged.</QEverything.Options.ResetScopeConfirm>
-  <QEverything.Options.Assignment>Edit assignment rules</QEverything.Options.Assignment>
-  <QEverything.Options.Participation>Edit effects participation</QEverything.Options.Participation>
+  <QEverything.Options.Assignment>Assign quality</QEverything.Options.Assignment>
+  <QEverything.Options.Participation>Effect targets</QEverything.Options.Participation>
   <QEverything.Options.Effects>Effects and tier factors</QEverything.Options.Effects>
   <QEverything.Options.SearchHelp>Search translated names, internal names, source mods and category ancestry.</QEverything.Options.SearchHelp>
   <QEverything.Options.AllSources>All source mods</QEverything.Options.AllSources>

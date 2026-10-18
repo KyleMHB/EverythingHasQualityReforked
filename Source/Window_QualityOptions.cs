@@ -139,8 +139,16 @@ namespace QualityEverything
         private void DrawRules(Rect rect)
         {
             float left = Math.Min(300, rect.width * .32f), right = rect.width - left - 12;
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y, left, 30), participation ? T("Participation") : T("Assignment"))) participation = !participation;
-            if (Widgets.ButtonText(new Rect(rect.x + left + 12, rect.y, right, 30), T("Effects"))) { effects = true; return; }
+            float policyWidth = (rect.width - 16) / 3;
+            for (int i = 0; i < 2; i++)
+            {
+                var policyRect = new Rect(rect.x + i * (policyWidth + 8), rect.y, policyWidth, 30);
+                bool selectedPolicy = participation == (i == 1);
+                if (selectedPolicy) Widgets.DrawHighlightSelected(policyRect);
+                if (Widgets.ButtonText(policyRect, T(i == 0 ? "Assignment" : "Participation"), drawBackground: !selectedPolicy))
+                    participation = i == 1;
+            }
+            if (Widgets.ButtonText(new Rect(rect.x + 2 * (policyWidth + 8), rect.y, policyWidth, 30), T("Effects"))) { effects = true; return; }
             DrawBrowser(new Rect(rect.x, rect.y + 38, left, rect.height - 38));
             float x = rect.x + left + 12, y = rect.y + 38;
             string scope = category.Length > 0 ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(category)?.LabelCap.ToString() ?? category)

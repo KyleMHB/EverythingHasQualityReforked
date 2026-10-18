@@ -75,7 +75,7 @@ namespace QualityEverything
         {
             if (method == null) return false;
             // Unknown interceptors may already supply quality scaling. Fail closed rather than advertise arbitrary stacking.
-            if (Harmony.GetPatchInfo(method)?.Owners.Any(o => o != Owner) == true) return false;
+            if (QualityPatchOwnership.HasExternalPatches(method)) return false;
             try
             {
                 harmony.Patch(method, prefix == null ? null : new HarmonyMethod(typeof(QualityEquipmentCombat), prefix),
