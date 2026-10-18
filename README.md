@@ -1,104 +1,43 @@
 # Everything Has Quality Reforked
 
-Everything Has Quality Reforked is a RimWorld 1.6 mod that expands RimWorld's quality system to more item types, with configurable category rules and individual def controls.
+Everything Has Quality Reforked expands item quality and offers optional quality effects for RimWorld 1.6 and 1.7. It is a fork of pudy248's fork of Cozarkian's Everything Has Quality.
 
-This project is a fork of a fork of Cozarkian's original Everything Has Quality. The refork keeps the original goal intact while updating compatibility, settings usability, and stability for modern RimWorld 1.6 mod lists.
+## Install from Steam Workshop
 
-## Features
+Subscribe to [Everything Has Quality Reforked](https://steamcommunity.com/sharedfiles/filedetails/?id=3710884766) and [Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077). Enable Harmony before this mod.
 
-- **Expanded quality support** for buildings, resources, ingredients, meals, drugs, medicine, apparel, weapons, shells, and other manufactured items.
-- **Category-level controls** for enabling or disabling quality by item group.
-- **Minimum and maximum quality ranges** for supported item categories.
-- **Individual def overrides** for resources, buildings, weapons, apparel, and other items.
-- **Searchable settings lists** for large modpacks with many defs.
-- **Material and work-table quality factors** for production quality calculations.
-- **Passive fermentation quality** that transfers the weighted-average quality of a full wort batch to the finished beer when material quality influence is enabled.
-- **Skill and inspiration options** for butchering, chemistry, construction, cooking, gathering, harvesting, mining, and stonecutting.
-- **RimWorld 1.6 packaging** through `LoadFolders.xml`, `1.6`, and `Common`.
+## Build a local package
 
-## Installation
+Use a .NET 10 SDK. The 1.6 target uses .NET Framework 4.8 reference packages from NuGet. The 1.7 target needs a local 1.7 game directory containing `Assembly-CSharp.dll`, `UnityStubs.dll` and `Waylith.UnityCompat.dll`. Package restore needs access to NuGet or an existing local package cache.
 
-### Steam Workshop
-
-Subscribe on Steam Workshop if using the published Workshop version:
-
-- [Everything Has Quality Reforked](https://steamcommunity.com/sharedfiles/filedetails/?id=3710884766)
-
-### Manual Installation
-
-1. Download or clone this repository.
-2. Place the repository folder in your RimWorld `Mods` directory.
-3. Enable **Harmony** before this mod in RimWorld's mod list.
-4. Enable **Everything Has Quality Reforked**.
-
-## Usage
-
-After enabling the mod, open RimWorld's mod settings and select **Everything Has Quality**.
-
-Use the settings tabs to:
-
-- enable or disable quality by category
-- set minimum and maximum quality limits
-- configure whether materials, work tables, skill requirements, and inspirations affect generated quality
-- enable individual def customization for specific resources, buildings, weapons, apparel, and other items
-- search long settings lists when working with large modpacks
-
-When **Resources/Ingredients Affect Quality** is enabled, a full fermenting-barrel batch records the weighted-average quality of the wort it accepts and applies that quality to the finished beer. The active batch data is saved, the barrel's own quality does not affect the result, and the configured quality bounds still apply.
-
-This mod enables quality on more things, but it does not make every quality-bearing item automatically scale every stat. Broader stat scaling requires a separate mod and should be checked for compatibility with your current mod list.
-
-## Configuration
-
-Configuration is stored through RimWorld's normal mod settings system.
-
-Important options include:
-
-- **Quality categories:** toggles for buildings, resources, ingredients, meals, drugs, medicine, apparel, weapons, shells, and manufactured items.
-- **Quality bounds:** per-category minimum and maximum quality values.
-- **Production inputs:** optional quality influence from materials, work tables, and skill requirements.
-- **Supply quality factors:** multipliers for how input quality contributes to output quality.
-- **Individual overrides:** per-def enablement lists for selected categories.
-- **Inspirations:** custom inspiration toggles for production activities added by this fork.
-
-Some category changes require applying settings in the mod options before affected defs are synchronized.
-
-## Building from Source
-
-Prerequisites:
-
-- .NET SDK capable of building `net48` projects
-- RimWorld 1.6 reference package access through the project package references
-
-Build command:
+From this repository, run:
 
 ```powershell
-dotnet build .\Source\QualityEverything.csproj -c Debug /p:UseSharedCompilation=false
+.\package-local.ps1 -DotNetPath 'C:\path\to\dotnet.exe' -ManagedPath 'C:\path\to\RimWorld'
 ```
 
-The Debug build writes `QualityEverything.dll` to `Common\Assemblies`. It does not copy the assembly to `1.6\Assemblies`.
+The package is `artifacts\package\EverythingHasQualityReforked`. Copy that folder into RimWorld's `Mods` directory, then enable Harmony before this mod. A source checkout does not contain ready-to-load binaries.
 
-For the repository's full Release deployment workflow, run:
+For one target without packaging, run:
 
 ```powershell
-.\deploy.ps1
+.\build-local.ps1 -GameVersion 1.6 -DotNetPath 'C:\path\to\dotnet.exe'
+.\build-local.ps1 -GameVersion 1.7 -DotNetPath 'C:\path\to\dotnet.exe' -ManagedPath 'C:\path\to\RimWorld'
 ```
 
-The deployment script uses the shared `..\_Shared\RimWorldModTools.ps1` tooling to build the Release configuration and package the `About`, `Common`, and `1.6` folders.
+Builds write only to `artifacts\1.6` or `artifacts\1.7` and read game references without changing the game installation. The package shares `Common` content and loads one `QualityEverything.dll` for each game version. Harmony comes from the separate Harmony mod.
 
-## Testing and Validation
+## Install a prepared local package
 
-The primary validation command is the project build:
+Close RimWorld before replacing an installed copy. Back up that copy and any saves you intend to use. To replace this mod's package folders at an explicit destination, run:
 
 ```powershell
-dotnet build .\Source\QualityEverything.csproj -c Debug /p:UseSharedCompilation=false
+.\deploy.ps1 -Destination 'C:\path\to\RimWorld\Mods\EverythingHasQualityReforked'
 ```
 
-There is no separate automated test suite in this repository.
+The destination folder must be named `EverythingHasQualityReforked`. Deployment uses the prepared package and replaces its owned content folders, including obsolete shared assemblies. It does not build, select a mod list or launch RimWorld.
 
-## Contributing
-
-> Contributions, issues, and feature requests are welcome.
-
+Read [the settings and removal guide](docs/quality-guide.md) before changing an existing colony's quality support.
 ## Links
 
 
@@ -112,6 +51,12 @@ Support me on Ko-fi. This does not imply endorsement by the original authors.
 - **Original Mod:** [Cozarkian/EverythingHasQuality](https://github.com/Cozarkian/EverythingHasQuality)
 - **Intermediate Fork:** [pudy248/EverythingHasQualityFork](https://github.com/pudy248/EverythingHasQualityFork)
 - **Harmony:** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077)
+
+- [Better Pawn Control Forked](https://steamcommunity.com/sharedfiles/filedetails/?id=3724294345)
+- [Cargo Containers Expanded](https://steamcommunity.com/sharedfiles/filedetails/?id=3714050938)
+- [Gear Up and Go Reforked](https://steamcommunity.com/sharedfiles/filedetails/?id=3724312502)
+- [Outfit Stands Plus Forked](https://steamcommunity.com/sharedfiles/filedetails/?id=3724311713)
+- [Stats Forked](https://steamcommunity.com/sharedfiles/filedetails/?id=3712317437)
 
 ## License
 

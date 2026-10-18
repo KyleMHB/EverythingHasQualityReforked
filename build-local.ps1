@@ -1,16 +1,19 @@
 param(
     [ValidateSet('1.6', '1.7')][string]$GameVersion = '1.6',
     [string]$ManagedPath,
+    [string]$DotNetPath = 'dotnet',
     [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release'
 )
 $ErrorActionPreference = 'Stop'
-$projectPath = Join-Path $PSScriptRoot 'Source/QualityEverything.csproj'
-$buildArguments = @('build', $projectPath, '-c', $Configuration, "-p:RimWorldVersion=$GameVersion")
+$arguments = @('build', (Join-Path $PSScriptRoot 'Source/QualityEverything.csproj'), '-c', $Configuration,
+    "-p:RimWorldVersion=$GameVersion", '-p:NuGetAudit=false', '-p:UseSharedCompilation=false')
 if ($GameVersion -eq '1.7') {
-    if (-not $ManagedPath -or -not (Test-Path -LiteralPath (Join-Path $ManagedPath 'Assembly-CSharp.dll'))) {
-        throw 'For 1.7, supply -ManagedPath pointing to the game assemblies. It is read only; no deployment is performed.'
+    foreach ($assembly in @('Assembly-CSharp.dll', 'UnityStubs.dll', 'Waylith.UnityCompat.dll')) {
+        if (-not $ManagedPath -or -not (Test-Path -LiteralPath (Join-Path $ManagedPath $assembly) -PathType Leaf)) {
+            throw "For 1.7, supply -ManagedPath containing $assembly. The game directory is read only."
+        }
     }
-    $buildArguments += "-p:RimWorldManagedPath=$((Resolve-Path -LiteralPath $ManagedPath).Path)"
+    $arguments += "-p:RimWorldManagedPath=$((Resolve-Path -LiteralPath $ManagedPath).Path)"
 }
-& dotnet @buildArguments
+& $DotNetPath @arguments
 if ($LASTEXITCODE -ne 0) { throw "Local $GameVersion build failed with exit code $LASTEXITCODE." }

@@ -1,5 +1,40 @@
 # Changelog
 
+Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
+
+## 2026-10-18
+
+### Added
+
+- Added inherited item/category rules with translated-name search, source filters, explanations and scoped bulk actions.
+- Added separate opt-in quality effects for durability, production, equipment, combat, power, batteries, food, medicine, supported ordinary drugs and native linked furniture.
+- Added previewable mild and Progression presets. All new effects start disabled on fresh installs and upgrades.
+
+### Changed
+
+- Changed saved options to activate after restarting RimWorld, with Save/Discard controls and separate assignment/effect rules.
+- Preserved legacy settings and inactive selections during migration.
+- Preserved selected native factory and Processor Framework fixed-quality output policies and detected Progression exclusions.
+- Documented support limits, omitted storage and installed-bionic effects, and described disable/removal behavior.
+
+### Fixed
+
+- Fixed version-specific quality production patches and isolated deferred recipe operations.
+- Removed live component reinitialization when saving settings.
+- Preserved native quality support when assignment is excluded.
+- Scoped currency and favor handling and aligned quality eligibility with effective rules.
+
+### Internal
+
+- Added isolated 1.6/.NET Framework 4.8 and 1.7/.NET 10 build/package tooling with explicit deployment destinations.
+- Removed stale duplicate assemblies and bundled Harmony files. Packages now share content and load one mod assembly per version.
+- Corrected the assembly title and product metadata.
+## 2026-10-14
+
+### Changed
+
+- Added RimWorld 1.7 compatibility while retaining 1.6 support.
+
 ## 2026-08-28
 
 ### Added
