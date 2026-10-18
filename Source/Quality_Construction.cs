@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -17,34 +17,35 @@ namespace QualityEverything
         [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> ConstructionQuality(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            MethodInfo OriginalQualityGenerator = AccessTools.Method(typeof(QualityUtility), "GenerateQualityCreatedByPawn", new Type[]{ typeof(Pawn), typeof(SkillDef) }, null);
-            LocalBuilder materialQuality = generator.DeclareLocal(typeof(int)); //Log.Message("Declared variable");
-            yield return new CodeInstruction(OpCodes.Ldarg_0);
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Quality_Construction), "CalculateMaterialQuality"));
-            yield return new CodeInstruction(OpCodes.Stloc, materialQuality);
-            foreach (CodeInstruction codeInstruction in instructions)
+            var original = AccessTools.Method(typeof(QualityUtility), "GenerateQualityCreatedByPawn", new[] { typeof(Pawn), typeof(SkillDef), typeof(bool) });
+            var source = instructions.ToList();
+            if (original == null || source.Count(i => i.Calls(original)) != 1)
             {
-                if (codeInstruction.opcode == OpCodes.Call && (MethodInfo)codeInstruction.operand == OriginalQualityGenerator) //Replace vanilla code for creating quality with custom code
-                {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldloc, materialQuality);
-                    yield return new CodeInstruction(OpCodes.Ldnull);
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Quality_Generator), "GenerateQualityCreatedByPawn"));
-                }
-                else
-                {
-                    yield return codeInstruction;
-                }
+                Log.Error("QEverything: construction quality pattern did not match exactly once; leaving original behavior intact.");
+                return source;
             }
-            //Log.Message("Construction patch successful");
-            yield break;
+            LocalBuilder materialQuality = generator.DeclareLocal(typeof(int));
+            var result = QualityPatchUtility.ReplaceSingleCall(source, original,
+                AccessTools.Method(typeof(Quality_Construction), nameof(GenerateConstructionQuality)),
+                () => new[] { new CodeInstruction(OpCodes.Ldarg_0), new CodeInstruction(OpCodes.Ldloc, materialQuality) }, "construction quality");
+            // Capture before vanilla destroys the frame's resource container.
+            result.InsertRange(0, new[] {
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Quality_Construction), nameof(CalculateMaterialQuality))),
+                new CodeInstruction(OpCodes.Stloc, materialQuality) });
+            return result;
         }
 
+        public static QualityCategory GenerateConstructionQuality(Pawn pawn, SkillDef skill, bool consumeInspiration, Frame frame, int materialQuality)
+        {
+            var builtDef = frame.def.entityDefToBuild as ThingDef;
+            return Quality_Generator.GenerateQualityForDef(pawn, skill, builtDef, materialQuality, null, consumeInspiration);
+        }
         public static int CalculateMaterialQuality(Frame frame)
         {
             float materialQuality = -1;
             ThingDef thingDef = frame.def.entityDefToBuild as ThingDef;
-            if (ModSettings_QEverything.useMaterialQuality && thingDef != null && thingDef.HasComp(typeof(CompQuality)))
+            if (ModSettings_QEverything.useMaterialQuality && thingDef != null && QualityDefUtility.ShouldReceiveQuality(thingDef) && thingDef.HasComp(typeof(CompQuality)))
             {
                 int numIng = 0;
                 for (int i = 0; i < frame.resourceContainer.Count; i++)
@@ -71,47 +72,33 @@ namespace QualityEverything
         //Prevents pawns from picking up stacks that can't stack when gathering construction materials
         public static IEnumerable<CodeInstruction> CollectNextTarget_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            MethodInfo mEnd = AccessTools.Method(typeof(Pawn_JobTracker), "EndCurrentJob");
-            MethodInfo canStack = AccessTools.Method(typeof(ThingWithComps), "CanStackWith");
-            FieldInfo fDef = AccessTools.Field(typeof(Thing), "def");
-            List<CodeInstruction> list = instructions.ToList();
-            //Log.Message("Starting jump patch");
-            int start = -1;
-            int end = -1;
-            bool foundStart = false;
-            for (int i = 0; i < list.Count; i++)
+            var list = instructions.ToList();
+            var defField = AccessTools.Field(typeof(Thing), nameof(Thing.def));
+            var matches = new List<Tuple<int, int>>();
+            for (int second = 1; second + 1 < list.Count; second++)
             {
-                if (i + 2 < list.Count
-                    && list[i].Calls(mEnd)
-                    && list[i + 1].opcode == OpCodes.Ret
-                    && list[i + 2].opcode == OpCodes.Ldloc_2)
+                if (!list[second].LoadsField(defField) ||
+                    (list[second + 1].opcode != OpCodes.Bne_Un && list[second + 1].opcode != OpCodes.Bne_Un_S)) continue;
+                for (int first = second - 1; first >= Math.Max(0, second - 8); first--)
                 {
-                    //Log.Message("Found the start of the def matching conditional");
-                    start = i + 2;
-                    foundStart = true;
-                }
-                if (foundStart && list[i].opcode == OpCodes.Bne_Un_S)
-                {
-                    //Log.Message("Found the end of def matching conditional");
-                    end = i;
+                    if (list[first].opcode.FlowControl == FlowControl.Branch || list[first].opcode.FlowControl == FlowControl.Cond_Branch) break;
+                    if (!list[first].LoadsField(defField)) continue;
+                    matches.Add(Tuple.Create(first, second));
                     break;
                 }
             }
-            if (!foundStart || end == -1)
+            if (matches.Count != 1)
             {
-                Log.Error("Can't find code range for def matching conditional in Toils_Haul.JumpIfAlsoCollectingNextTargetInQueue");
-                return list.AsEnumerable();
+                Log.Error("QEverything: haul stack comparison pattern did not match exactly once; leaving original behavior intact.");
+                return list;
             }
-            for (int j = start; j < end; j++)
-            {
-                if (list[j].LoadsField(fDef))
-                {
-                    list[j].opcode = OpCodes.Nop;
-                }
-            }
-            list[end].opcode = OpCodes.Brfalse_S;
-            list.Insert(end, new CodeInstruction(OpCodes.Call, canStack));
-            return list.AsEnumerable();
+            int left = matches[0].Item1;
+            int right = matches[0].Item2;
+            list[left].opcode = OpCodes.Nop;
+            list[left].operand = null;
+            list[right].opcode = OpCodes.Callvirt;
+            list[right].operand = AccessTools.Method(typeof(Thing), nameof(Thing.CanStackWith));
+            list[right + 1].opcode = OpCodes.Brfalse;            return list;
         }
     }
 }

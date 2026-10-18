@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using RimWorld;
 using Verse;
 using Verse.Sound;
@@ -134,18 +134,6 @@ namespace QualityEverything
 
         public static void ApplySettingsChanges()
         {
-            if (Startup.stuffPatchRan && !ModSettings_QEverything.stuffQuality && !ModSettings_QEverything.indivStuff)
-            {
-                Find.WindowStack.Add(new Window_RestartWarning("QEverything.RestartStuff".Translate()));
-                return;
-            }
-            else if (!Startup.stuffPatchRan && (ModSettings_QEverything.stuffQuality || ModSettings_QEverything.indivStuff))
-            {
-                Find.WindowStack.Add(new Window_RestartWarning("QEverything.RestartStuff".Translate()));
-                return;
-            }
-            QualityCompSync.SyncAllDefs();
-            Quality_CompPatch.ApplyNewQuality();
             Find.WindowStack.Add(new Window_RestartWarning("QEverything.Restart".Translate()));
         }
 

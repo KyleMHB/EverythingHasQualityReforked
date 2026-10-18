@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -21,79 +21,58 @@ namespace QualityEverything
             GenerateResourceQuality(harvested, worker, SkillDefOf.Plants);
         }
 
-        [HarmonyPatch(
-            typeof(Mineable),
-            "TrySpawnYield",
-            new Type[] { typeof(Map), typeof(float), typeof(bool), typeof(Pawn) })]
-        [HarmonyTranspiler]       
+        [HarmonyPatch(typeof(Mineable), "TrySpawnYield", new Type[] { typeof(Map), typeof(bool), typeof(Pawn) })]
+        [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> MiningQuality(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> codeInstructions = instructions.ToList<CodeInstruction>();
-            CodeInstruction code;
-            for (int i = 0; i < codeInstructions.Count; i++)
-            {
-                code = codeInstructions[i];
-                yield return code;
-                if (code.opcode == OpCodes.Call && (MethodInfo)code.operand == AccessTools.Method(typeof(ThingMaker), "MakeThing", new Type[] { typeof(ThingDef), typeof(ThingDef) }))
-                {
-                    CodeInstruction loadInstruction = CodeInstruction.LoadField(typeof(SkillDefOf), "Mining");
-                    yield return new CodeInstruction(OpCodes.Dup);
-                    yield return new CodeInstruction(OpCodes.Ldarg_S, 4);
-                    yield return loadInstruction;
-                    yield return new CodeInstruction(OpCodes.Call, mGenerateResQuality);
-                }
-            }
-            yield break;
-            //Log.Message("Mining patch successful");
-            //return InsertQualityCall(instructions);
+            return InsertResourceQuality(instructions, 1, "mining", () => new[] {
+                new CodeInstruction(OpCodes.Ldarg_3), CodeInstruction.LoadField(typeof(SkillDefOf), nameof(SkillDefOf.Mining)) });
         }
 
         [HarmonyPatch(typeof(CompHasGatherableBodyResource), "Gathered")]
         [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> AnimalQuality(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> codeInstructions = instructions.ToList<CodeInstruction>();
-            CodeInstruction code;
-            for (int i = 0; i < codeInstructions.Count; i++)
-            {
-                code = codeInstructions[i];
-                yield return code;
-                if (code.opcode == OpCodes.Call && (MethodInfo)code.operand == AccessTools.Method(typeof(ThingMaker), "MakeThing", new Type[] { typeof(ThingDef), typeof(ThingDef) }))
-                {
-                    CodeInstruction loadInstruction = CodeInstruction.LoadField(typeof(SkillDefOf), "Animals");
-                    yield return new CodeInstruction(OpCodes.Dup);
-                    yield return new CodeInstruction(OpCodes.Ldarg_1);
-                    yield return loadInstruction;
-                    yield return new CodeInstruction(OpCodes.Call, mGenerateResQuality);
-                }
-            }
-            yield break;
-            //return InsertQualityCall(instructions);
+            return InsertResourceQuality(instructions, 1, "animal gathering", () => new[] {
+                new CodeInstruction(OpCodes.Ldarg_1), CodeInstruction.LoadField(typeof(SkillDefOf), nameof(SkillDefOf.Animals)) });
         }
 
         [HarmonyPatch(typeof(CompEggLayer), "ProduceEgg")]
         [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> EggQuality(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> codeInstructions = instructions.ToList<CodeInstruction>();
-            CodeInstruction code;
-            for (int i = 0; i < codeInstructions.Count; i++)
-            {
-                code = codeInstructions[i];
-                yield return code;
-                if (code.opcode == OpCodes.Call && (MethodInfo)code.operand == AccessTools.Method(typeof(ThingMaker), "MakeThing", new Type[] { typeof(ThingDef), typeof(ThingDef) }))
-                {
-                    yield return new CodeInstruction(OpCodes.Dup);
-                    yield return new CodeInstruction(OpCodes.Ldnull);
-                    yield return new CodeInstruction(OpCodes.Ldnull);
-                    yield return new CodeInstruction(OpCodes.Call, mGenerateResQuality);
-                }
-            }
-            yield break;
+            return InsertResourceQuality(instructions, 2, "egg laying", () => new[] {
+                new CodeInstruction(OpCodes.Ldnull), new CodeInstruction(OpCodes.Ldnull) });
         }
 
+        private static IEnumerable<CodeInstruction> InsertResourceQuality(IEnumerable<CodeInstruction> instructions, int expected, string feature, Func<IEnumerable<CodeInstruction>> workerAndSkill)
+        {
+            var code = instructions.ToList();
+            var makeThing = AccessTools.Method(typeof(ThingMaker), nameof(ThingMaker.MakeThing), new[] { typeof(ThingDef), typeof(ThingDef) });
+            if (code.Count(i => i.Calls(makeThing)) != expected)
+            {
+                Log.Error("QEverything: " + feature + " creation pattern did not match expected count; leaving original behavior intact.");
+                return code;
+            }
+            var result = new List<CodeInstruction>();
+            foreach (var instruction in code)
+            {
+                if (!instruction.Calls(makeThing)) { result.Add(instruction); continue; }
+                var copy = new CodeInstruction(instruction);
+                var call = new CodeInstruction(OpCodes.Call, mGenerateResQuality);
+                // Keep the generated callback inside the same protected region as creation.
+                call.blocks.AddRange(copy.blocks.Where(b => b.blockType == ExceptionBlockType.EndExceptionBlock));
+                copy.blocks.RemoveAll(b => b.blockType == ExceptionBlockType.EndExceptionBlock);
+                result.Add(copy);
+                result.Add(new CodeInstruction(OpCodes.Dup));
+                result.AddRange(workerAndSkill());
+                result.Add(call);
+            }
+            return result;
+        }
         public static void GenerateResourceQuality(Thing thing, Pawn worker = null, SkillDef relevantSkill = null)
         {
+            if (thing == null || !QualityDefUtility.ShouldReceiveQuality(thing.def)) return;
             CompQuality comp = thing.TryGetComp<CompQuality>();
             if (comp == null)
             {

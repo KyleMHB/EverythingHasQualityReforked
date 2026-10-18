@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework Condition="'$(RimWorldVersion)' != '1.7'">net48</TargetFramework>
+    <TargetFramework Condition="'$(RimWorldVersion)' == '1.7'">net10.0</TargetFramework>
+    <RimWorldVersion Condition="'$(RimWorldVersion)' == ''">1.6</RimWorldVersion>
+    <RimWorldReferenceVersion Condition="'$(RimWorldReferenceVersion)' == ''">1.6.4871</RimWorldReferenceVersion>
+    <BaseOutputPath>..\artifacts\$(RimWorldVersion)\</BaseOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <LangVersion>latest</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>QualityEverything</RootNamespace>
@@ -14,7 +19,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Common\Assemblies\</OutputPath>
+    <OutputPath>..\artifacts\$(RimWorldVersion)\$(Configuration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,14 +29,23 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Common\Assemblies\</OutputPath>
+    <OutputPath>..\artifacts\$(RimWorldVersion)\$(Configuration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4633" />
-    <PackageReference Include="Lib.Harmony" Version="2.4.2" />
+    <PackageReference Condition="'$(RimWorldVersion)' == '1.6'" Include="Krafs.Rimworld.Ref" Version="$(RimWorldReferenceVersion)" />
+    <PackageReference Include="Lib.Harmony" Version="2.4.2" ExcludeAssets="runtime" />
   </ItemGroup>
+  <ItemGroup Condition="'$(RimWorldVersion)' == '1.7'">
+    <Reference Include="Assembly-CSharp"><HintPath>$(RimWorldManagedPath)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityStubs"><HintPath>$(RimWorldManagedPath)\UnityStubs.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Waylith.UnityCompat"><HintPath>$(RimWorldManagedPath)\Waylith.UnityCompat.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="ValidateRimWorldTarget" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(RimWorldVersion)' != '1.6' and '$(RimWorldVersion)' != '1.7'" Text="RimWorldVersion must be 1.6 or 1.7." />
+    <Error Condition="'$(RimWorldVersion)' == '1.7' and !Exists('$(RimWorldManagedPath)\Assembly-CSharp.dll')" Text="Set RimWorldManagedPath to a local 1.7 assembly directory. Builds never deploy to it." />
+  </Target>
 </Project>

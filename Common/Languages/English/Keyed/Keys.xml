@@ -7,9 +7,9 @@
 	<QEverything.Tab3>Buildings</QEverything.Tab3>
 	<QEverything.Tab4>Weap &amp; Apparel</QEverything.Tab4>
 	<QEverything.Tab5>Other</QEverything.Tab5>
-	
-	<QEverything.ApplyCat>Add quality to new item categories</QEverything.ApplyCat>
-	<QEverything.Restart>Notice: A restart may be required to remove quality.</QEverything.Restart>
+
+	<QEverything.ApplyCat>Save changes (restart required)</QEverything.ApplyCat>
+	<QEverything.Restart>Restart RimWorld to apply saved changes. Existing item components will not be rebuilt.</QEverything.Restart>
 	<QEverything.RestartStuff>Warning: Detected changes to stuff quality. A restart is required.</QEverything.RestartStuff>
 	<QEverything.CatDef>Restore Category Defaults</QEverything.CatDef>
 	<QEverything.IndDef>Reset All Individual Defaults</QEverything.IndDef>
@@ -28,13 +28,13 @@
 	<QEverything.Buildings>Buildings:</QEverything.Buildings>
 	<QEverything.Furniture>Furniture, Production &amp; Art:</QEverything.Furniture>
 	<QEverything.Power>Power, Security &amp; Other:</QEverything.Power>
-	
+
 	<QEverything.WeapShells>Weapons &amp; Shells:</QEverything.WeapShells>
 	<QEverything.Clothing>Apparel:</QEverything.Clothing>
-	
+
 	<QEverything.Food>Food:</QEverything.Food>
 	<QEverything.OtherFood>Drugs, Medicine &amp; Manufactured:</QEverything.OtherFood>
-	
+
 	<QEverything.Work>Work Tables</QEverything.Work>
 	<QEverything.Security>Security Buildings</QEverything.Security>
 	<QEverything.Edifice>Other Buildings and Construction</QEverything.Edifice>
@@ -48,18 +48,18 @@
 	<QEverything.Apparel>Apparel (additional to vanilla)</QEverything.Apparel>
 	<QEverything.Weapons>Weapons (additional to vanilla)</QEverything.Weapons>
 	<QEverything.Shells>Shells</QEverything.Shells>
-	
+
 	<QEverything.Materials>Resources/Ingredients Affect Quality</QEverything.Materials>
 	<QEverything.Tables>Work Tables Affect Quality</QEverything.Tables>
 	<QEverything.SkillReq>Skill Requirements Affect Quality</QEverything.SkillReq>
 	<QEverything.Standard>Std Quality: </QEverything.Standard>
-	
+
 	<QEverything.SkilledAnimals>Skills Affect Quality of Animal Products</QEverything.SkilledAnimals>
 	<QEverything.SkilledButchering>Skills Affect Quality of Meat and Leather</QEverything.SkilledButchering>
 	<QEverything.SkilledHarvesting>Skills Affect Quality of Crops</QEverything.SkilledHarvesting>
 	<QEverything.SkilledMining>Skills Affect Quality of Mined Ore</QEverything.SkilledMining>
 	<QEverything.SkilledStoneCutting>Skills Affect Quality of Stonecutting</QEverything.SkilledStoneCutting>
-	
+
 	<QEverything.InspiredButchering>Enable butchering inspiration</QEverything.InspiredButchering>
 	<QEverything.InspiredChemistry>Enable chemistry inspiration</QEverything.InspiredChemistry>
 	<QEverything.InspiredConstruction>Enable construction inspiration</QEverything.InspiredConstruction>
@@ -68,7 +68,7 @@
 	<QEverything.InspiredHarvesting>Enable harvesting inspiration</QEverything.InspiredHarvesting>
 	<QEverything.InspiredMining>Enable mining inspiration</QEverything.InspiredMining>
 	<QEverything.InspiredStonecutting>Enable stonecutting inspiration</QEverything.InspiredStonecutting>
-	
+
 	<QEverything.SupplyQuality>Multiplicative supply quality</QEverything.SupplyQuality>
 	<QEverything.Awful>Awful</QEverything.Awful>
 	<QEverything.Poor>Poor</QEverything.Poor>

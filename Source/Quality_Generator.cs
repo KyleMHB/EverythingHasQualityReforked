@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -11,14 +11,20 @@ namespace QualityEverything
     {
         public static QualityCategory GenerateQualityCreatedByPawn(Pawn pawn, SkillDef relevantSkill, Thing thing, int supplyQuality = -1, List<SkillRequirement> recipeSkillReq = null)
         {
-            ThingDef def = thing.def;
-            if (ModSettings_QEverything.skilledStoneCutting && thing.HasThingCategory(ThingCategoryDefOf.StoneBlocks) && relevantSkill == null)
+            return GenerateQualityForDef(pawn, relevantSkill, thing.def, supplyQuality, recipeSkillReq);
+        }
+
+        public static QualityCategory GenerateQualityForDef(Pawn pawn, SkillDef relevantSkill, ThingDef def, int supplyQuality = -1, List<SkillRequirement> recipeSkillReq = null, bool consumeInspiration = true)
+        {
+            if (def == null || !QualityDefUtility.ShouldReceiveQuality(def))
+                return QualityUtility.GenerateQualityCreatedByPawn(pawn, relevantSkill, consumeInspiration);
+            if (ModSettings_QEverything.skilledStoneCutting && def.thingCategories?.Contains(ThingCategoryDefOf.StoneBlocks) == true && relevantSkill == null)
             {
                 relevantSkill = SkillDefOf.Crafting;
             }
             if (relevantSkill == null || (!ModSettings_QEverything.skilledButchering && (def.IsMeat || def.IsLeather)))
             {
-                return QualityUtility.GenerateQuality(QualityGenerator.BaseGen);
+                return (QualityCategory)Mathf.Clamp((int)QualityUtility.GenerateQuality(QualityGenerator.BaseGen), QualityDefUtility.GetMinQuality(def), QualityDefUtility.GetMaxQuality(def));
             }
             QualityCategory qualityCategory;
             int minQuality = QualityDefUtility.GetMinQuality(def);
@@ -54,26 +60,21 @@ namespace QualityEverything
                 {
                     for (int sk = 0; sk < recipeSkillReq.Count; sk++)
                     {
-                        level -= recipeSkillReq[sk].minLevel;
+                        if (recipeSkillReq[sk].skill == relevantSkill) level -= recipeSkillReq[sk].minLevel;
                     }
                 }
                 else if (relevantSkill == SkillDefOf.Plants)
                 {
-                    int plantSkill = 0;
-                    foreach (var plantDef in DefDatabase<ThingDef>.AllDefsListForReading.Where(def => def.plant?.sowMinSkill != null))
-                    {
-                        if (plantDef.plant.harvestedThingDef == def) plantSkill = Mathf.Max(plantSkill, plantDef.plant.sowMinSkill);
-                    }
-                    level -= plantSkill;
+                    level -= GetHarvestRequirement(def);
                 }
-                else if (def is BuildableDef)
+                else if (relevantSkill == SkillDefOf.Construction)
                 {
                     level -= def.constructionSkillPrerequisite;
                 }
             }
             InspirationDef inspirationDef = InspirationUtility.CheckInspired(def, relevantSkill);
-            bool inspired = (inspirationDef != null && pawn.InspirationDef == inspirationDef);
-            
+            bool inspired = (consumeInspiration && inspirationDef != null && pawn.InspirationDef == inspirationDef);
+
             if ((ModSettings_QEverything.useMaterialQuality || ModSettings_QEverything.useTableQuality) && supplyQuality >= 0)
             {
                 if (ModSettings_QEverything.multSupplyFactor)
@@ -128,6 +129,22 @@ namespace QualityEverything
             return (QualityCategory)Mathf.Clamp((int)qualityCategory, minQuality, maxQuality);
         }
 
+        private static Dictionary<ThingDef, int> harvestRequirements;
+        private static int GetHarvestRequirement(ThingDef product)
+        {
+            if (harvestRequirements == null)
+            {
+                harvestRequirements = new Dictionary<ThingDef, int>();
+                foreach (ThingDef plant in DefDatabase<ThingDef>.AllDefsListForReading)
+                {
+                    ThingDef harvested = plant.plant?.harvestedThingDef;
+                    if (harvested == null) continue;
+                    harvestRequirements.TryGetValue(harvested, out int previous);
+                    harvestRequirements[harvested] = Math.Max(previous, plant.plant.sowMinSkill);
+                }
+            }
+            return harvestRequirements.TryGetValue(product, out int required) ? required : 0;
+        }
         public static int GetMinQuality(ThingDef def)
         {
             return QualityDefUtility.GetMinQuality(def);
