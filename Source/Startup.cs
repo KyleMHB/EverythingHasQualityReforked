@@ -21,6 +21,7 @@ namespace QualityEverything
             Quality_CompPatch.DefPatch(); 
             QualityDurabilityProduction.Register();
             QualityEnergyEffects.Register();
+            QualityConsumableEffects.Register();
         }
 
         public static void RunHarmony()
