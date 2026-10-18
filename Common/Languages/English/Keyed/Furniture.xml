@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Furniture.Unsupported>Supports only the native Dresser and EndTable definitions using ordinary facilities with comfort offsets. Powered, custom, quality-aware and existing rest-offset facilities are preserved.</QEverything.Furniture.Unsupported>
+  <QEverything.Furniture.Support>Native dressers and end tables only; native selected active links, one best quality factor per kind. Rest addition per kind = (factor - 1) × 0.05, after the bed's own quality parts. Normal adds zero; two Legendary kinds add 2 percentage points, two Awful kinds lose 0.5 points. Total uses the configured caps, at most +2/-0.5 points. Powered, custom and native quality-aware facilities are preserved.</QEverything.Furniture.Support>
+  <QEverything.Furniture.Explanation>Linked furniture quality: {0} rest effectiveness (after bed quality; total caps +{1}/-{2})</QEverything.Furniture.Explanation>
+</LanguageData>
