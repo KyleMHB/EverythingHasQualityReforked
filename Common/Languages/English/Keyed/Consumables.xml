@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Consumables.StatConflict>A quality stat part is already installed; this adapter stays disabled.</QEverything.Consumables.StatConflict>
+  <QEverything.Consumables.StatSupported>Item stat used by native consumption. Contamination and rotten-food paths remain native.</QEverything.Consumables.StatSupported>
+  <QEverything.Consumables.MedicineSupported>Instance potency feeds native tending and surgical outcome calculations. Native tending caps and surgery curves remain authoritative. Consumed surgical doses are captured on the bill and survive saving. Removing the mod drops these potency corrections while retaining the native bill.</QEverything.Consumables.MedicineSupported>
+  <QEverything.Consumables.StatFactor>Quality effect: ×{0}</QEverything.Consumables.StatFactor>
+  <QEverything.Consumables.MedicineUnavailable>The native tending or surgical medicine consumer could not be verified. Potency stays native.</QEverything.Consumables.MedicineUnavailable>
+  <QEverything.Consumables.DrugSchema>Unsupported drug schema. Supported channels require an ordinary single-stage go-juice, wake-up, yayo or smokeleaf high with native fixed decay and known outcome doers. This drug stays native.</QEverything.Consumables.DrugSchema>
+  <QEverything.Consumables.DrugsSupported>Supported ordinary highs capture strength and duration per dose. Strength affects known positive capacities, work and meditation offsets, rest recovery, psyfocus, pain reduction, and positive hediff mood. Mixed doses blend by remaining native severity; native severity caps and redosing remain authoritative. Duration also prolongs native penalties and exposure to hazards. Existing untracked highs start at Normal. Captured doses keep their factors after disabling; removing the mod returns their remaining effects to native strength and decay.</QEverything.Consumables.DrugsSupported>
+  <QEverything.Consumables.DrugUnavailable>Native drug capture, benefit or persistence adapter unavailable. New doses stay native.</QEverything.Consumables.DrugUnavailable>
+</LanguageData>
