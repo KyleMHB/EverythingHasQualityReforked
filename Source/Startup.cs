@@ -22,6 +22,8 @@ namespace QualityEverything
             QualityDurabilityProduction.Register();
             QualityEnergyEffects.Register();
             QualityConsumableEffects.Register();
+            QualityEquipmentCombat.Register();
+            QualityLinkedFurniture.Register();
         }
 
         public static void RunHarmony()
