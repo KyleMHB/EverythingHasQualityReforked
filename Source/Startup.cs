@@ -19,6 +19,7 @@ namespace QualityEverything
             QualityCatalog.Build();
             RunHarmony(); 
             Quality_CompPatch.DefPatch(); 
+            QualityDurabilityProduction.Register();
         }
 
         public static void RunHarmony()
