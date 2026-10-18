@@ -13,6 +13,8 @@ namespace QualityEverything
     internal static class QualityEnergyEffects
     {
         private static bool registered;
+        private static readonly HashSet<ThingDef> activeCapacity = new HashSet<ThingDef>();
+        private static readonly HashSet<ThingDef> activeEfficiency = new HashSet<ThingDef>();
         private static readonly FieldInfo maximum = AccessTools.Field(typeof(CompProperties_Battery), "storedEnergyMax");
         private static readonly FieldInfo efficiency = AccessTools.Field(typeof(CompProperties_Battery), "efficiency");
         private static readonly MethodInfo consumption = AccessTools.PropertyGetter(typeof(CompProperties_Power), "PowerConsumption");
@@ -26,7 +28,8 @@ namespace QualityEverything
             registered = true;
             var harmony = new Harmony("rimworld.qualityframework.energy");
             bool power = false, battery = false;
-            string powerReason = null, batteryReason = null;
+            string powerReason = "QEverything.Energy.PowerAvailable".Translate().ToString();
+            string batteryReason = "QEverything.Energy.BatteryAvailable".Translate().ToString();
             try
             {
                 var inspect = AccessTools.Method(typeof(CompPowerTrader), "CompInspectStringExtra");
@@ -88,6 +91,8 @@ namespace QualityEverything
 
         private static void ScopeDefinitions()
         {
+            bool capacityEnabled = QualityEffects.Available(EffectId.BatteryCapacity) && QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(nameof(EffectId.BatteryCapacity), out var capacity) && capacity.Enabled;
+            bool efficiencyEnabled = QualityEffects.Available(EffectId.BatteryEfficiency) && QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(nameof(EffectId.BatteryEfficiency), out var charging) && charging.Enabled;
             foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
             {
                 var props = def.GetCompProperties<CompProperties_Battery>();
@@ -99,8 +104,13 @@ namespace QualityEverything
                 if (def.thingClass == null || !typeof(Building_Battery).IsAssignableFrom(def.thingClass) || AccessTools.Method(def.thingClass, "DrawAt")?.DeclaringType != typeof(Building_Battery))
                     capacityReason = "QEverything.Energy.CustomRenderer".Translate().ToString();
                 QualityEffects.SetUnsupported(EffectId.BatteryCapacity, def, capacityReason);
-                QualityEffects.SetUnsupported(EffectId.BatteryEfficiency, def, custom ??
-                    (!QualityEnergyCalculation.Finite(props.efficiency) || props.efficiency <= 0f || props.efficiency > 1f ? "QEverything.Energy.InvalidEfficiency".Translate().ToString() : null));
+                string efficiencyReason = custom ?? (!QualityEnergyCalculation.Finite(props.efficiency) || props.efficiency <= 0f || props.efficiency > 1f ? "QEverything.Energy.InvalidEfficiency".Translate().ToString() : null);
+                QualityEffects.SetUnsupported(EffectId.BatteryEfficiency, def, efficiencyReason);
+                // Active options and participation are immutable until restart. Resolve eligibility
+                // once so disabled/excluded batteries retain native reads and quality hooks stay cheap.
+                if (!QualityCatalog.Participates(def) || !def.comps.Any(p => p?.compClass != null && typeof(CompQuality).IsAssignableFrom(p.compClass))) continue;
+                if (capacityEnabled && capacityReason == null) activeCapacity.Add(def);
+                if (efficiencyEnabled && efficiencyReason == null) activeEfficiency.Add(def);
             }
         }
 
@@ -126,25 +136,27 @@ namespace QualityEverything
         {
             // Quality may be a later sibling comp during LoadingVars. Native storedPower is absolute;
             // the native clamp must wait until PostLoadInit, including for held/minified batteries.
-            if (LoadingEarly && QualityEffects.Available(EffectId.BatteryCapacity) && QualityEffects.UnsupportedReason(EffectId.BatteryCapacity, comp.parent.def) == null)
+            if (LoadingEarly && activeCapacity.Contains(comp.parent.def))
                 return float.MaxValue;
             return EffectiveMaximum(props, comp);
         }
         internal static float EffectiveMaximum(CompProperties_Battery props, CompPowerBattery comp)
         {
+            if (!activeCapacity.Contains(comp.parent.def)) return props.storedEnergyMax;
             float value = props.storedEnergyMax * QualityEffects.Factor(EffectId.BatteryCapacity, comp.parent);
             return QualityEnergyCalculation.Finite(value) && value > 0f ? value : props.storedEnergyMax;
         }
         private static float Efficiency(CompProperties_Battery props, CompPowerBattery comp)
         {
+            if (!activeEfficiency.Contains(comp.parent.def)) return props.efficiency;
             float factor = QualityEffects.Factor(EffectId.BatteryEfficiency, comp.parent);
             return factor == 1f ? props.efficiency : QualityEnergyCalculation.Efficiency(props.efficiency, factor);
         }
-        private static float BuildingMaximum(CompProperties_Battery props, ThingWithComps building) => EffectiveMaximum(props, building.GetComp<CompPowerBattery>());
+        private static float BuildingMaximum(CompProperties_Battery props, ThingWithComps building) => activeCapacity.Contains(building.def) ? EffectiveMaximum(props, building.GetComp<CompPowerBattery>()) : props.storedEnergyMax;
         private static void BeforeBattery(CompPowerBattery __instance) => Reconcile(__instance);
         private static void Reconcile(CompPowerBattery comp)
         {
-            if (comp == null || LoadingEarly || !QualityEffects.Available(EffectId.BatteryCapacity) || QualityEffects.UnsupportedReason(EffectId.BatteryCapacity, comp.parent.def) != null) return;
+            if (comp == null || !activeCapacity.Contains(comp.parent.def) || LoadingEarly) return;
             float maximumValue = EffectiveMaximum(comp.Props, comp);
             // DrawPower takes absolute energy and cannot increase storedPower. No percentage setter.
             // StoredEnergy is patched too, so use a guarded field reader for the reconciliation itself.
@@ -153,9 +165,13 @@ namespace QualityEverything
             if (stored > retained) comp.DrawPower(stored - retained);
         }
         private static readonly AccessTools.FieldRef<CompPowerBattery, float> storedEnergy = AccessTools.FieldRefAccess<CompPowerBattery, float>("storedEnergy");
-        private static void QualityChanged(CompQuality __instance) => Reconcile(__instance.parent.GetComp<CompPowerBattery>());
+        private static void QualityChanged(CompQuality __instance)
+        {
+            if (activeCapacity.Contains(__instance.parent.def)) Reconcile(__instance.parent.GetComp<CompPowerBattery>());
+        }
         private static void Acceptance(CompPowerBattery __instance, ref float __result)
         {
+            if (!activeCapacity.Contains(__instance.parent.def) && !activeEfficiency.Contains(__instance.parent.def)) return;
             // Native early broken/EMP zeros must survive. Only the active supported effect's
             // arithmetic needs the nonnegative/zero-efficiency correction.
             if (QualityEffects.Factor(EffectId.BatteryCapacity, __instance.parent) == 1f && QualityEffects.Factor(EffectId.BatteryEfficiency, __instance.parent) == 1f) return;
