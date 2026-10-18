@@ -7,4 +7,6 @@
   <QEverything.Energy.InvalidCapacity>Battery maximum is not a finite positive value.</QEverything.Energy.InvalidCapacity>
   <QEverything.Energy.CustomRenderer>Custom battery renderer has an unverified capacity display.</QEverything.Energy.CustomRenderer>
   <QEverything.Energy.InvalidEfficiency>Battery efficiency is outside the supported range above 0 and at most 100%.</QEverything.Energy.InvalidEfficiency>
+  <QEverything.Energy.PowerAvailable>Native dynamic electrical output and active-demand display are available.</QEverything.Energy.PowerAvailable>
+  <QEverything.Energy.BatteryAvailable>Coordinated native battery charging, capacity, display and save paths are available.</QEverything.Energy.BatteryAvailable>
 </LanguageData>
