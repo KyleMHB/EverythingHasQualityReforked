@@ -16,6 +16,7 @@ namespace QualityEverything
 
         static Startup()
         {
+            QualityCatalog.Build();
             RunHarmony(); 
             Quality_CompPatch.DefPatch(); 
         }
@@ -24,7 +25,7 @@ namespace QualityEverything
         {
             //Log.Message("QEverything: Starting harmony");
             Harmony harmony = new Harmony("rimworld.qualityframework");
-            if (ModSettings_QEverything.stuffQuality || ModSettings_QEverything.indivStuff)
+            if (QualityCatalog.AnyAssigned(QualityBucket.Stuff))
             {
                 stuffPatchRan = true;
                 MethodInfo mJump = AccessTools.FindIncludingInnerTypes(typeof(Toils_Haul), t => AccessTools.FirstMethod(t, m => m.Name.Contains("JumpIfAlsoCollectingNextTargetInQueue") && m.ReturnType == typeof(void)));

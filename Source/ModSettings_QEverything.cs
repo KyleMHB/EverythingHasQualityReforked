@@ -48,11 +48,11 @@ namespace QualityEverything
         public static int maxIngQuality = 4;
         public static int minTastyQuality = 0;
         public static int maxTastyQuality = 4;
-        
+
         public static bool mealQuality = false;
         public static int minMealQuality = 0;
         public static int maxMealQuality = 4;
-        
+
         public static bool drugQuality = false;
         public static int minDrugQuality = 0;
         public static int maxDrugQuality = 4;
@@ -82,7 +82,7 @@ namespace QualityEverything
         public static bool indivWeapons = false;
         public static bool indivApparel = false;
         public static bool indivOther = false;
-        
+
         public static bool multSupplyFactor = true;
         public static float awfulSupplyFactor = .8f;
         public static float poorSupplyFactor = .9f;
@@ -112,109 +112,30 @@ namespace QualityEverything
         public static List<string> otherKeys = new List<string>();
         public static List<bool> otherValues = new List<bool>();
 
+        private string configurationXml;
         public override void ExposeData()
         {
-            Scribe_Values.Look(ref useMaterialQuality, "useMaterialQuality", true);
-            Scribe_Values.Look(ref useTableQuality, "useTableQuality", true);
-            Scribe_Values.Look(ref useSkillReq, "useSkillReq", true);
-            Scribe_Values.Look(ref stdSupplyQuality, "stdSupplyQuality", 2);
-
-            Scribe_Values.Look(ref inspiredButchering, "inspiredButchering", true);
-            Scribe_Values.Look(ref inspiredChemistry, "inspiredChemistry", true);
-            Scribe_Values.Look(ref inspiredCooking, "inspiredCooking", true);
-            Scribe_Values.Look(ref inspiredConstruction, "inspiredConstruction", true);
-            Scribe_Values.Look(ref inspiredGathering, "inspiredGathering", true);
-            Scribe_Values.Look(ref inspiredHarvesting, "inspiredHarvesting", true);
-            Scribe_Values.Look(ref inspiredMining, "inspiredMining", true);
-            Scribe_Values.Look(ref inspiredStonecutting, "inspiredStonecutting", true);
-
-            Scribe_Values.Look(ref skilledAnimals, "skilledAnimals", false);
-            Scribe_Values.Look(ref skilledButchering, "skilledButchering", false);
-            Scribe_Values.Look(ref skilledHarvesting, "skilledHarvesting", false);
-            Scribe_Values.Look(ref skilledMining, "skilledMining", false);
-            Scribe_Values.Look(ref skilledStoneCutting, "skilledStoneCutting", false);
-
-            Scribe_Values.Look(ref edificeQuality, "edificeQuality", true);
-            Scribe_Values.Look(ref minEdificeQuality, "minEdificeQuality", 0);
-            Scribe_Values.Look(ref maxEdificeQuality, "maxEdificeQuality", 4);
-
-            Scribe_Values.Look(ref workQuality, "workQuality", true);
-            Scribe_Values.Look(ref minWorkQuality, "minWorkQuality", 0);
-            Scribe_Values.Look(ref maxWorkQuality, "maxWorkQuality", 4);
-
-            Scribe_Values.Look(ref securityQuality, "securityQuality", true);
-            Scribe_Values.Look(ref minSecurityQuality, "minSecurityQuality", 0);
-            Scribe_Values.Look(ref maxSecurityQuality, "maxSecurityQuality", 4);
-
-            Scribe_Values.Look(ref stuffQuality, "stuffQuality", true);
-            Scribe_Values.Look(ref minStuffQuality, "minStuffQuality", 0);
-            Scribe_Values.Look(ref maxStuffQuality, "maxStuffQuality", 4);
-
-            Scribe_Values.Look(ref ingredientQuality, "ingredientQuality", true);
-            Scribe_Values.Look(ref minIngQuality, "minIngQuality", 2);
-            Scribe_Values.Look(ref maxIngQuality, "maxIngQuality", 4);
-            Scribe_Values.Look(ref minTastyQuality, "minTastyQuality", 0);
-            Scribe_Values.Look(ref maxTastyQuality, "maxTastyQuality", 4);
-
-            Scribe_Values.Look(ref mealQuality, "mealQuality", false);
-            Scribe_Values.Look(ref minMealQuality, "minMealQuality", 0);
-            Scribe_Values.Look(ref maxMealQuality, "maxMealQuality", 4); 
-            
-            Scribe_Values.Look(ref drugQuality, "drugQuality", false);
-            Scribe_Values.Look(ref minDrugQuality, "minDrugQuality", 0);
-            Scribe_Values.Look(ref maxDrugQuality, "maxDrugQuality", 4); 
-            
-            Scribe_Values.Look(ref medQuality, "medQuality", false);
-            Scribe_Values.Look(ref minMedQuality, "minMedQuality", 0);
-            Scribe_Values.Look(ref maxMedQuality, "maxMedQuality", 4);
-
-            Scribe_Values.Look(ref manufQuality, "manufQuality", true);
-            Scribe_Values.Look(ref minManufQuality, "minManufQuality", 0);
-            Scribe_Values.Look(ref maxManufQuality, "maxManufQuality", 4);
-
-            Scribe_Values.Look(ref apparelQuality, "apparelQuality", false);
-            Scribe_Values.Look(ref minApparelQuality, "minApparelQuality", 0);
-            Scribe_Values.Look(ref maxApparelQuality, "maxApparelQuality", 6);
-
-            Scribe_Values.Look(ref weaponQuality, "weaponQuality", false);
-            Scribe_Values.Look(ref minWeaponQuality, "minWeaponQuality", 0);
-            Scribe_Values.Look(ref maxWeaponQuality, "maxWeaponQuality", 6);
+            if (Scribe.mode == LoadSaveMode.Saving) configurationXml = QualitySettingsState.Saved.Serialize();
+            Scribe_Values.Look(ref configurationXml, "qualityConfiguration", null);
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
-                int legacyMinWeaponQuality = minWeaponQuality;
-                int legacyMaxWeaponQuality = maxWeaponQuality;
-                Scribe_Values.Look(ref legacyMinWeaponQuality, "minWeapoQuality", minWeaponQuality);
-                Scribe_Values.Look(ref legacyMaxWeaponQuality, "maxWeapoQuality", maxWeaponQuality);
-                minWeaponQuality = legacyMinWeaponQuality;
-                maxWeaponQuality = legacyMaxWeaponQuality;
+                QualityConfiguration configuration;
+                try
+                {
+                    if (string.IsNullOrEmpty(configurationXml))
+                    {
+                        configuration = QualityConfiguration.MigrateLegacyXml(Scribe.loader.curXmlParent.OuterXml);
+                    }
+                    else configuration = QualityConfiguration.Parse(configurationXml);
+                    QualitySettingsState.Load(configuration);
+                }
+                catch (System.Exception error)
+                {
+                    Log.Warning("Everything Has Quality: settings could not be loaded; using defaults. " + error.Message);
+                    QualitySettingsState.Load(new QualityConfiguration { LegacyBackup = configurationXml ?? "" });
+                }
             }
-
-            Scribe_Values.Look(ref shellQuality, "shellQuality", true);
-            Scribe_Values.Look(ref minShellQuality, "minShellQuality", 0);
-            Scribe_Values.Look(ref maxShellQuality, "maxShellQuality", 4);
-
-            Scribe_Values.Look(ref indivStuff, "indivStuff", false);
-            Scribe_Values.Look(ref indivBuildings, "indivBuildings", false);
-            Scribe_Values.Look(ref indivWeapons, "indivWeapons", false);
-            Scribe_Values.Look(ref indivApparel, "indivApparel", false);
-            Scribe_Values.Look(ref indivOther, "indivOther", false);
-
-            Scribe_Values.Look(ref multSupplyFactor, "supplyQuality", true);
-            Scribe_Values.Look(ref awfulSupplyFactor, "awfulSupplyFactor", .8f);
-            Scribe_Values.Look(ref poorSupplyFactor, "poorSupplyFactor", .9f);
-            Scribe_Values.Look(ref normalSupplyFactor, "normalSupplyFactor", 1f);
-            Scribe_Values.Look(ref goodSupplyFactor, "goodSupplyFactor", 1.1f);
-            Scribe_Values.Look(ref excSupplyFactor, "excSupplyFactor", 1.2f);
-            Scribe_Values.Look(ref masterSupplyFactor, "masterSupplyFactor", 1.3f);
-            Scribe_Values.Look(ref legSupplyFactor, "legSupplyFactor", 1.4f);
-
-            Scribe_Collections.Look<string, bool>(ref stuffDict, "stuffDict", LookMode.Value, LookMode.Value, ref stuffKeys, ref stuffValues);
-            Scribe_Collections.Look<string, bool>(ref bldgDict, "bldgDict", LookMode.Value, LookMode.Value, ref bldgKeys, ref bldgValues);
-            Scribe_Collections.Look<string, bool>(ref weapDict, "weapDict", LookMode.Value, LookMode.Value, ref weapKeys, ref weapValues);
-            Scribe_Collections.Look<string, bool>(ref appDict, "appDict", LookMode.Value, LookMode.Value, ref appKeys, ref appValues);
-            Scribe_Collections.Look<string, bool>(ref otherDict, "otherDict", LookMode.Value, LookMode.Value, ref otherKeys, ref otherValues);
-
-            base.ExposeData();
         }
+
     }
 }

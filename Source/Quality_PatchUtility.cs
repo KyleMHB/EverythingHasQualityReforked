@@ -10,12 +10,16 @@ namespace QualityEverything
 {
     internal static class QualityPatchUtility
     {
+        private static readonly Dictionary<string, bool> statuses = new Dictionary<string, bool>(StringComparer.Ordinal);
+        public static IReadOnlyDictionary<string, bool> Statuses => statuses;
+
         public static List<CodeInstruction> ReplaceSingleCall(IEnumerable<CodeInstruction> instructions,
             MethodInfo original, MethodInfo replacement, Func<IEnumerable<CodeInstruction>> extraArguments, string feature)
         {
             var code = instructions.ToList();
             if (original == null || code.Count(i => i.Calls(original)) != 1)
             {
+                statuses[feature] = false;
                 Log.Error("QEverything: " + feature + " pattern did not match exactly once; leaving original behavior intact.");
                 return code;
             }
@@ -33,6 +37,7 @@ namespace QualityEverything
                 result.AddRange(arguments);
                 result.Add(call);
             }
+            statuses[feature] = true;
             return result;
         }
     }

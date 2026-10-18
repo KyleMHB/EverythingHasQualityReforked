@@ -162,102 +162,7 @@ namespace QualityEverything
 
         public static bool ShouldReceiveQuality(ThingDef def)
         {
-            string defName = def?.defName;
-            if (def == null || string.IsNullOrEmpty(defName))
-            {
-                return false;
-            }
-
-            switch (GetBucket(def))
-            {
-                case QualityBucket.Stuff:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivStuff,
-                        ModSettings_QEverything.stuffDict,
-                        defName,
-                        ModSettings_QEverything.stuffQuality);
-
-                case QualityBucket.WorkBuilding:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivBuildings,
-                        ModSettings_QEverything.bldgDict,
-                        defName,
-                        ModSettings_QEverything.workQuality);
-
-                case QualityBucket.SecurityBuilding:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivBuildings,
-                        ModSettings_QEverything.bldgDict,
-                        defName,
-                        ModSettings_QEverything.securityQuality);
-
-                case QualityBucket.Building:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivBuildings,
-                        ModSettings_QEverything.bldgDict,
-                        defName,
-                        ModSettings_QEverything.edificeQuality);
-
-                case QualityBucket.Weapon:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivWeapons,
-                        ModSettings_QEverything.weapDict,
-                        defName,
-                        ModSettings_QEverything.weaponQuality);
-
-                case QualityBucket.Shell:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivWeapons,
-                        ModSettings_QEverything.weapDict,
-                        defName,
-                        ModSettings_QEverything.shellQuality);
-
-                case QualityBucket.Apparel:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivApparel,
-                        ModSettings_QEverything.appDict,
-                        defName,
-                        ModSettings_QEverything.apparelQuality);
-
-                case QualityBucket.Drug:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivOther,
-                        ModSettings_QEverything.otherDict,
-                        defName,
-                        ModSettings_QEverything.drugQuality);
-
-                case QualityBucket.Medicine:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivOther,
-                        ModSettings_QEverything.otherDict,
-                        defName,
-                        ModSettings_QEverything.medQuality);
-
-                case QualityBucket.Meal:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivOther,
-                        ModSettings_QEverything.otherDict,
-                        defName,
-                        ModSettings_QEverything.mealQuality);
-
-                case QualityBucket.TastyIngredient:
-                case QualityBucket.Ingredient:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivOther,
-                        ModSettings_QEverything.otherDict,
-                        defName,
-                        ModSettings_QEverything.ingredientQuality);
-
-                case QualityBucket.Manufactured:
-                    return GetIndividualOrCategorySetting(
-                        ModSettings_QEverything.indivOther,
-                        ModSettings_QEverything.otherDict,
-                        defName,
-                        ModSettings_QEverything.manufQuality);
-
-                default:
-                    return false;
-            }
+            return QualityCatalog.Assigned(def);
         }
 
         public static int GetMinQuality(ThingDef def)
@@ -352,101 +257,24 @@ namespace QualityEverything
 
     internal static class QualityCompSync
     {
-        private static readonly HashSet<string> OriginalQualityDefs = new HashSet<string>(StringComparer.Ordinal);
-        private static readonly HashSet<string> OriginalImproveThisDefs = new HashSet<string>(StringComparer.Ordinal);
-        private static readonly Type ImproveThisCompType = AccessTools.TypeByName("RimWorld___Improve_This.ImproveThisComp");
-
-        private static bool initialized;
-
+        // Ownership by reference preserves native/custom properties even after repeated synchronization.
+        private static readonly Dictionary<ThingDef, CompProperties> owned = new Dictionary<ThingDef, CompProperties>();
         public static void SyncAllDefs()
         {
-            CaptureOriginalState();
-            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading)
+            QualityCatalog.Build();
+            foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
             {
-                SyncDef(def);
-            }
-        }
-
-        private static void CaptureOriginalState()
-        {
-            if (initialized)
-            {
-                return;
-            }
-
-            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading)
-            {
-                if (def.HasComp(typeof(CompQuality)))
+                bool assigned = QualityDefUtility.ShouldReceiveQuality(def);
+                if (!assigned)
                 {
-                    OriginalQualityDefs.Add(def.defName);
+                    if (owned.TryGetValue(def, out var property)) { def.comps?.Remove(property); owned.Remove(def); }
+                    continue;
                 }
-
-                if (ImproveThisCompType != null && def.HasComp(ImproveThisCompType))
-                {
-                    OriginalImproveThisDefs.Add(def.defName);
-                }
+                if (def.comps?.Exists(p => p?.compClass != null && typeof(CompQuality).IsAssignableFrom(p.compClass)) == true) continue;
+                def.comps ??= new List<CompProperties>();
+                var added = new CompProperties { compClass = typeof(CompQuality) };
+                def.comps.Add(added); owned[def] = added;
             }
-
-            initialized = true;
-        }
-
-        private static void SyncDef(ThingDef def)
-        {
-            if (def == null || string.IsNullOrEmpty(def.defName))
-            {
-                return;
-            }
-
-            bool shouldHaveQuality = QualityDefUtility.ShouldReceiveQuality(def);
-            bool keepQuality = OriginalQualityDefs.Contains(def.defName) || shouldHaveQuality;
-            SyncComp(def, typeof(CompQuality), keepQuality);
-
-            if (ImproveThisCompType != null)
-            {
-                bool keepImproveThis = OriginalImproveThisDefs.Contains(def.defName) || shouldHaveQuality;
-                SyncComp(def, ImproveThisCompType, keepImproveThis);
-            }
-        }
-
-        private static void SyncComp(ThingDef def, Type compType, bool keepComp)
-        {
-            if (compType == null)
-            {
-                return;
-            }
-
-            def.comps ??= new List<CompProperties>();
-
-            int existingIndex = FindCompIndex(def.comps, compType);
-            if (keepComp)
-            {
-                if (existingIndex < 0)
-                {
-                    def.comps.Add(new CompProperties { compClass = compType });
-                }
-                return;
-            }
-
-            for (int i = def.comps.Count - 1; i >= 0; i--)
-            {
-                if (def.comps[i]?.compClass == compType)
-                {
-                    def.comps.RemoveAt(i);
-                }
-            }
-        }
-
-        private static int FindCompIndex(List<CompProperties> comps, Type compType)
-        {
-            for (int i = 0; i < comps.Count; i++)
-            {
-                if (comps[i]?.compClass == compType)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
         }
     }
 }

@@ -139,97 +139,15 @@ namespace QualityEverything
 
         public static void RestoreDefaults()
         {
-            ModSettings_QEverything.useMaterialQuality = true;
-            ModSettings_QEverything.useTableQuality = true;
-            ModSettings_QEverything.useSkillReq = true;
-            ModSettings_QEverything.stdSupplyQuality = 2;
-            ModSettings_QEverything.tableFactor = .4f;
-
-            ModSettings_QEverything.inspiredButchering = true;
-            ModSettings_QEverything.inspiredChemistry = true;
-            ModSettings_QEverything.inspiredCooking = true;
-            ModSettings_QEverything.inspiredConstruction = true;
-            ModSettings_QEverything.inspiredGathering = true;
-            ModSettings_QEverything.inspiredHarvesting = true;
-            ModSettings_QEverything.inspiredMining = true;
-            ModSettings_QEverything.inspiredStonecutting = true;
-
-            ModSettings_QEverything.skilledAnimals = false;
-            ModSettings_QEverything.skilledButchering = false;
-            ModSettings_QEverything.skilledHarvesting = false;
-            ModSettings_QEverything.skilledMining = false;
-            ModSettings_QEverything.skilledStoneCutting = false;
-
-            ModSettings_QEverything.edificeQuality = true;
-            ModSettings_QEverything.minEdificeQuality = 0;
-            ModSettings_QEverything.maxEdificeQuality = 4;
-
-            ModSettings_QEverything.workQuality = true;
-            ModSettings_QEverything.minWorkQuality = 0;
-            ModSettings_QEverything.maxWorkQuality = 4;
-
-            ModSettings_QEverything.securityQuality = true;
-            ModSettings_QEverything.minSecurityQuality = 0;
-            ModSettings_QEverything.maxSecurityQuality = 4;
-
-            ModSettings_QEverything.stuffQuality = true;
-            ModSettings_QEverything.minStuffQuality = 0;
-            ModSettings_QEverything.maxStuffQuality = 4;
-
-            ModSettings_QEverything.ingredientQuality = true;
-            ModSettings_QEverything.minIngQuality = 2;
-            ModSettings_QEverything.maxIngQuality = 4;
-            ModSettings_QEverything.minTastyQuality = 0;
-            ModSettings_QEverything.maxTastyQuality = 4;
-
-            ModSettings_QEverything.mealQuality = false;
-            ModSettings_QEverything.minMealQuality = 0;
-            ModSettings_QEverything.maxMealQuality = 4;
-
-            ModSettings_QEverything.drugQuality = false;
-            ModSettings_QEverything.minDrugQuality = 0;
-            ModSettings_QEverything.maxDrugQuality = 4;
-
-            ModSettings_QEverything.medQuality = false;
-            ModSettings_QEverything.minMedQuality = 0;
-            ModSettings_QEverything.maxMedQuality = 4;
-
-            ModSettings_QEverything.manufQuality = true;
-            ModSettings_QEverything.minManufQuality = 0;
-            ModSettings_QEverything.maxManufQuality = 4;
-
-            ModSettings_QEverything.apparelQuality = false;
-            ModSettings_QEverything.minApparelQuality = 0;
-            ModSettings_QEverything.maxApparelQuality = 6;
-
-            ModSettings_QEverything.weaponQuality = false;
-            ModSettings_QEverything.minWeaponQuality = 0;
-            ModSettings_QEverything.maxWeaponQuality = 6;
-
-            ModSettings_QEverything.shellQuality = false;
-            ModSettings_QEverything.minShellQuality = 0;
-            ModSettings_QEverything.maxShellQuality = 4;
-
-            ModSettings_QEverything.indivStuff = false;
-            ModSettings_QEverything.indivBuildings = false;
-            ModSettings_QEverything.indivWeapons = false;
-            ModSettings_QEverything.indivApparel = false;
-            ModSettings_QEverything.indivOther = false;
-            ModSettings_QEverything.stuffDict.Clear();
-            ModSettings_QEverything.bldgDict.Clear();
-            ModSettings_QEverything.weapDict.Clear();
-            ModSettings_QEverything.appDict.Clear();
-            ModSettings_QEverything.otherDict.Clear();
-
-            ModSettings_QEverything.multSupplyFactor = true;
-            ModSettings_QEverything.awfulSupplyFactor = .8f;
-            ModSettings_QEverything.poorSupplyFactor = .9f;
-            ModSettings_QEverything.normalSupplyFactor = 1f;
-            ModSettings_QEverything.goodSupplyFactor = 1.1f;
-            ModSettings_QEverything.excSupplyFactor = 1.2f;
-            ModSettings_QEverything.masterSupplyFactor = 1.3f;
-            ModSettings_QEverything.legSupplyFactor = 1.4f;
-
+            var defaults = new QualityConfiguration();
+            var draft = QualitySettingsState.Draft;
+            draft.Production = defaults.Production;
+            draft.Assignment = defaults.Assignment;
+            draft.Participation = defaults.Participation;
+            draft.Effects = defaults.Effects;
+            draft.LinkedFurnitureBonusCap = defaults.LinkedFurnitureBonusCap;
+            draft.LinkedFurniturePenaltyCap = defaults.LinkedFurniturePenaltyCap;
+            QualitySettingsState.Changed();
         }
     }
 }

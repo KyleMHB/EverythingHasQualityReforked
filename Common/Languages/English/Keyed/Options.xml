@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Options.Intro>Quality rules and production options activate after restarting RimWorld. Open the editor to browse definitions, edit a draft and save changes for the next session.</QEverything.Options.Intro>
+  <QEverything.Options.Open>Open quality options</QEverything.Options.Open>
+  <QEverything.Options.RestartPending>Saved changes require a restart.</QEverything.Options.RestartPending>
+  <QEverything.Options.ActiveSaved>Active and saved settings match.</QEverything.Options.ActiveSaved>
+  <QEverything.Options.DraftPending>Draft has unsaved changes.</QEverything.Options.DraftPending>
+  <QEverything.Options.DraftSaved>Draft matches saved settings.</QEverything.Options.DraftSaved>
+  <QEverything.Options.Rules>Quality Rules</QEverything.Options.Rules>
+  <QEverything.Options.Production>Production</QEverything.Options.Production>
+  <QEverything.Options.Compatibility>Compatibility</QEverything.Options.Compatibility>
+  <QEverything.Options.Save>Save for restart</QEverything.Options.Save>
+  <QEverything.Options.Discard>Discard draft</QEverything.Options.Discard>
+  <QEverything.Options.Continue>Continue editing</QEverything.Options.Continue>
+  <QEverything.Options.Close>Close</QEverything.Options.Close>
+  <QEverything.Options.RemovalWarning>Removing mod-added quality support can discard those quality values after restart and a later save.</QEverything.Options.RemovalWarning>
+  <QEverything.Options.InvalidInput>Enter finite values within the allowed range. Minimum quality cannot exceed maximum quality.</QEverything.Options.InvalidInput>
+  <QEverything.Options.ResetAll>Reset everything</QEverything.Options.ResetAll>
+  <QEverything.Options.ResetConfirm>Reset assignment, effects and production to fresh-install defaults in the draft? Saved settings change only when you save.</QEverything.Options.ResetConfirm>
+  <QEverything.Options.ResetScope>Reset selected scope</QEverything.Options.ResetScope>
+  <QEverything.Options.ResetScopeConfirm>Clear the matching item overrides and the selected branch rule, or restore the selected group default? Other rules remain unchanged.</QEverything.Options.ResetScopeConfirm>
+  <QEverything.Options.Assignment>Edit assignment rules</QEverything.Options.Assignment>
+  <QEverything.Options.Participation>Edit effects participation</QEverything.Options.Participation>
+  <QEverything.Options.Effects>Effects and tier factors</QEverything.Options.Effects>
+  <QEverything.Options.SearchHelp>Search translated names, internal names, source mods and category ancestry.</QEverything.Options.SearchHelp>
+  <QEverything.Options.AllSources>All source mods</QEverything.Options.AllSources>
+  <QEverything.Options.AllGroups>All groups and branches</QEverything.Options.AllGroups>
+  <QEverything.Options.AllResults>All results</QEverything.Options.AllResults>
+  <QEverything.Options.Included>Included</QEverything.Options.Included>
+  <QEverything.Options.Excluded>Excluded</QEverything.Options.Excluded>
+  <QEverything.Options.Overrides>Item overrides only</QEverything.Options.Overrides>
+  <QEverything.Options.Unavailable>Unavailable</QEverything.Options.Unavailable>
+  <QEverything.Options.Available>Available</QEverything.Options.Available>
+  <QEverything.Options.Inherit>Inherit</QEverything.Options.Inherit>
+  <QEverything.Options.Include>Include</QEverything.Options.Include>
+  <QEverything.Options.Exclude>Exclude</QEverything.Options.Exclude>
+  <QEverything.Options.Group>Group default</QEverything.Options.Group>
+  <QEverything.Options.Category>Category branch</QEverything.Options.Category>
+  <QEverything.Options.Item>Item override</QEverything.Options.Item>
+  <QEverything.Options.Unsupported>Unsupported item</QEverything.Options.Unsupported>
+  <QEverything.Options.SelectItem>Select an item to see its source and governing rule. Bulk buttons apply item overrides to every matching result, including rows outside the visible area.</QEverything.Options.SelectItem>
+  <QEverything.Options.Conflict>Conflicting branches: Exclude wins</QEverything.Options.Conflict>
+  <QEverything.Options.NativeProtected>Native or other-mod quality support is preserved when assignment is excluded.</QEverything.Options.NativeProtected>
+  <QEverything.Options.NeedsQuality>Effects require an actual quality component. These rules do not create quality on an existing item.</QEverything.Options.NeedsQuality>
+  <QEverything.Options.MildPreset>Preview mild preset</QEverything.Options.MildPreset>
+  <QEverything.Options.ProgressionPreset>Progression preset</QEverything.Options.ProgressionPreset>
+  <QEverything.Options.PresetPreview>Apply these mild curves to every listed effect in the draft? Unsupported adapters remain inactive. Values are ordered Awful through Legendary.</QEverything.Options.PresetPreview>
+  <QEverything.Options.ProgressionPending>Progression preset exceptions await integrated pack validation. This preset is unavailable until that work is complete.</QEverything.Options.ProgressionPending>
+  <QEverything.Options.CostCurve>Lower factors reduce this cost or cooldown</QEverything.Options.CostCurve>
+  <QEverything.Options.BenefitCurve>Higher factors increase this benefit</QEverything.Options.BenefitCurve>
+  <QEverything.Options.LinkedBonusCap>Linked furniture total bonus cap (maximum 0.02)</QEverything.Options.LinkedBonusCap>
+  <QEverything.Options.LinkedPenaltyCap>Linked furniture total penalty cap (maximum 0.005)</QEverything.Options.LinkedPenaltyCap>
+  <QEverything.Options.CompatibilityIntro>Availability describes implemented adapters, not proof that every modded definition is supported. Use item details for recorded exceptions. Multiplayer remains unverified.</QEverything.Options.CompatibilityIntro>
+  <QEverything.Options.StorageOmitted>Storage capacity omitted: Adaptive Storage requires coordinated per-instance acceptance, hauling and overflow support; its partial integration would be unsafe.</QEverything.Options.StorageOmitted>
+  <QEverything.Options.BionicsDeferred>Installed bionics deferred: framework-free surgery and removal do not preserve exact item quality and body-part identity safely.</QEverything.Options.BionicsDeferred>
+  <QEverything.Options.InactiveLegacy>Recoverable inactive legacy selections</QEverything.Options.InactiveLegacy>
+  <QEverything.Options.RecoverLegacy>Restore inactive legacy selections into assignment overrides</QEverything.Options.RecoverLegacy>
+  <QEverything.Options.RecoverConfirm>Import all inactive legacy choices as explicit assignment overrides? This includes true and false entries and can replace existing overrides for those items.</QEverything.Options.RecoverConfirm>
+  <QEverything.Options.ClosePrompt>There are unsaved draft changes. Save them for the next restart, discard them, or continue editing.</QEverything.Options.ClosePrompt>
+  <QEverything.Options.AdapterPending>Adapter implementation pending</QEverything.Options.AdapterPending>
+  <QEverything.Options.EffectSupport>View effect support for this item</QEverything.Options.EffectSupport>
+  <QEverything.Options.Group.Stuff>Resources and materials</QEverything.Options.Group.Stuff>
+  <QEverything.Options.Group.WorkBuilding>Work buildings</QEverything.Options.Group.WorkBuilding>
+  <QEverything.Options.Group.SecurityBuilding>Security buildings</QEverything.Options.Group.SecurityBuilding>
+  <QEverything.Options.Group.Building>Buildings</QEverything.Options.Group.Building>
+  <QEverything.Options.Group.Weapon>Weapons</QEverything.Options.Group.Weapon>
+  <QEverything.Options.Group.Shell>Shells</QEverything.Options.Group.Shell>
+  <QEverything.Options.Group.Apparel>Apparel</QEverything.Options.Group.Apparel>
+  <QEverything.Options.Group.Drug>Drugs</QEverything.Options.Group.Drug>
+  <QEverything.Options.Group.Medicine>Medicine</QEverything.Options.Group.Medicine>
+  <QEverything.Options.Group.Meal>Meals</QEverything.Options.Group.Meal>
+  <QEverything.Options.Group.TastyIngredient>Tasty ingredients</QEverything.Options.Group.TastyIngredient>
+  <QEverything.Options.Group.Ingredient>Ingredients</QEverything.Options.Group.Ingredient>
+  <QEverything.Options.Group.Manufactured>Manufactured goods</QEverything.Options.Group.Manufactured>
+  <QEverything.Options.Effect.BuildingDurability>Building maximum hit points</QEverything.Options.Effect.BuildingDurability>
+  <QEverything.Options.Effect.WeaponDurability>Weapon maximum hit points</QEverything.Options.Effect.WeaponDurability>
+  <QEverything.Options.Effect.ApparelDurability>Apparel maximum hit points</QEverything.Options.Effect.ApparelDurability>
+  <QEverything.Options.Effect.WorktableSpeed>Worktable speed</QEverything.Options.Effect.WorktableSpeed>
+  <QEverything.Options.Effect.ResearchSpeed>Research speed</QEverything.Options.Effect.ResearchSpeed>
+  <QEverything.Options.Effect.DoorSpeed>Door opening speed</QEverything.Options.Effect.DoorSpeed>
+  <QEverything.Options.Effect.GeneratorOutput>Generator output</QEverything.Options.Effect.GeneratorOutput>
+  <QEverything.Options.Effect.ConsumerDemand>Power consumer demand</QEverything.Options.Effect.ConsumerDemand>
+  <QEverything.Options.Effect.BatteryCapacity>Battery capacity</QEverything.Options.Effect.BatteryCapacity>
+  <QEverything.Options.Effect.BatteryEfficiency>Battery charging efficiency</QEverything.Options.Effect.BatteryEfficiency>
+  <QEverything.Options.Effect.FoodNutrition>Food nutrition</QEverything.Options.Effect.FoodNutrition>
+  <QEverything.Options.Effect.FoodPoisoningRisk>Inherent food poisoning risk</QEverything.Options.Effect.FoodPoisoningRisk>
+  <QEverything.Options.Effect.MedicinePotency>Medical potency</QEverything.Options.Effect.MedicinePotency>
+  <QEverything.Options.Effect.DrugStrength>Beneficial drug strength</QEverything.Options.Effect.DrugStrength>
+  <QEverything.Options.Effect.DrugDuration>Beneficial drug duration</QEverything.Options.Effect.DrugDuration>
+  <QEverything.Options.Effect.EquipmentWork>Equipment: work and yields</QEverything.Options.Effect.EquipmentWork>
+  <QEverything.Options.Effect.EquipmentMovement>Equipment: movement and survival</QEverything.Options.Effect.EquipmentMovement>
+  <QEverything.Options.Effect.EquipmentMedicine>Equipment: medicine</QEverything.Options.Effect.EquipmentMedicine>
+  <QEverything.Options.Effect.EquipmentSocial>Equipment: social, trade and animals</QEverything.Options.Effect.EquipmentSocial>
+  <QEverything.Options.Effect.EquipmentAbilities>Equipment: abilities and psycasting</QEverything.Options.Effect.EquipmentAbilities>
+  <QEverything.Options.Effect.MeleeCooldown>Melee weapon cooldown</QEverything.Options.Effect.MeleeCooldown>
+  <QEverything.Options.Effect.RangedCooldown>Ranged weapon cooldown</QEverything.Options.Effect.RangedCooldown>
+  <QEverything.Options.Effect.TurretCooldown>Turret cooldown</QEverything.Options.Effect.TurretCooldown>
+  <QEverything.Options.Effect.TrapDamage>Trap damage</QEverything.Options.Effect.TrapDamage>
+  <QEverything.Options.Effect.LinkedFurniture>Linked furniture bed-rest contribution</QEverything.Options.Effect.LinkedFurniture>
+  <QEverything.Options.Production.useMaterialQuality>Use Material Quality</QEverything.Options.Production.useMaterialQuality>
+  <QEverything.Options.Production.useTableQuality>Use Table Quality</QEverything.Options.Production.useTableQuality>
+  <QEverything.Options.Production.useSkillReq>Use Skill Req</QEverything.Options.Production.useSkillReq>
+  <QEverything.Options.Production.stdSupplyQuality>Standard supply Quality</QEverything.Options.Production.stdSupplyQuality>
+  <QEverything.Options.Production.tableFactor>Table Factor</QEverything.Options.Production.tableFactor>
+  <QEverything.Options.Production.inspiredButchering>Inspired Butchering</QEverything.Options.Production.inspiredButchering>
+  <QEverything.Options.Production.inspiredChemistry>Inspired Chemistry</QEverything.Options.Production.inspiredChemistry>
+  <QEverything.Options.Production.inspiredCooking>Inspired Cooking</QEverything.Options.Production.inspiredCooking>
+  <QEverything.Options.Production.inspiredConstruction>Inspired Construction</QEverything.Options.Production.inspiredConstruction>
+  <QEverything.Options.Production.inspiredGathering>Inspired Gathering</QEverything.Options.Production.inspiredGathering>
+  <QEverything.Options.Production.inspiredHarvesting>Inspired Harvesting</QEverything.Options.Production.inspiredHarvesting>
+  <QEverything.Options.Production.inspiredMining>Inspired Mining</QEverything.Options.Production.inspiredMining>
+  <QEverything.Options.Production.inspiredStonecutting>Inspired Stonecutting</QEverything.Options.Production.inspiredStonecutting>
+  <QEverything.Options.Production.skilledAnimals>Skilled Animals</QEverything.Options.Production.skilledAnimals>
+  <QEverything.Options.Production.skilledButchering>Skilled Butchering</QEverything.Options.Production.skilledButchering>
+  <QEverything.Options.Production.skilledHarvesting>Skilled Harvesting</QEverything.Options.Production.skilledHarvesting>
+  <QEverything.Options.Production.skilledMining>Skilled Mining</QEverything.Options.Production.skilledMining>
+  <QEverything.Options.Production.skilledStoneCutting>Skilled Stone Cutting</QEverything.Options.Production.skilledStoneCutting>
+  <QEverything.Options.Production.edificeQuality>Edifice Quality</QEverything.Options.Production.edificeQuality>
+  <QEverything.Options.Production.minEdificeQuality>Minimum Edifice Quality</QEverything.Options.Production.minEdificeQuality>
+  <QEverything.Options.Production.maxEdificeQuality>Maximum Edifice Quality</QEverything.Options.Production.maxEdificeQuality>
+  <QEverything.Options.Production.workQuality>Work Quality</QEverything.Options.Production.workQuality>
+  <QEverything.Options.Production.minWorkQuality>Minimum Work Quality</QEverything.Options.Production.minWorkQuality>
+  <QEverything.Options.Production.maxWorkQuality>Maximum Work Quality</QEverything.Options.Production.maxWorkQuality>
+  <QEverything.Options.Production.securityQuality>Security Quality</QEverything.Options.Production.securityQuality>
+  <QEverything.Options.Production.minSecurityQuality>Minimum Security Quality</QEverything.Options.Production.minSecurityQuality>
+  <QEverything.Options.Production.maxSecurityQuality>Maximum Security Quality</QEverything.Options.Production.maxSecurityQuality>
+  <QEverything.Options.Production.stuffQuality>Stuff Quality</QEverything.Options.Production.stuffQuality>
+  <QEverything.Options.Production.minStuffQuality>Minimum Stuff Quality</QEverything.Options.Production.minStuffQuality>
+  <QEverything.Options.Production.maxStuffQuality>Maximum Stuff Quality</QEverything.Options.Production.maxStuffQuality>
+  <QEverything.Options.Production.ingredientQuality>Ingredient Quality</QEverything.Options.Production.ingredientQuality>
+  <QEverything.Options.Production.minIngQuality>Minimum ingredient quality</QEverything.Options.Production.minIngQuality>
+  <QEverything.Options.Production.maxIngQuality>Maximum ingredient quality</QEverything.Options.Production.maxIngQuality>
+  <QEverything.Options.Production.minTastyQuality>Minimum tasty ingredient quality</QEverything.Options.Production.minTastyQuality>
+  <QEverything.Options.Production.maxTastyQuality>Maximum tasty ingredient quality</QEverything.Options.Production.maxTastyQuality>
+  <QEverything.Options.Production.mealQuality>Meal Quality</QEverything.Options.Production.mealQuality>
+  <QEverything.Options.Production.minMealQuality>Minimum Meal Quality</QEverything.Options.Production.minMealQuality>
+  <QEverything.Options.Production.maxMealQuality>Maximum Meal Quality</QEverything.Options.Production.maxMealQuality>
+  <QEverything.Options.Production.drugQuality>Drug Quality</QEverything.Options.Production.drugQuality>
+  <QEverything.Options.Production.minDrugQuality>Minimum Drug Quality</QEverything.Options.Production.minDrugQuality>
+  <QEverything.Options.Production.maxDrugQuality>Maximum Drug Quality</QEverything.Options.Production.maxDrugQuality>
+  <QEverything.Options.Production.medQuality>Med Quality</QEverything.Options.Production.medQuality>
+  <QEverything.Options.Production.minMedQuality>Minimum Med Quality</QEverything.Options.Production.minMedQuality>
+  <QEverything.Options.Production.maxMedQuality>Maximum Med Quality</QEverything.Options.Production.maxMedQuality>
+  <QEverything.Options.Production.manufQuality>Manuf Quality</QEverything.Options.Production.manufQuality>
+  <QEverything.Options.Production.minManufQuality>Minimum Manuf Quality</QEverything.Options.Production.minManufQuality>
+  <QEverything.Options.Production.maxManufQuality>Maximum Manuf Quality</QEverything.Options.Production.maxManufQuality>
+  <QEverything.Options.Production.apparelQuality>Apparel Quality</QEverything.Options.Production.apparelQuality>
+  <QEverything.Options.Production.minApparelQuality>Minimum Apparel Quality</QEverything.Options.Production.minApparelQuality>
+  <QEverything.Options.Production.maxApparelQuality>Maximum Apparel Quality</QEverything.Options.Production.maxApparelQuality>
+  <QEverything.Options.Production.weaponQuality>Weapon Quality</QEverything.Options.Production.weaponQuality>
+  <QEverything.Options.Production.minWeaponQuality>Minimum Weapon Quality</QEverything.Options.Production.minWeaponQuality>
+  <QEverything.Options.Production.maxWeaponQuality>Maximum Weapon Quality</QEverything.Options.Production.maxWeaponQuality>
+  <QEverything.Options.Production.shellQuality>Shell Quality</QEverything.Options.Production.shellQuality>
+  <QEverything.Options.Production.minShellQuality>Minimum Shell Quality</QEverything.Options.Production.minShellQuality>
+  <QEverything.Options.Production.maxShellQuality>Maximum Shell Quality</QEverything.Options.Production.maxShellQuality>
+  <QEverything.Options.Production.multSupplyFactor>Mult Supply Factor</QEverything.Options.Production.multSupplyFactor>
+  <QEverything.Options.Production.awfulSupplyFactor>Awful Supply Factor</QEverything.Options.Production.awfulSupplyFactor>
+  <QEverything.Options.Production.poorSupplyFactor>Poor Supply Factor</QEverything.Options.Production.poorSupplyFactor>
+  <QEverything.Options.Production.normalSupplyFactor>Normal Supply Factor</QEverything.Options.Production.normalSupplyFactor>
+  <QEverything.Options.Production.goodSupplyFactor>Good Supply Factor</QEverything.Options.Production.goodSupplyFactor>
+  <QEverything.Options.Production.excSupplyFactor>Exc Supply Factor</QEverything.Options.Production.excSupplyFactor>
+  <QEverything.Options.Production.masterSupplyFactor>Master Supply Factor</QEverything.Options.Production.masterSupplyFactor>
+  <QEverything.Options.Production.legSupplyFactor>Leg Supply Factor</QEverything.Options.Production.legSupplyFactor>
+  <QEverything.Options.BulkInclude>Include matching items</QEverything.Options.BulkInclude>
+  <QEverything.Options.BulkExclude>Exclude matching items</QEverything.Options.BulkExclude>
+  <QEverything.Options.BulkClear>Clear matching overrides</QEverything.Options.BulkClear>
+  <QEverything.Options.Mixed>mixed</QEverything.Options.Mixed>
+  <QEverything.Options.PatchStatusHelp>Production call replacements report whether their expected IL pattern matched at startup. A missing entry has not reported a result.</QEverything.Options.PatchStatusHelp>
+  <QEverything.Options.PatchVerified>Expected call pattern verified</QEverything.Options.PatchVerified>
+  <QEverything.Options.NativeFallback>Pattern unsupported; original behavior retained</QEverything.Options.NativeFallback>
+</LanguageData>

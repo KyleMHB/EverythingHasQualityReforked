@@ -38,7 +38,7 @@ namespace QualityEverything
             InspirationDef inspiration = __instance.def;
             if (inspiration == DefOf_QFramework.QF_Inspired_Butchering)
             {
-                if (ModSettings_QEverything.stuffQuality && ModSettings_QEverything.inspiredButchering && ModSettings_QEverything.skilledButchering)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredButchering && ModSettings_QEverything.skilledButchering)
                 {
                     return __result;
                 }
@@ -46,7 +46,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Gathering)
             {
-                if (ModSettings_QEverything.stuffQuality && ModSettings_QEverything.inspiredGathering && ModSettings_QEverything.skilledAnimals)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredGathering && ModSettings_QEverything.skilledAnimals)
                 {
                     return __result;
                 }
@@ -54,7 +54,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Harvesting)
             {
-                if (ModSettings_QEverything.stuffQuality && ModSettings_QEverything.inspiredHarvesting && ModSettings_QEverything.skilledHarvesting)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredHarvesting && ModSettings_QEverything.skilledHarvesting)
                 {
                     return __result;
                 }
@@ -62,7 +62,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Mining)
             {
-                if (ModSettings_QEverything.stuffQuality && ModSettings_QEverything.inspiredMining && ModSettings_QEverything.skilledMining)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredMining && ModSettings_QEverything.skilledMining)
                 {
                     return __result;
                 }
@@ -70,7 +70,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Stonecutting)
             { 
-                if(ModSettings_QEverything.stuffQuality && ModSettings_QEverything.inspiredStonecutting && ModSettings_QEverything.skilledStoneCutting)
+                if(QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredStonecutting && ModSettings_QEverything.skilledStoneCutting)
                 { 
                     return __result;
                 }
@@ -78,7 +78,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Chemistry)
             {
-                if (ModSettings_QEverything.inspiredChemistry && (ModSettings_QEverything.drugQuality || ModSettings_QEverything.medQuality))
+                if (ModSettings_QEverything.inspiredChemistry && QualityCatalog.AnyAssigned(QualityBucket.Drug, QualityBucket.Medicine))
                 {
                     return __result;
                 }
@@ -86,7 +86,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Construction)
             {
-                if (ModSettings_QEverything.inspiredConstruction && (ModSettings_QEverything.edificeQuality || ModSettings_QEverything.workQuality || ModSettings_QEverything.securityQuality))
+                if (ModSettings_QEverything.inspiredConstruction && QualityCatalog.AnyAssigned(QualityBucket.Building, QualityBucket.WorkBuilding, QualityBucket.SecurityBuilding))
                 {
                     return __result;
                 }
@@ -95,7 +95,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Cooking)
             {
-                if (ModSettings_QEverything.inspiredCooking && ModSettings_QEverything.mealQuality)
+                if (ModSettings_QEverything.inspiredCooking && QualityCatalog.AnyAssigned(QualityBucket.Meal))
                 {
                     return __result;
                 }
