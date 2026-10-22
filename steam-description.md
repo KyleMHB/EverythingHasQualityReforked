@@ -36,7 +36,7 @@ Building durability enabled. Vanilla rest effectiveness stays in place alongside
 [h2]Your rules. A rebuilt interface.[/h2]
 Search · Filter by mod · Review selected · Undo
 
-[img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/quality-settings.jpg[/img]
+[img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/quality-settings.png[/img]
 
 [h1]How to use[/h1]
 [list]
