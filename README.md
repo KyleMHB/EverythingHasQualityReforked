@@ -29,7 +29,7 @@ Individual item rules override category and group defaults. Quality assignment a
 
 Batch actions apply to **selected items**, including selections hidden by current filters. **Select all results** adds the current results to your selection. Use **Review selected** before applying a change and **Undo** to reverse draft edits. **Discard** restores saved settings.
 
-The Compatibility page explains unsupported items and unavailable effects. Supported factory and Processor Framework outputs retain their own quality policies. Storage capacity and installed-bionic effects are omitted. See [the settings and removal guide](docs/quality-guide.md) for effect limits, preset details and production rules.
+Support details for individual items show potentially relevant effects and recorded exclusions. Supported factory and Processor Framework outputs retain their own quality policies. Storage capacity and installed-bionic effects are omitted. See [the settings and removal guide](docs/quality-guide.md) for effect limits, preset details and production rules.
 
 ## Existing saves and removal
 

@@ -55,7 +55,7 @@ Production settings control how materials, work tables, skills and inspirations 
 Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]Harmony[/url]. Load Harmony before this mod.
 
 [h1]Compatibility and save safety[/h1]
-Excluding an item preserves quality supplied by RimWorld or another mod. The Compatibility page explains unsupported items and effects. Storage capacity and installed-bionic effects are omitted. Multiplayer is unverified.
+Excluding an item preserves quality supplied by RimWorld or another mod. Support details for individual items show potentially relevant effects and recorded exclusions. Storage capacity and installed-bionic effects are omitted. Multiplayer is unverified.
 
 Quality separates stacks by tier and can increase stack counts. Back up your save before removing quality support or uninstalling. Saved quality values can be lost, and lower durability or battery capacity can clamp excess hit points or charge. See the settings guide for effect limits and removal details.
 

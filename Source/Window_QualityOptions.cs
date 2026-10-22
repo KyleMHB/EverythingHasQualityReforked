@@ -79,14 +79,14 @@ namespace QualityEverything
             var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color;
             try
             {
-                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production"), T("Compatibility") }; float tabWidth = (rect.width - 18) / 4;
-                for (int i = 0; i < 4; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
+                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
+                for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
                 participation = page == 1;
                 Widgets.Label(new Rect(rect.x, rect.y + 38, rect.width, 28), (QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));
                 var body = new Rect(rect.x, rect.y + 72, rect.width, Math.Max(100, rect.height - 164));
                 if (page == 0) DrawRules(body);
                 else if (page == 1) { float half = (body.width - 8) / 2; if (Widgets.ButtonText(new Rect(body.x, body.y, half, 30), U("ChooseEffects"), drawBackground: targetView)) targetView = false; if (Widgets.ButtonText(new Rect(body.x + half + 8, body.y, half, 30), U("EffectItems"), drawBackground: !targetView)) targetView = true; body.y += 38; body.height -= 38; if (targetView) DrawRules(body); else DrawEffects(body); }
-                else if (page == 2) DrawProduction(body); else DrawCompatibility(body);
+                else if (page == 2) DrawProduction(body);
                 Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RemovalWarning")); float w = (rect.width - 32) / 5;
                 if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && undo.Count > 0) { QualitySettingsState.ReplaceDraft(undo.Pop()); buffers.Clear(); DraftChanged(); }
                 if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); buffers.Clear(); undo.Clear(); error = ""; }
