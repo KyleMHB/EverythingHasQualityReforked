@@ -118,7 +118,7 @@ namespace QualityEverything
                     RoleEffect roleEffect = role.def.roleEffects.FirstOrDefault((RoleEffect eff) => eff is RoleEffect_ProductionQualityOffset);
                     if (roleEffect != null)
                     {
-                        qualityCategory = (QualityCategory)Mathf.Min((int)(qualityCategory + (byte)((RoleEffect_ProductionQualityOffset)roleEffect).offset), 6);
+                        qualityCategory = (QualityCategory)QualityTier.AddLevels((int)qualityCategory, ((RoleEffect_ProductionQualityOffset)roleEffect).offset);
                     }
                 }
             }

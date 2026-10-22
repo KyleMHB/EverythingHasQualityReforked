@@ -222,8 +222,7 @@ namespace QualityEverything
             foreach (var field in typeof(ProductionSettings).GetFields())
             {
                 object value = field.GetValue(Production);
-                if (value is float number && (float.IsNaN(number) || float.IsInfinity(number) || number < 0 || number > 10)) errors.Add(field.Name);
-                if (field.Name == "tableFactor" && (float)value > 1) errors.Add(field.Name);
+                if (value is float number && !QualityNumericRange.Production(field.Name).Contains(number)) errors.Add(field.Name);
                 if (value is int tier && (tier < 0 || tier > 6)) errors.Add(field.Name);
                 if (field.Name.StartsWith("min"))
                 {
@@ -231,9 +230,9 @@ namespace QualityEverything
                     if (maximum != null && (int)value > (int)maximum.GetValue(Production)) errors.Add(field.Name);
                 }
             }
-            foreach (var pair in Effects) if (pair.Value == null || pair.Value.Factors == null || pair.Value.Factors.Length != 7 || pair.Value.Factors.Any(v => float.IsNaN(v) || float.IsInfinity(v) || v < .01f || v > 10f)) errors.Add(pair.Key);
-            if (float.IsNaN(LinkedFurnitureBonusCap) || LinkedFurnitureBonusCap < 0 || LinkedFurnitureBonusCap > .02f) errors.Add("LinkedFurnitureBonusCap");
-            if (float.IsNaN(LinkedFurniturePenaltyCap) || LinkedFurniturePenaltyCap < 0 || LinkedFurniturePenaltyCap > .005f) errors.Add("LinkedFurniturePenaltyCap");
+            foreach (var pair in Effects) if (pair.Value == null || pair.Value.Factors == null || pair.Value.Factors.Length != 7 || pair.Value.Factors.Any(v => !QualityNumericRange.Effect.Contains(v))) errors.Add(pair.Key);
+            if (!QualityNumericRange.LinkedBonus.Contains(LinkedFurnitureBonusCap)) errors.Add("LinkedFurnitureBonusCap");
+            if (!QualityNumericRange.LinkedPenalty.Contains(LinkedFurniturePenaltyCap)) errors.Add("LinkedFurniturePenaltyCap");
             return errors;
         }
         public string Serialize()
@@ -374,68 +373,24 @@ namespace QualityEverything
             if (errors.Count == 0) Saved = Draft.Clone();
             return errors;
         }
+        public void ReplaceDraft(QualityConfiguration configuration) => Draft = configuration.Clone();
         public void Discard()
         {
             Draft = Saved.Clone();
         }
     }
 
-    internal sealed class EffectDescriptor
-    {
-        public readonly EffectId Id;
-        public readonly string Family, LabelKey;
-        public readonly bool Cost;
-        public readonly float Minimum = .01f, Maximum = 10f;
-        public EffectDescriptor(EffectId id, string family)
-        {
-            Id = id;
-            Family = family;
-            LabelKey = "QEverything.Options.Effect." + id;
-            Cost = QualityEffectCatalog.IsCost(id);
-        }
-    }
-
     internal static class QualityEffectCatalog
     {
-        public static readonly EffectDescriptor[] Descriptors = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Select(id => new EffectDescriptor(id, Family(id))).ToArray();
-        private static string Family(EffectId id)
-        {
-            switch (id)
-            {
-                case EffectId.BuildingDurability:
-                case EffectId.WeaponDurability:
-                case EffectId.ApparelDurability:
-                    return "Durability";
-                case EffectId.WorktableSpeed:
-                case EffectId.ResearchSpeed:
-                case EffectId.DoorSpeed:
-                    return "Production";
-                case EffectId.GeneratorOutput:
-                case EffectId.ConsumerDemand:
-                case EffectId.BatteryCapacity:
-                case EffectId.BatteryEfficiency:
-                    return "Power";
-                case EffectId.FoodNutrition:
-                case EffectId.FoodPoisoningRisk:
-                case EffectId.MedicinePotency:
-                case EffectId.DrugStrength:
-                case EffectId.DrugDuration:
-                    return "Consumables";
-                case EffectId.EquipmentWork:
-                case EffectId.EquipmentMovement:
-                case EffectId.EquipmentMedicine:
-                case EffectId.EquipmentSocial:
-                case EffectId.EquipmentAbilities:
-                    return "Equipment";
-                case EffectId.LinkedFurniture:
-                    return "Furniture";
-                default:
-                    return "Combat";
-            }
-        }
         public static bool IsCost(EffectId id) => id == EffectId.ConsumerDemand || id == EffectId.FoodPoisoningRisk || id == EffectId.MeleeCooldown || id == EffectId.RangedCooldown || id == EffectId.TurretCooldown;
-        public static float[] Curve(EffectId id) => IsCost(id)
-            ? new[] { 1.05f, 1.02f, 1f, .98f, .95f, .9f, .8f }
-            : new[] { .95f, .98f, 1f, 1.02f, 1.05f, 1.1f, 1.2f };
+        public static float[] Curve(EffectId id, bool medium = false)
+        {
+            if (!medium) return IsCost(id)
+                ? new[] { 1.05f, 1.02f, 1f, .98f, .95f, .9f, .8f }
+                : new[] { .95f, .98f, 1f, 1.02f, 1.05f, 1.1f, 1.2f };
+            // Normal stays neutral; interpolate separately below and above Normal.
+            var benefits = new[] { .6f, .8f, 1f, 1.375f, 1.75f, 2.125f, 2.5f };
+            return IsCost(id) ? benefits.Select(factor => 1f / factor).ToArray() : benefits;
+        }
     }
 }

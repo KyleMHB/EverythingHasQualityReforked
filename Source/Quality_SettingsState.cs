@@ -53,6 +53,7 @@ namespace QualityEverything
         {
             Revision++;
         }
+        public static void ReplaceDraft(QualityConfiguration configuration) { session.ReplaceDraft(configuration); Changed(); }
         public static void Discard()
         {
             session.Discard();
@@ -101,7 +102,7 @@ namespace QualityEverything
         public ThingDef Def;
         public RuleTarget Target;
         public bool NativeQuality;
-        public string Label, Source, Search;
+        public string Label, Source;
     }
 
     internal static class QualityCatalog
@@ -144,7 +145,6 @@ namespace QualityEverything
                     Label = def.LabelCap,
                     Source = source
                 };
-                entry.Search = (entry.Label + " " + def.defName + " " + source + " " + def.modContentPack?.PackageId + " " + string.Join(" ", paths.Keys.Select(id => (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(id)?.label ?? "") + " " + id))).ToLowerInvariant();
                 Entries.Add(entry);
                 byDef[def] = entry;
                 activeAssignment[def] = QualityRules.Resolve(entry.Target, QualitySettingsState.ActiveSnapshot.Assignment);

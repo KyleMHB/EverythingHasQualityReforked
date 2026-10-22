@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Verse;
 
 namespace QualityEverything
@@ -6,91 +6,91 @@ namespace QualityEverything
     public class ModSettings_QEverything : ModSettings
     {
 
-        public static bool useMaterialQuality = true;
-        public static bool useTableQuality = true;
-        public static bool useSkillReq = true;
-        public static int stdSupplyQuality = 2;
-        public static float tableFactor = .4f;
+        public static bool useMaterialQuality;
+        public static bool useTableQuality;
+        public static bool useSkillReq;
+        public static int stdSupplyQuality;
+        public static float tableFactor;
 
-        public static bool inspiredButchering = true;
-        public static bool inspiredChemistry = true;
-        public static bool inspiredCooking = true;
-        public static bool inspiredConstruction = true;
-        public static bool inspiredGathering = true;
-        public static bool inspiredHarvesting = true;
-        public static bool inspiredMining = true;
-        public static bool inspiredStonecutting = true;
+        public static bool inspiredButchering;
+        public static bool inspiredChemistry;
+        public static bool inspiredCooking;
+        public static bool inspiredConstruction;
+        public static bool inspiredGathering;
+        public static bool inspiredHarvesting;
+        public static bool inspiredMining;
+        public static bool inspiredStonecutting;
 
-        public static bool skilledAnimals = false;
-        public static bool skilledButchering = false;
-        public static bool skilledHarvesting = false;
-        public static bool skilledMining = false;
-        public static bool skilledStoneCutting = false;
+        public static bool skilledAnimals;
+        public static bool skilledButchering;
+        public static bool skilledHarvesting;
+        public static bool skilledMining;
+        public static bool skilledStoneCutting;
 
-        public static bool edificeQuality = true;
-        public static int minEdificeQuality = 0;
-        public static int maxEdificeQuality = 4;
+        public static bool edificeQuality;
+        public static int minEdificeQuality;
+        public static int maxEdificeQuality;
 
-        public static bool workQuality = true;
-        public static int minWorkQuality = 0;
-        public static int maxWorkQuality = 4;
+        public static bool workQuality;
+        public static int minWorkQuality;
+        public static int maxWorkQuality;
 
-        public static bool securityQuality = true;
-        public static int minSecurityQuality = 0;
-        public static int maxSecurityQuality = 4;
+        public static bool securityQuality;
+        public static int minSecurityQuality;
+        public static int maxSecurityQuality;
 
-        public static bool stuffQuality = true;
-        public static int minStuffQuality = 0;
-        public static int maxStuffQuality = 4;
+        public static bool stuffQuality;
+        public static int minStuffQuality;
+        public static int maxStuffQuality;
 
-        public static bool ingredientQuality = true;
-        public static int minIngQuality = 2;
-        public static int maxIngQuality = 4;
-        public static int minTastyQuality = 0;
-        public static int maxTastyQuality = 4;
+        public static bool ingredientQuality;
+        public static int minIngQuality;
+        public static int maxIngQuality;
+        public static int minTastyQuality;
+        public static int maxTastyQuality;
 
-        public static bool mealQuality = false;
-        public static int minMealQuality = 0;
-        public static int maxMealQuality = 4;
+        public static bool mealQuality;
+        public static int minMealQuality;
+        public static int maxMealQuality;
 
-        public static bool drugQuality = false;
-        public static int minDrugQuality = 0;
-        public static int maxDrugQuality = 4;
+        public static bool drugQuality;
+        public static int minDrugQuality;
+        public static int maxDrugQuality;
 
-        public static bool medQuality = false;
-        public static int minMedQuality = 0;
-        public static int maxMedQuality = 4;
+        public static bool medQuality;
+        public static int minMedQuality;
+        public static int maxMedQuality;
 
-        public static bool manufQuality = true;
-        public static int minManufQuality = 0;
-        public static int maxManufQuality = 4;
+        public static bool manufQuality;
+        public static int minManufQuality;
+        public static int maxManufQuality;
 
-        public static bool apparelQuality = false;
-        public static int minApparelQuality = 0;
-        public static int maxApparelQuality = 6;
+        public static bool apparelQuality;
+        public static int minApparelQuality;
+        public static int maxApparelQuality;
 
-        public static bool weaponQuality = false;
-        public static int minWeaponQuality = 0;
-        public static int maxWeaponQuality = 6;
+        public static bool weaponQuality;
+        public static int minWeaponQuality;
+        public static int maxWeaponQuality;
 
-        public static bool shellQuality = false;
-        public static int minShellQuality = 0;
-        public static int maxShellQuality = 4;
+        public static bool shellQuality;
+        public static int minShellQuality;
+        public static int maxShellQuality;
 
-        public static bool indivStuff = false;
-        public static bool indivBuildings = false;
-        public static bool indivWeapons = false;
-        public static bool indivApparel = false;
-        public static bool indivOther = false;
+        public static bool indivStuff;
+        public static bool indivBuildings;
+        public static bool indivWeapons;
+        public static bool indivApparel;
+        public static bool indivOther;
 
-        public static bool multSupplyFactor = true;
-        public static float awfulSupplyFactor = .8f;
-        public static float poorSupplyFactor = .9f;
-        public static float normalSupplyFactor = 1f;
-        public static float goodSupplyFactor = 1.1f;
-        public static float excSupplyFactor = 1.2f;
-        public static float masterSupplyFactor = 1.3f;
-        public static float legSupplyFactor = 1.4f;
+        public static bool multSupplyFactor;
+        public static float awfulSupplyFactor;
+        public static float poorSupplyFactor;
+        public static float normalSupplyFactor;
+        public static float goodSupplyFactor;
+        public static float excSupplyFactor;
+        public static float masterSupplyFactor;
+        public static float legSupplyFactor;
 
         public static Dictionary<string, bool> stuffDict = new Dictionary<string, bool>();
         public static List<string> stuffKeys = new List<string>();
@@ -111,6 +111,14 @@ namespace QualityEverything
         public static Dictionary<string, bool> otherDict = new Dictionary<string, bool>();
         public static List<string> otherKeys = new List<string>();
         public static List<bool> otherValues = new List<bool>();
+
+        static ModSettings_QEverything()
+        {
+            // Preserve the public compatibility fields, with one source for scalar defaults.
+            var defaults = new ProductionSettings();
+            foreach (var field in typeof(ProductionSettings).GetFields())
+                typeof(ModSettings_QEverything).GetField(field.Name).SetValue(null, field.GetValue(defaults));
+        }
 
         private string configurationXml;
         public override void ExposeData()

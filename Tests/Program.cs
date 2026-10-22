@@ -9,6 +9,10 @@ class Program
 {
     static void Main()
     {
+        Check(QualityTier.AddLevels(2, -1) == 1, "negative role modifier reduces quality");
+        Check(QualityTier.AddLevels(2, 1) == 3, "positive role modifier increases quality");
+        Check(QualityTier.AddLevels(2, int.MinValue) == 0, "negative offsets clamp to Awful");
+        Check(QualityTier.AddLevels(2, int.MaxValue) == 6, "positive offsets clamp without integer overflow");
         CheckPatchReplacement();
         var scope = new QualityOperationContext<int>(-1);
         var first = scope.Wrap(Values(() => scope.Current, 2), 2).GetEnumerator();

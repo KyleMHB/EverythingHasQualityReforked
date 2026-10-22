@@ -2,6 +2,21 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
+## 2026-10-21
+
+### Fixed
+
+- Fixed negative production-role quality modifiers increasing quality instead of lowering it.
+- Fixed queued ingredient collection when resource quality is disabled but other ingredient stacks have quality.
+- Matched numeric input limits to the values accepted by Save.
+- Included the complete inherited license notice in local packages and repeated deployments.
+
+### Internal
+
+- Isolated check-program builds and added a runner that rejects results from the wrong program.
+- Added package file hashes and source/build identifiers to local packages.
+- Removed unused settings helpers and shared scalar defaults with the retained public settings fields.
+
 ## 2026-10-18
 
 ### Added

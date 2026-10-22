@@ -38,19 +38,17 @@ namespace QualityEverything
         public static void RunHarmony()
         {
             Harmony harmony = new Harmony("rimworld.qualityframework");
-            if (QualityCatalog.AnyAssigned(QualityBucket.Stuff))
+            // Any ingredient can have incompatible stacks, including native/provider quality
+            // when this mod's Stuff assignment is disabled.
+            MethodInfo mJump = AccessTools.FindIncludingInnerTypes(typeof(Toils_Haul), t => AccessTools.FirstMethod(t, m => m.Name.Contains("JumpIfAlsoCollectingNextTargetInQueue") && m.ReturnType == typeof(void)));
+            if (mJump != null)
             {
+                harmony.Patch(mJump, null, null, new HarmonyMethod(typeof(Quality_Construction), "CollectNextTarget_Transpiler"));
                 stuffPatchRan = true;
-                MethodInfo mJump = AccessTools.FindIncludingInnerTypes(typeof(Toils_Haul), t => AccessTools.FirstMethod(t, m => m.Name.Contains("JumpIfAlsoCollectingNextTargetInQueue") && m.ReturnType == typeof(void)));
-                if (mJump != null)
-                {
-                    harmony.Patch(mJump, null, null, new HarmonyMethod(typeof(Quality_Construction), "CollectNextTarget_Transpiler"));
-                }
-                else
-                {
-                    Log.Error("QEverything: unable to find haul queue method for stuff stacking patch.");
-                }
-
+            }
+            else
+            {
+                Log.Error("QEverything: unable to find haul queue method for stack compatibility patch.");
             }
             if (QualityCatalog.Assigned(ThingDefOf.Silver))
             {

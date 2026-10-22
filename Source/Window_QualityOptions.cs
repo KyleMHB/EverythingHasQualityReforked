@@ -5,482 +5,281 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
-
 namespace QualityEverything
 {
-    internal sealed class Window_QualityOptions : Window
+    internal sealed partial class Window_QualityOptions : Window
     {
-        private sealed class CategoryNode
+        private sealed class BrowserState
         {
-            public ThingCategoryDef Def;
-            public string Path;
-            public int Depth;
-            public string[] Ancestors;
+            public string Search = "", Group = "", Category = "", Source = "", FilterKey;
+            public int ResultFilter, SelectionRevision, HiddenRevision = -1, Hidden;
+            public string HiddenFilterKey;
+            public bool OverridesOnly, Reviewing;
+            public Vector2 TreeScroll, ListScroll;
+            public readonly HashSet<string> Selected = new HashSet<string>(StringComparer.Ordinal);
+            public BrowserState Previous;
+            public List<QualityCatalogEntry> Filtered = new List<QualityCatalogEntry>();
+            public BrowserState Filters() => new BrowserState { Search = Search, Group = Group, Category = Category, Source = Source, ResultFilter = ResultFilter, OverridesOnly = OverridesOnly };
+            public void Restore(BrowserState f) { Search = f.Search; Group = f.Group; Category = f.Category; Source = f.Source; ResultFilter = f.ResultFilter; OverridesOnly = f.OverridesOnly; Reviewing = false; ListScroll = Vector2.zero; }
         }
-
-        private int page, resultFilter;
-        private bool effects, participation, overridesOnly, closing;
-        private string search = "", group = "", category = "", source = "", selected = "", filterKey, error = "";
-        private Vector2 browserScroll, listScroll, productionScroll, effectScroll, compatibilityScroll;
+        private sealed class CategoryNode { public ThingCategoryDef Def; public string Path; public int Depth; public string[] Ancestors; }
+        private readonly BrowserState assignment = new BrowserState(), targets = new BrowserState();
+        private BrowserState Browser => participation ? targets : assignment;
+        private bool participation, targetView, closing;
+        private int page;
+        private readonly Action afterClose;
         private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
+        private readonly Stack<QualityConfiguration> undo = new Stack<QualityConfiguration>();
+        private Vector2 productionScroll, effectScroll, compatibilityScroll;
+        private string error = "";
         private readonly HashSet<string> expanded = new HashSet<string>();
         private readonly List<CategoryNode> categoryNodes;
         private List<CategoryNode> visibleCategoryNodes;
         private readonly string[] groupIds = QualitySettingsState.GroupFields.Keys.ToArray();
-        private int compatibilityRevision = -1;
-        private List<string> compatibilityLines;
         private readonly Dictionary<string, int[]> counts = new Dictionary<string, int[]>();
         private int countRevision = -1;
         private bool countParticipation;
-        private List<QualityCatalogEntry> filtered = new List<QualityCatalogEntry>();
         private QualityConfiguration Draft => QualitySettingsState.Draft;
         private RuleSet Rules => participation ? Draft.Participation : Draft.Assignment;
         public override Vector2 InitialSize => new Vector2(1120, 820);
         private static string T(string key) => ("QEverything.Options." + key).Translate().ToString();
+        private static string U(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T("UX." + key), args);
         private static string GroupLabel(string id) => T("Group." + id);
         private static string ChoiceLabel(RuleChoice choice) => T(choice.ToString());
-
-        public Window_QualityOptions()
+        public Window_QualityOptions(Action afterClose = null)
         {
-            doCloseX = true;
-            closeOnClickedOutside = false;
-            absorbInputAroundWindow = true;
-            forcePause = true;
-            QualityCatalog.Build();
-            categoryNodes = DefDatabase<ThingCategoryDef>.AllDefsListForReading.Select(BuildNode)
-                .OrderBy(n => n.Path, StringComparer.CurrentCultureIgnoreCase).ToList();
+            this.afterClose = afterClose; doCloseX = true; closeOnClickedOutside = false; absorbInputAroundWindow = true; forcePause = true;
+            QualityCatalog.Build(); categoryNodes = DefDatabase<ThingCategoryDef>.AllDefsListForReading.Select(BuildNode).OrderBy(n => n.Path, StringComparer.CurrentCultureIgnoreCase).ToList();
             foreach (var node in categoryNodes.Where(n => n.Def.parent == null)) expanded.Add(node.Def.defName);
         }
-
         private static CategoryNode BuildNode(ThingCategoryDef def)
         {
-            var chain = new List<ThingCategoryDef>();
-            var seen = new HashSet<ThingCategoryDef>();
+            var chain = new List<ThingCategoryDef>(); var seen = new HashSet<ThingCategoryDef>();
             for (var current = def; current != null && seen.Add(current); current = current.parent) chain.Add(current);
-            chain.Reverse();
-            return new CategoryNode
-            {
-                Def = def,
-                Depth = chain.Count,
-                Path = string.Join(" / ", chain.Select(c => c.LabelCap.ToString())),
-                Ancestors = chain.Where(c => c != def).Select(c => c.defName).ToArray()
-            };
+            chain.Reverse(); return new CategoryNode { Def = def, Depth = chain.Count, Path = string.Join(" / ", chain.Select(c => c.LabelCap.ToString())), Ancestors = chain.Where(c => c != def).Select(c => c.defName).ToArray() };
         }
-
+        public override void PostClose() { base.PostClose(); afterClose?.Invoke(); }
         public override bool OnCloseRequest()
         {
-            if (!closing && (QualitySettingsState.Dirty || buffers.Any(p => !ValidBuffer(p.Value))))
-            {
-                if (!Find.WindowStack.IsOpen<Window_QualityClose>()) Find.WindowStack.Add(new Window_QualityClose(this));
-                return false;
-            }
+            if (!closing && (QualitySettingsState.Dirty || buffers.Any(p => !BufferIsValid(p.Key, p.Value, out _))))
+            { if (!Find.WindowStack.IsOpen<Window_QualityClose>()) Find.WindowStack.Add(new Window_QualityClose(this)); return false; }
             return true;
         }
-
-        internal void Finish(bool save)
-        {
-            if (save && !Save()) return;
-            if (!save) QualitySettingsState.Discard();
-            closing = true;
-            Close();
-        }
-
+        internal void Finish(bool save) { if (save && !Save()) return; if (!save) QualitySettingsState.Discard(); closing = true; Close(); }
         private bool Save()
         {
-            if (buffers.Any(p => !ValidBuffer(p.Value)))
-            {
-                error = T("InvalidInput");
-                return false;
-            }
-            var errors = QualitySettingsState.Save();
-            error = errors.Count == 0 ? "" : T("InvalidInput") + " " + string.Join(", ", errors);
-            return errors.Count == 0;
+            if (buffers.Any(p => !BufferIsValid(p.Key, p.Value, out _))) { error = T("InvalidInput"); return false; }
+            var errors = QualitySettingsState.Save(); error = errors.Count == 0 ? T("RestartPending") : T("InvalidInput") + " " + string.Join(", ", errors);
+            if (errors.Count == 0) undo.Clear(); return errors.Count == 0;
         }
-
+        private void RememberDraft() { if (undo.Count >= 30) { var recent = undo.Take(29).Reverse().ToArray(); undo.Clear(); foreach (var item in recent) undo.Push(item); } undo.Push(Draft.Clone()); }
+        private void DraftChanged() { QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = null; error = ""; }
         public override void DoWindowContents(Rect rect)
         {
-            var oldFont = Text.Font;
-            var oldAnchor = Text.Anchor;
-            var oldColor = GUI.color;
+            var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color;
             try
             {
-                Text.Font = GameFont.Small;
-                float tabWidth = (rect.width - 16) / 3;
-                for (int i = 0; i < 3; i++)
-                    if (Widgets.ButtonText(new Rect(rect.x + i * (tabWidth + 8), rect.y, tabWidth, 32), T(new[] { "Rules", "Production", "Compatibility" }[i]))) page = i;
-                string state = (QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  "
-                    + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved"));
-                Widgets.Label(new Rect(rect.x, rect.y + 38, rect.width, 42), state);
-                var body = new Rect(rect.x, rect.y + 85, rect.width, Math.Max(100, rect.height - 170));
-                if (page == 0) { if (effects) DrawEffects(body); else DrawRules(body); }
-                else if (page == 1) DrawProduction(body);
-                else DrawCompatibility(body);
-                Widgets.Label(new Rect(rect.x, rect.yMax - 78, rect.width, 38), string.IsNullOrEmpty(error) ? T("RemovalWarning") : error);
-                float width = (rect.width - 24) / 4;
-                if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, width, 32), T("Save"))) Save();
-                if (Widgets.ButtonText(new Rect(rect.x + width + 8, rect.yMax - 34, width, 32), T("Discard")))
-                {
-                    QualitySettingsState.Discard(); buffers.Clear(); error = "";
-                }
-                if (Widgets.ButtonText(new Rect(rect.x + 2 * (width + 8), rect.yMax - 34, width, 32), T("ResetAll")))
-                    Confirm(T("ResetConfirm"), ResetEverything);
-                if (Widgets.ButtonText(new Rect(rect.x + 3 * (width + 8), rect.yMax - 34, width, 32), T("Close"))) Close();
+                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production"), T("Compatibility") }; float tabWidth = (rect.width - 18) / 4;
+                for (int i = 0; i < 4; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
+                participation = page == 1;
+                Widgets.Label(new Rect(rect.x, rect.y + 38, rect.width, 28), (QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));
+                var body = new Rect(rect.x, rect.y + 72, rect.width, Math.Max(100, rect.height - 164));
+                if (page == 0) DrawRules(body);
+                else if (page == 1) { float half = (body.width - 8) / 2; if (Widgets.ButtonText(new Rect(body.x, body.y, half, 30), U("ChooseEffects"), drawBackground: targetView)) targetView = false; if (Widgets.ButtonText(new Rect(body.x + half + 8, body.y, half, 30), U("EffectItems"), drawBackground: !targetView)) targetView = true; body.y += 38; body.height -= 38; if (targetView) DrawRules(body); else DrawEffects(body); }
+                else if (page == 2) DrawProduction(body); else DrawCompatibility(body);
+                Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RemovalWarning")); float w = (rect.width - 32) / 5;
+                if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && undo.Count > 0) { QualitySettingsState.ReplaceDraft(undo.Pop()); buffers.Clear(); DraftChanged(); }
+                if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); buffers.Clear(); undo.Clear(); error = ""; }
+                if (Widgets.ButtonText(new Rect(rect.x + 2 * (w + 8), rect.yMax - 34, w, 32), T("ResetAll"))) Confirm(T("ResetConfirm"), () => { RememberDraft(); Mod_SettingsUtility.RestoreDefaults(); buffers.Clear(); DraftChanged(); });
+                if (Widgets.ButtonText(new Rect(rect.x + 3 * (w + 8), rect.yMax - 34, w, 32), T("Save"))) Save();
+                if (Widgets.ButtonText(new Rect(rect.x + 4 * (w + 8), rect.yMax - 34, w, 32), T("Close"))) Close();
             }
-            finally { Text.Font = oldFont; Text.Anchor = oldAnchor; GUI.color = oldColor; }
+            finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; }
         }
-
-        private static void Confirm(string message, Action action) => Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(message, action));
-        private void ResetEverything()
-        {
-            Mod_SettingsUtility.RestoreDefaults();
-            buffers.Clear();
-        }
-
+        private static void Confirm(string text, Action action) => Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(text, action));
+        private string ScopeName => Browser.Category.Length > 0 ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(Browser.Category)?.LabelCap.ToString() ?? Browser.Category) : Browser.Group.Length > 0 ? GroupLabel(Browser.Group) : U("AllItems");
         private void DrawRules(Rect rect)
         {
-            float left = Math.Min(300, rect.width * .32f), right = rect.width - left - 12;
-            float policyWidth = (rect.width - 16) / 3;
-            for (int i = 0; i < 2; i++)
+            float left = Math.Min(260, rect.width * .28f); DrawBrowser(new Rect(rect.x, rect.y, left, rect.height));
+            var area = new Rect(rect.x + left + 12, rect.y, rect.width - left - 12, rect.height); var s = Browser; float y = area.y;
+            Widgets.Label(new Rect(area.x, y, area.width, 24), ScopeName); y += 26;
+            if (s.Group.Length > 0 || s.Category.Length > 0)
             {
-                var policyRect = new Rect(rect.x + i * (policyWidth + 8), rect.y, policyWidth, 30);
-                bool selectedPolicy = participation == (i == 1);
-                if (selectedPolicy) Widgets.DrawHighlightSelected(policyRect);
-                if (Widgets.ButtonText(policyRect, T(i == 0 ? "Assignment" : "Participation"), drawBackground: !selectedPolicy))
-                    participation = i == 1;
+                string current = s.Group.Length > 0 ? U(Rules.Groups.TryGetValue(s.Group, out var yes) && yes ? "DefaultYes" : "DefaultNo") : RuleText(Rules.Categories.TryGetValue(s.Category, out var val) ? val : RuleChoice.Inherit, false);
+                if (Widgets.ButtonText(new Rect(area.x, y, area.width * .6f, 30), U(participation ? "ApplyEffects" : "GiveQuality") + ": " + current)) SelectScopeRule();
+                if (Widgets.ButtonText(new Rect(area.x + area.width * .62f, y, area.width * .38f, 30), U("CustomItems"))) { s.Search = s.Source = ""; s.ResultFilter = 0; s.OverridesOnly = true; s.Reviewing = false; }
+                y += 34; Widgets.Label(new Rect(area.x, y, area.width, 24), ScopeSummary()); y += 27;
             }
-            if (Widgets.ButtonText(new Rect(rect.x + 2 * (policyWidth + 8), rect.y, policyWidth, 30), T("Effects"))) { effects = true; return; }
-            DrawBrowser(new Rect(rect.x, rect.y + 38, left, rect.height - 38));
-            float x = rect.x + left + 12, y = rect.y + 38;
-            string scope = category.Length > 0 ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(category)?.LabelCap.ToString() ?? category)
-                : group.Length > 0 ? GroupLabel(group) : T("AllGroups");
-            Widgets.Label(new Rect(x, y, right, 25), scope); y += 27;
-            string next = Widgets.TextField(new Rect(x, y, right, 30), search);
-            if (next != search) { search = next; listScroll = Vector2.zero; }
-            TooltipHandler.TipRegion(new Rect(x, y, right, 30), T("SearchHelp")); y += 36;
-            float third = (right - 12) / 3;
-            if (Widgets.ButtonText(new Rect(x, y, third, 28), source.Length == 0 ? T("AllSources") : source)) SelectSource();
-            if (Widgets.ButtonText(new Rect(x + third + 6, y, third, 28), T(new[] { "AllResults", "Included", "Excluded" }[resultFilter]))) resultFilter = (resultFilter + 1) % 3;
-            Widgets.CheckboxLabeled(new Rect(x + 2 * (third + 6), y, third, 28), T("Overrides"), ref overridesOnly); y += 34;
-            Refresh();
-            for (int i = 0; i < 3; i++)
+            else { Widgets.Label(new Rect(area.x, y, area.width, 40), U(participation ? "TargetsHelp" : "AssignmentHelp")); y += 42; }
+            Widgets.Label(new Rect(area.x, y, area.width, 22), U("SearchIn", ScopeName)); y += 22;
+            GUI.SetNextControlName(participation ? "quality-target-search" : "quality-assignment-search");
+            string next = Widgets.TextField(new Rect(area.x, y, area.width - 72, 30), s.Search); if (next != s.Search) { s.Search = next; s.ListScroll = Vector2.zero; }
+            if (Widgets.ButtonText(new Rect(area.xMax - 66, y, 66, 30), U("ClearSearch"))) s.Search = ""; y += 34;
+            float third = (area.width - 12) / 3;
+            if (Widgets.ButtonText(new Rect(area.x, y, third, 30), U("Mod", s.Source.Length == 0 ? U("AllMods") : s.Source))) SelectSource();
+            if (Widgets.ButtonText(new Rect(area.x + third + 6, y, third, 30), U("Show", T(new[] { "AllResults", "Included", "Excluded" }[s.ResultFilter])))) Find.WindowStack.Add(new FloatMenu(Enumerable.Range(0, 3).Select(i => new FloatMenuOption(T(new[] { "AllResults", "Included", "Excluded" }[i]), () => s.ResultFilter = i)).ToList()));
+            Widgets.CheckboxLabeled(new Rect(area.x + 2 * (third + 6), y, third, 30), U("CustomOnly"), ref s.OverridesOnly); y += 34; Refresh(); float action = (area.width - 12) / 3;
+            if (Widgets.ButtonText(new Rect(area.x, y, action, 28), U("SelectResults", s.Filtered.Count))) { foreach (var e in s.Filtered) s.Selected.Add(e.Target.Id); s.SelectionRevision++; }
+            if (Widgets.ButtonText(new Rect(area.x + action + 6, y, action, 28), U("AllCategories"))) { s.Group = s.Category = ""; s.ListScroll = Vector2.zero; }
+            if (Widgets.ButtonText(new Rect(area.x + 2 * (action + 6), y, action, 28), U("ClearFilters"))) ClearFilters(); y += 34;
+            if (s.Selected.Count > 0 || s.Reviewing)
             {
-                RuleChoice choice = (RuleChoice)new[] { 1, 2, 0 }[i];
-                if (Widgets.ButtonText(new Rect(x + i * (third + 6), y, third, 36), T(new[] { "BulkInclude", "BulkExclude", "BulkClear" }[i]) + " (" + filtered.Count + ")"))
-                {
-                    foreach (string id in filtered.Select(e => e.Target.Id).ToArray()) SetRule(Rules.Items, id, choice);
-                    QualitySettingsState.Changed();
-                }
+                int hidden = SelectionHidden(s); Widgets.Label(new Rect(area.x, y, area.width * .48f, 28), U("Selected", s.Selected.Count, hidden));
+                if (Widgets.ButtonText(new Rect(area.x + area.width * .49f, y, area.width * .30f, 28), U(s.Reviewing ? "BackResults" : "ReviewSelected"))) ReviewSelected();
+                if (Widgets.ButtonText(new Rect(area.x + area.width * .80f, y, area.width * .20f, 28), U("ClearSelection"))) { s.Selected.Clear(); s.SelectionRevision++; if (s.Reviewing) ReviewSelected(); }
+                y += 32;
+                var choices = new[] { RuleChoice.Include, RuleChoice.Exclude, RuleChoice.Inherit }; for (int i = 0; i < choices.Length; i++) { var choice = choices[i]; if (Widgets.ButtonText(new Rect(area.x + i * (action + 6), y, action, 30), RuleText(choice, true))) ApplySelected(choice); }
+                y += 34;
             }
-            y += 42;
-            float detailsHeight = Math.Min(205, rect.height * .4f);
-            DrawItems(new Rect(x, y, right, Math.Max(40, rect.yMax - y - detailsHeight - 6)));
-            DrawDetails(new Rect(x, rect.yMax - detailsHeight, right, detailsHeight));
+            else { Widgets.Label(new Rect(area.x, y, area.width, 28), U("SelectionHelp")); y += 30; }
+            DrawItems(new Rect(area.x, y, area.width, Math.Max(45, area.yMax - y)));
         }
-
-        private void RefreshCounts()
+        private int summaryRevision = -1;
+        private string summaryKey, summaryText;
+        private string ScopeSummary()
         {
-            if (countRevision == QualitySettingsState.Revision && countParticipation == participation) return;
-            counts.Clear();
-            foreach (var entry in QualityCatalog.Entries)
-            {
-                bool included = Resolve(entry).Enabled;
-                foreach (string key in entry.Target.Categories.Select(c => "c:" + c.Id).Concat(new[] { "g:" + entry.Target.Group }))
-                {
-                    if (!counts.TryGetValue(key, out var pair)) counts[key] = pair = new int[2];
-                    pair[included ? 0 : 1]++;
-                }
-            }
-            countRevision = QualitySettingsState.Revision; countParticipation = participation;
+            var s = Browser; string key = participation + "|" + s.Group + "|" + s.Category;
+            if (summaryRevision == QualitySettingsState.Revision && summaryKey == key) return summaryText;
+            summaryRevision = QualitySettingsState.Revision; summaryKey = key;
+            var scoped = QualityCatalog.Entries.Where(e => (s.Group.Length == 0 || e.Target.Group == s.Group) && (s.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == s.Category))).ToArray();
+            int custom = scoped.Count(e => Rules.Items.ContainsKey(e.Target.Id));
+            int deeper = scoped.SelectMany(e => e.Target.Categories).Select(c => c.Id).Distinct().Count(id => id != s.Category && Rules.Categories.ContainsKey(id));
+            if (s.Category.Length == 0 || scoped.Length == 0) return summaryText = U("ScopeSummary", scoped.Count(e => Resolve(e).Enabled), scoped.Length, custom, deeper);
+            var node = categoryNodes.First(n => n.Def.defName == s.Category);
+            var ancestors = node.Ancestors.Select((id, i) => new CategoryPath(id, i + 1)).ToArray();
+            var parents = scoped.Select(e => QualityRules.Resolve(new RuleTarget("", e.Target.Group, true, ancestors), Rules)).Select(r => (r.Enabled ? T("Included") : T("Excluded")) + " / " + (r.ReasonKind == "Category" ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(r.SourceId)?.LabelCap.ToString() ?? r.SourceId) : GroupLabel(r.SourceId))).Distinct().ToArray();
+            return summaryText = U("ParentSummary", parents.Length == 1 ? parents[0] : U("MixedParent"), custom, deeper);
         }
-
-        private string CountLabel(string key)
+        private string RuleText(RuleChoice choice, bool item) => choice == RuleChoice.Inherit ? U(item ? "UseCategory" : "UseParent") : U(participation ? (choice == RuleChoice.Include ? "AllowEffects" : "BlockEffects") : (choice == RuleChoice.Include ? "GiveQuality" : "NoQuality"));
+        private void SelectScopeRule()
         {
-            if (!counts.TryGetValue(key, out var pair)) return " (0)";
-            return " (" + pair[0] + "/" + (pair[0] + pair[1]) + (pair[0] > 0 && pair[1] > 0 ? " " + T("Mixed") : "") + ")";
-        }
-
-        private void DrawBrowser(Rect rect)
-        {
-            RefreshCounts();
-            if (visibleCategoryNodes == null) visibleCategoryNodes = categoryNodes.Where(n => n.Ancestors.All(expanded.Contains)).ToList();
-            var categories = visibleCategoryNodes;
-            var groups = groupIds;
-            int total = groups.Length + categories.Count + 2;
-            const float row = 36;
-            var view = new Rect(0, 0, rect.width - 18, total * row);
-            Widgets.BeginScrollView(rect, ref browserScroll, view);
-            int first = Math.Max(0, (int)(browserScroll.y / row)), last = Math.Min(total, first + (int)(rect.height / row) + 2);
-            for (int index = first; index < last; index++)
-            {
-                float y = index * row;
-                if (index == 0)
-                {
-                    if (Widgets.ButtonText(new Rect(0, y, view.width, 30), T("AllGroups"))) { group = ""; category = ""; }
-                    continue;
-                }
-                if (index <= groups.Length)
-                {
-                    string id = groups[index - 1];
-                    if (Widgets.ButtonText(new Rect(0, y, view.width - 32, 30), GroupLabel(id) + CountLabel("g:" + id))) { group = id; category = ""; listScroll = Vector2.zero; }
-                    bool enabled = Rules.Groups.TryGetValue(id, out bool b) && b, before = enabled;
-                    Widgets.CheckboxLabeled(new Rect(view.width - 28, y, 28, 30), "", ref enabled);
-                    if (before != enabled) { Rules.Groups[id] = enabled; QualitySettingsState.Changed(); }
-                    continue;
-                }
-                if (index == groups.Length + 1)
-                {
-                    if (Widgets.ButtonText(new Rect(0, y, view.width, 30), T("ResetScope"))) Confirm(T("ResetScopeConfirm"), ResetScope);
-                    continue;
-                }
-                var node = categories[index - groups.Length - 2]; var def = node.Def;
-                float indent = Math.Min(30, (node.Depth - 1) * 8);
-                if (def.childCategories?.Count > 0 && Widgets.ButtonText(new Rect(indent, y, 23, 30), expanded.Contains(def.defName) ? "-" : "+"))
-                {
-                    if (!expanded.Add(def.defName)) expanded.Remove(def.defName);
-                    visibleCategoryNodes = null;
-                }
-                if (Widgets.ButtonText(new Rect(indent + 25, y, Math.Max(35, view.width - indent - 94), 30), def.LabelCap + CountLabel("c:" + def.defName))) { category = def.defName; group = ""; listScroll = Vector2.zero; }
-                RuleChoice choice = Rules.Categories.TryGetValue(def.defName, out var rule) ? rule : RuleChoice.Inherit;
-                if (Widgets.ButtonText(new Rect(view.width - 65, y, 65, 30), ChoiceLabel(choice))) { SetRule(Rules.Categories, def.defName, (RuleChoice)(((int)choice + 1) % 3)); QualitySettingsState.Changed(); }
-                TooltipHandler.TipRegion(new Rect(0, y, view.width, 30), node.Path + " (" + def.defName + ")" + CountLabel("c:" + def.defName));
-            }
-            Widgets.EndScrollView();
-        }
-
-        private void SelectSource()
-        {
-            var choices = new List<FloatMenuOption> { new FloatMenuOption(T("AllSources"), () => source = "") };
-            choices.AddRange(QualityCatalog.Entries.Select(e => e.Source).Distinct().OrderBy(s => s).Select(s => new FloatMenuOption(s, () => source = s)));
+            var s = Browser; var choices = new List<FloatMenuOption>(); foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice)))
+            { if (s.Group.Length > 0 && choice == RuleChoice.Inherit) continue; var captured = choice; choices.Add(new FloatMenuOption(RuleText(choice, false), () => { if (s.Group.Length > 0) { bool current = Rules.Groups.TryGetValue(s.Group, out var b) && b; if (current == (captured == RuleChoice.Include)) return; } else if (!RuleChanges(Rules.Categories, s.Category, captured)) return; RememberDraft(); if (s.Group.Length > 0) Rules.Groups[s.Group] = captured == RuleChoice.Include; else SetRule(Rules.Categories, s.Category, captured); DraftChanged(); })); }
             Find.WindowStack.Add(new FloatMenu(choices));
         }
-
-        private RuleResolution Resolve(QualityCatalogEntry entry)
+        private int SelectionHidden(BrowserState s)
         {
-            var target = entry.Target;
-            return QualityRules.Resolve(participation ? new RuleTarget(target.Id, target.Group, target.Supported || entry.NativeQuality, target.Categories) : target, Rules);
+            if (s.HiddenRevision != s.SelectionRevision || s.HiddenFilterKey != s.FilterKey) { s.Hidden = s.Selected.Count - s.Filtered.Count(e => s.Selected.Contains(e.Target.Id)); s.HiddenRevision = s.SelectionRevision; s.HiddenFilterKey = s.FilterKey; }
+            return s.Hidden;
         }
-
-        private void Refresh()
+        private static bool RuleChanges(Dictionary<string, RuleChoice> rules, string id, RuleChoice choice) => (rules.TryGetValue(id, out var old) ? old : RuleChoice.Inherit) != choice;
+        private void ApplySelected(RuleChoice choice)
         {
-            string key = QualityCatalog.Revision + "|" + QualitySettingsState.Revision + "|" + search + "|" + group + "|" + category + "|" + source + "|" + resultFilter + "|" + overridesOnly + "|" + participation;
-            if (key == filterKey) return;
-            filterKey = key;
-            var entries = new List<QualityCatalogEntry>(QualityCatalog.Entries);
-            var knownIds = new HashSet<string>(entries.Select(e => e.Target.Id));
-            foreach (string id in Rules.Items.Keys.Where(id => !knownIds.Contains(id)))
-                entries.Add(new QualityCatalogEntry { Target = new RuleTarget(id, "", false, new CategoryPath[0]), Label = id, Source = T("Unavailable"), Search = id.ToLowerInvariant() });
-            string query = search.Trim().ToLowerInvariant();
-            filtered = entries.Where(e => (query.Length == 0 || e.Search.Contains(query))
-                && (group.Length == 0 || e.Target.Group == group)
-                && (category.Length == 0 || e.Target.Categories.Any(c => c.Id == category))
-                && (source.Length == 0 || e.Source == source)
-                && (!overridesOnly || Rules.Items.ContainsKey(e.Target.Id))
-                && (resultFilter == 0 || Resolve(e).Enabled == (resultFilter == 1))).ToList();
+            var changed = Browser.Selected.Where(id => RuleChanges(Rules.Items, id, choice)).ToArray();
+            if (changed.Length == 0) { error = U("AlreadyApplied"); return; }
+            RememberDraft(); foreach (string id in changed) SetRule(Rules.Items, id, choice); DraftChanged(); error = U("Applied", changed.Length);
         }
-
-        private void DrawItems(Rect rect)
+        private void ClearFilters() { var s = Browser; s.Search = s.Group = s.Category = s.Source = ""; s.ResultFilter = 0; s.OverridesOnly = s.Reviewing = false; s.ListScroll = Vector2.zero; }
+        private void ReviewSelected() { var s = Browser; if (!s.Reviewing) { s.Previous = s.Filters(); ClearFilters(); s.Reviewing = true; } else { if (s.Previous != null) s.Restore(s.Previous); s.Reviewing = false; } s.ListScroll = Vector2.zero; }
+        private void RefreshCounts()
         {
-            const float row = 34;
-            var view = new Rect(0, 0, rect.width - 18, filtered.Count * row);
-            Widgets.BeginScrollView(rect, ref listScroll, view);
-            int first = Math.Max(0, (int)(listScroll.y / row)), last = Math.Min(filtered.Count, first + (int)(rect.height / row) + 2);
+            if (countRevision == QualitySettingsState.Revision && countParticipation == participation) return; counts.Clear();
+            foreach (var e in QualityCatalog.Entries) { bool included = Resolve(e).Enabled; foreach (string key in e.Target.Categories.Select(c => "c:" + c.Id).Concat(new[] { "g:" + e.Target.Group })) { if (!counts.TryGetValue(key, out var pair)) counts[key] = pair = new int[2]; pair[included ? 0 : 1]++; } }
+            countRevision = QualitySettingsState.Revision; countParticipation = participation;
+        }
+        private string CountLabel(string key) { if (!counts.TryGetValue(key, out var p)) return " (0)"; return " (" + p[0] + "/" + (p[0] + p[1]) + ")"; }
+        private void DrawBrowser(Rect rect)
+        {
+            RefreshCounts(); if (visibleCategoryNodes == null) visibleCategoryNodes = categoryNodes.Where(n => n.Ancestors.All(expanded.Contains)).ToList();
+            var nodes = visibleCategoryNodes; int total = groupIds.Length + nodes.Count + 2; const float row = 34; var view = new Rect(0, 0, rect.width - 18, total * row); var s = Browser;
+            Widgets.BeginScrollView(rect, ref s.TreeScroll, view); int first = Math.Max(0, (int)(s.TreeScroll.y / row)), last = Math.Min(total, first + (int)(rect.height / row) + 2);
             for (int i = first; i < last; i++)
             {
-                var entry = filtered[i]; var resolution = Resolve(entry); float y = i * row;
-                if (Widgets.ButtonText(new Rect(0, y, view.width * .62f, row - 2), entry.Label)) selected = entry.Target.Id;
-                Widgets.Label(new Rect(view.width * .63f, y, view.width * .37f, row), T(resolution.Enabled ? "Included" : "Excluded") + " / " + T(resolution.ReasonKind));
-                TooltipHandler.TipRegion(new Rect(0, y, view.width, row), entry.Target.Id + "\n" + entry.Source + "\n" + resolution.SourceId);
+                float y = i * row; if (i == 0) { if (Widgets.ButtonText(new Rect(0, y, view.width, 30), U("AllItems"))) { s.Group = s.Category = ""; s.Reviewing = false; } continue; }
+                if (i <= groupIds.Length) { string id = groupIds[i - 1]; var rr = new Rect(0, y, view.width, 30); if (s.Group == id) Widgets.DrawHighlightSelected(rr); if (Widgets.ButtonText(rr, GroupLabel(id) + CountLabel("g:" + id), drawBackground: s.Group != id)) { s.Group = id; s.Category = ""; s.Reviewing = false; s.ListScroll = Vector2.zero; } continue; }
+                if (i == groupIds.Length + 1) { Widgets.Label(new Rect(0, y, view.width, 30), U("CategoryTree")); continue; }
+                var node = nodes[i - groupIds.Length - 2]; var def = node.Def; float indent = Math.Min(32, (node.Depth - 1) * 8);
+                if (def.childCategories?.Count > 0 && Widgets.ButtonText(new Rect(indent, y, 23, 30), expanded.Contains(def.defName) ? "-" : "+")) { if (!expanded.Add(def.defName)) expanded.Remove(def.defName); visibleCategoryNodes = null; }
+                var cr = new Rect(indent + 25, y, Math.Max(35, view.width - indent - 25), 30); if (s.Category == def.defName) Widgets.DrawHighlightSelected(cr);
+                if (Widgets.ButtonText(cr, def.LabelCap + CountLabel("c:" + def.defName), drawBackground: s.Category != def.defName)) { s.Category = def.defName; s.Group = ""; s.Reviewing = false; s.ListScroll = Vector2.zero; }
+                TooltipHandler.TipRegion(new Rect(0, y, view.width, 30), node.Path);
             }
             Widgets.EndScrollView();
         }
-
-        private void DrawDetails(Rect rect)
+        private void SelectSource() => Find.WindowStack.Add(new Window_QualitySource(value => { Browser.Source = value; Browser.ListScroll = Vector2.zero; }));
+        private RuleResolution Resolve(QualityCatalogEntry e) { var t = e.Target; return QualityRules.Resolve(participation ? new RuleTarget(t.Id, t.Group, t.Supported || e.NativeQuality, t.Categories) : t, Rules); }
+        private void Refresh()
         {
-            var entry = filtered.FirstOrDefault(e => e.Target.Id == selected);
-            if (entry == null) { Widgets.Label(rect, T("SelectItem")); return; }
-            var resolution = Resolve(entry); string reason = resolution.SourceId;
-            if (resolution.ReasonKind == "Group") reason = GroupLabel(reason);
-            if (resolution.ReasonKind == "Category") reason = DefDatabase<ThingCategoryDef>.GetNamedSilentFail(reason)?.LabelCap.ToString() ?? reason;
-            string info = entry.Label + " / " + entry.Source + "\n" + T(resolution.ReasonKind) + ": " + reason
-                + (resolution.Conflict ? " / " + T("Conflict") : "") + (entry.NativeQuality ? "\n" + T("NativeProtected") : "");
-            Widgets.Label(new Rect(rect.x, rect.y, rect.width, 90), info);
-            float width = (rect.width - 12) / 3;
-            for (int i = 0; i < 3; i++)
-            {
-                var choice = (RuleChoice)i;
-                if (Widgets.ButtonText(new Rect(rect.x + i * (width + 6), rect.y + 94, width, 30), ChoiceLabel(choice))) { SetRule(Rules.Items, entry.Target.Id, choice); QualitySettingsState.Changed(); }
-            }
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y + 130, rect.width, 28), T("EffectSupport")))
-                Find.WindowStack.Add(new Dialog_MessageBox(string.Join("\n", Enum.GetValues(typeof(EffectId)).Cast<EffectId>()
-                    .Select(id => T("Effect." + id) + ": " + (QualityEffects.UnsupportedReason(id, entry.Def) ?? QualityEffects.Reason(id))))));
-            if (participation && !entry.NativeQuality && !QualityCatalog.Assigned(entry.Def)) Widgets.Label(new Rect(rect.x, rect.y + 160, rect.width, 40), T("NeedsQuality"));
+            var s = Browser; string key = QualityCatalog.Revision + "|" + QualitySettingsState.Revision + "|" + s.Search + "|" + s.Group + "|" + s.Category + "|" + s.Source + "|" + s.ResultFilter + "|" + s.OverridesOnly + "|" + s.Reviewing + "|" + (s.Reviewing ? s.SelectionRevision : 0);
+            if (key == s.FilterKey) return; s.FilterKey = key; var entries = new List<QualityCatalogEntry>(QualityCatalog.Entries); var known = new HashSet<string>(entries.Select(e => e.Target.Id));
+            foreach (string id in Rules.Items.Keys.Where(id => !known.Contains(id))) entries.Add(new QualityCatalogEntry { Target = new RuleTarget(id, "", false, new CategoryPath[0]), Label = id, Source = T("Unavailable") });
+            string query = s.Search.Trim(); s.Filtered = entries.Where(e => (query.Length == 0 || e.Label.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0) && (s.Group.Length == 0 || e.Target.Group == s.Group) && (s.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == s.Category)) && (s.Source.Length == 0 || e.Source == s.Source) && (!s.OverridesOnly || Rules.Items.ContainsKey(e.Target.Id)) && (s.ResultFilter == 0 || Resolve(e).Enabled == (s.ResultFilter == 1)) && (!s.Reviewing || s.Selected.Contains(e.Target.Id))).OrderBy(e => e.Label, StringComparer.CurrentCultureIgnoreCase).ToList();
         }
-
-        private static void SetRule(Dictionary<string, RuleChoice> rules, string id, RuleChoice choice)
+        private string ResolutionText(QualityCatalogEntry e)
         {
-            if (choice == RuleChoice.Inherit) rules.Remove(id); else rules[id] = choice;
+            var r = Resolve(e); string source = r.ReasonKind == "Group" ? GroupLabel(r.SourceId) : r.ReasonKind == "Category" ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(r.SourceId)?.LabelCap.ToString() ?? r.SourceId) : T(r.ReasonKind);
+            string status = U(participation ? (r.Enabled ? "EffectsAllowed" : "EffectsBlocked") : (r.Enabled ? "QualityYes" : "QualityNo")); if (!participation && e.NativeQuality && !r.Enabled) status = U("NativeKept"); return status + " / " + source;
         }
-
-        private void ResetScope()
+        private void DrawItems(Rect rect)
         {
-            foreach (var entry in filtered) Rules.Items.Remove(entry.Target.Id);
-            if (category.Length > 0) Rules.Categories.Remove(category);
-            if (group.Length > 0)
+            var s = Browser; const float row = 48; if (s.Filtered.Count == 0) { Widgets.Label(rect, U("NoResults", ScopeName)); return; }
+            var view = new Rect(0, 0, rect.width - 18, s.Filtered.Count * row); Widgets.BeginScrollView(rect, ref s.ListScroll, view);
+            int first = Math.Max(0, (int)(s.ListScroll.y / row)), last = Math.Min(s.Filtered.Count, first + (int)(rect.height / row) + 2);
+            for (int i = first; i < last; i++)
             {
-                var defaults = new QualityConfiguration();
-                Rules.Groups[group] = (participation ? defaults.Participation : defaults.Assignment).Groups[group];
-            }
-            QualitySettingsState.Changed();
-        }
-
-        private void DrawEffects(Rect rect)
-        {
-            float third = (rect.width - 12) / 3;
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y, third, 30), T("Rules"))) { effects = false; return; }
-            if (Widgets.ButtonText(new Rect(rect.x + third + 6, rect.y, third, 30), T("MildPreset"))) PreviewPreset();
-            if (Widgets.ButtonText(new Rect(rect.x + 2 * (third + 6), rect.y, third, 30), T("ProgressionPreset"))) PreviewProgression();
-            rect.y += 38; rect.height -= 38;
-            var ids = (EffectId[])Enum.GetValues(typeof(EffectId));
-            var view = new Rect(0, 0, rect.width - 18, ids.Length * 132 + 95);
-            Widgets.BeginScrollView(rect, ref effectScroll, view);
-            float y = 0;
-            foreach (var id in ids)
-            {
-                var effect = Draft.Effects[id.ToString()]; bool before = effect.Enabled;
-                Widgets.CheckboxLabeled(new Rect(0, y, view.width, 28), T("Effect." + id), ref effect.Enabled);
-                if (before != effect.Enabled) QualitySettingsState.Changed();
-                Widgets.Label(new Rect(0, y + 29, view.width, 27), (QualityEffectCatalog.IsCost(id) ? T("CostCurve") : T("BenefitCurve")) + " / " + QualityEffects.Reason(id));
-                float width = view.width / 7;
-                for (int tier = 0; tier < 7; tier++)
-                {
-                    int index = tier;
-                    Widgets.Label(new Rect(width * tier, y + 58, width, 25), ((QualityCategory)tier).GetLabel());
-                    FloatField(new Rect(width * tier, y + 85, width - 6, 28), "effect:" + id + ":" + tier, effect.Factors[tier], v => effect.Factors[index] = v);
-                }
-                y += 132;
-            }
-            Widgets.Label(new Rect(0, y, view.width * .7f, 28), T("LinkedBonusCap"));
-            FloatField(new Rect(view.width * .72f, y, view.width * .25f, 28), "linkedBonus", Draft.LinkedFurnitureBonusCap, v => Draft.LinkedFurnitureBonusCap = v); y += 36;
-            Widgets.Label(new Rect(0, y, view.width * .7f, 28), T("LinkedPenaltyCap"));
-            FloatField(new Rect(view.width * .72f, y, view.width * .25f, 28), "linkedPenalty", Draft.LinkedFurniturePenaltyCap, v => Draft.LinkedFurniturePenaltyCap = v);
-            Widgets.EndScrollView();
-        }
-
-        private void PreviewProgression()
-        {
-            string preview = T("ProgressionPreview") + "\n" + QualityProgression.HygieneStatus.Translate() + "\n" +
-                string.Join("\n", QualityProgression.Exclusions.Select(d => d.LabelCap + " [" + d.defName + "]")) + "\n" +
-                string.Join("\n", QualityNativeOutput.Status) + "\n" +
-                string.Join("\n", Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(QualityEffects.Available)
-                    .Select(id => T("Effect." + id) + ": " + string.Join(" / ", QualityEffectCatalog.Curve(id).Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))));
-            Confirm(preview, () =>
-            {
-                QualityProgression.Apply(Draft);
-                foreach (string key in buffers.Keys.Where(k => k.StartsWith("effect:")).ToArray()) buffers.Remove(key);
-                QualitySettingsState.Changed();
-            });
-        }
-
-        private void PreviewPreset()
-        {
-            string preview = T("PresetPreview") + "\n" + string.Join("\n", Enum.GetValues(typeof(EffectId)).Cast<EffectId>()
-                .Select(id => T("Effect." + id) + ": " + string.Join(" / ", QualityEffectCatalog.Curve(id).Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))));
-            Confirm(preview, () =>
-            {
-                foreach (EffectId id in Enum.GetValues(typeof(EffectId))) Draft.Effects[id.ToString()] = new EffectSettings { Enabled = true, Factors = QualityEffectCatalog.Curve(id) };
-                foreach (string key in buffers.Keys.Where(k => k.StartsWith("effect:")).ToArray()) buffers.Remove(key);
-                QualitySettingsState.Changed();
-            });
-        }
-
-        private void DrawProduction(Rect rect)
-        {
-            var fields = typeof(ProductionSettings).GetFields().Where(f => !QualitySettingsState.GroupFields.Values.Contains(f.Name)).ToArray();
-            var view = new Rect(0, 0, rect.width - 18, fields.Length * 38);
-            Widgets.BeginScrollView(rect, ref productionScroll, view);
-            float y = 0;
-            foreach (var field in fields)
-            {
-                string label = T("Production." + field.Name); object value = field.GetValue(Draft.Production);
-                if (value is bool boolean)
-                {
-                    bool before = boolean;
-                    Widgets.CheckboxLabeled(new Rect(0, y, view.width, 30), label, ref boolean);
-                    if (before != boolean) { field.SetValue(Draft.Production, boolean); QualitySettingsState.Changed(); }
-                }
-                else
-                {
-                    Widgets.Label(new Rect(0, y, view.width * .62f, 30), label);
-                    if (value is int tier)
-                    {
-                        if (Widgets.ButtonText(new Rect(view.width * .64f, y, view.width * .36f, 30), ((QualityCategory)tier).GetLabel()))
-                            Find.WindowStack.Add(new FloatMenu(Enumerable.Range(0, 7).Select(q => new FloatMenuOption(((QualityCategory)q).GetLabel(), () => { field.SetValue(Draft.Production, q); QualitySettingsState.Changed(); })).ToList()));
-                    }
-                    else FloatField(new Rect(view.width * .64f, y, view.width * .36f, 30), "production:" + field.Name, (float)value, v => field.SetValue(Draft.Production, v));
-                }
-                y += 38;
+                var e = s.Filtered[i]; float y = i * row; bool check = s.Selected.Contains(e.Target.Id), before = check;
+                if (check) Widgets.DrawHighlightSelected(new Rect(0, y, view.width, row)); Widgets.CheckboxLabeled(new Rect(0, y + 9, 28, 28), "", ref check);
+                if (check != before) { s.SelectionRevision++; if (check) s.Selected.Add(e.Target.Id); else s.Selected.Remove(e.Target.Id); if (s.Reviewing && s.Selected.Count == 0) ReviewSelected(); }
+                if (Widgets.ButtonText(new Rect(34, y + 2, view.width * .43f - 34, row - 4), e.Label)) Find.WindowStack.Add(new Window_QualityItem(this, e));
+                Widgets.Label(new Rect(view.width * .45f, y + 3, view.width * .55f, row - 4), ResolutionText(e)); TooltipHandler.TipRegion(new Rect(30, y, view.width - 30, row), e.Target.Id + "\n" + e.Source + "\n" + (e.NativeQuality ? T("NativeProtected") : ""));
             }
             Widgets.EndScrollView();
         }
-
+        private static void SetRule(Dictionary<string, RuleChoice> rules, string id, RuleChoice choice) { if (choice == RuleChoice.Inherit) rules.Remove(id); else rules[id] = choice; }
         private void FloatField(Rect rect, string key, float value, Action<float> set)
         {
             if (!buffers.TryGetValue(key, out string text)) text = value.ToString("R", CultureInfo.InvariantCulture);
             string edited = Widgets.TextField(rect, text); buffers[key] = edited;
-            if (edited == text) return;
-            if (float.TryParse(edited, NumberStyles.Float, CultureInfo.InvariantCulture, out float number)) set(number);
-            QualitySettingsState.Changed();
-        }
-        private static bool ValidBuffer(string value) => float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float number) && !float.IsNaN(number) && !float.IsInfinity(number);
-
-        private void DrawCompatibility(Rect rect)
-        {
-            if (compatibilityLines == null || compatibilityRevision != QualitySettingsState.Revision)
+            bool valid = BufferIsValid(key, edited, out float number);
+            if (!valid)
             {
-                var lines = new List<string> { T("CompatibilityIntro"), T("StorageOmitted"), T("BionicsDeferred"), T("ProgressionStatus"), QualityProgression.HygieneStatus.Translate().ToString(), T("PatchStatusHelp"), T("ImproveThisUnavailable") };
-                lines.AddRange(QualityNativeOutput.Status);
-                lines.AddRange(QualityPatchUtility.Statuses.OrderBy(p => p.Key).Select(p => p.Key + ": " + T(p.Value ? "PatchVerified" : "NativeFallback")));
-                lines.AddRange(Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Select(id => T("Effect." + id) + ": " + (QualityEffects.Available(id) ? T("Available") : T("Unavailable")) + " / " + QualityEffects.Reason(id)));
-                lines.Add(T("InactiveLegacy") + ": " + Draft.InactiveLegacy.Count);
-                lines.AddRange(Draft.InactiveLegacy.OrderBy(p => p.Key).Select(p => p.Key + ": " + ChoiceLabel(p.Value ? RuleChoice.Include : RuleChoice.Exclude)));
-                compatibilityLines = lines;
-                compatibilityRevision = QualitySettingsState.Revision;
+                var old = GUI.color; var font = Text.Font; GUI.color = new Color(1f, .65f, .6f); Text.Font = GameFont.Tiny;
+                Widgets.Label(new Rect(rect.x, rect.yMax + 1, rect.width, 18), U("FieldRange", RangeHint(key))); GUI.color = old; Text.Font = font;
+                TooltipHandler.TipRegion(rect, U("FieldRange", RangeHint(key)) + " " + U("LastValid"));
             }
-            var linesToDraw = compatibilityLines;
-            var view = new Rect(0, 0, rect.width - 18, linesToDraw.Count * 46 + 40);
-            Widgets.BeginScrollView(rect, ref compatibilityScroll, view);
-            int first = Math.Max(0, (int)(compatibilityScroll.y / 46)), last = Math.Min(linesToDraw.Count, first + (int)(rect.height / 46) + 2);
-            for (int i = first; i < last; i++) Widgets.Label(new Rect(0, i * 46, view.width, 44), linesToDraw[i]);
-            if (Draft.InactiveLegacy.Count > 0 && Widgets.ButtonText(new Rect(0, linesToDraw.Count * 46, view.width, 32), T("RecoverLegacy")))
-                Confirm(T("RecoverConfirm"), () =>
-                {
-                    foreach (var item in Draft.InactiveLegacy)
-                    {
-                        string id = item.Key.Substring(item.Key.IndexOf(':') + 1);
-                        Draft.Assignment.Items[id] = item.Value ? RuleChoice.Include : RuleChoice.Exclude;
-                    }
-                    QualitySettingsState.Changed();
-                });
-            Widgets.EndScrollView();
+            if (edited == text) return;
+            if (valid && number != value) { RememberDraft(); set(number); DraftChanged(); }
+        }
+        private static string RangeHint(string key) => QualityNumericRange.ForInput(key).Hint;
+        private static bool BufferIsValid(string key, string text, out float number) => QualityNumericRange.ForInput(key).TryParse(text, out number);
+        private sealed class Window_QualityItem : Window
+        {
+            private readonly Window_QualityOptions owner; private readonly QualityCatalogEntry entry;
+            public override Vector2 InitialSize => new Vector2(760, 470);
+            public Window_QualityItem(Window_QualityOptions owner, QualityCatalogEntry entry) { this.owner = owner; this.entry = entry; doCloseX = true; forcePause = true; absorbInputAroundWindow = true; }
+            public override void DoWindowContents(Rect rect)
+            {
+                Widgets.Label(new Rect(0, 0, rect.width, 34), entry.Label + " / " + entry.Source); Widgets.Label(new Rect(0, 42, rect.width, 58), owner.ResolutionText(entry)); float w = (rect.width - 16) / 3;
+                foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice))) { var captured = choice; if (Widgets.ButtonText(new Rect((int)choice * (w + 8), 105, w, 32), owner.RuleText(choice, true))) { if (RuleChanges(owner.Rules.Items, entry.Target.Id, captured)) { owner.RememberDraft(); SetRule(owner.Rules.Items, entry.Target.Id, captured); owner.DraftChanged(); } } }
+                Widgets.Label(new Rect(0, 147, rect.width, 54), owner.participation ? T("NeedsQuality") : T("NativeProtected"));
+                if (owner.participation && Widgets.ButtonText(new Rect(0, 205, rect.width, 30), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry));
+
+                if (Widgets.ButtonText(new Rect(rect.width - 120, rect.height - 34, 120, 32), U("Done"))) Close();
+            }
+        }
+        private sealed class Window_QualitySource : Window
+        {
+            private string search = ""; private Vector2 scroll; private readonly Action<string> choose; private readonly string[] sources;
+            public override Vector2 InitialSize => new Vector2(620, 600);
+            public Window_QualitySource(Action<string> choose) { this.choose = choose; sources = QualityCatalog.Entries.Select(e => e.Source).Distinct().OrderBy(s => s).ToArray(); doCloseX = true; forcePause = true; absorbInputAroundWindow = true; }
+            public override void DoWindowContents(Rect rect)
+            {
+                Widgets.Label(new Rect(0, 0, rect.width, 30), U("FindMod")); search = Widgets.TextField(new Rect(0, 34, rect.width, 30), search); if (Widgets.ButtonText(new Rect(0, 72, rect.width, 30), U("AllMods"))) { choose(""); Close(); }
+                var matches = sources.Where(s => s.IndexOf(search.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0).ToArray(); var view = new Rect(0, 0, rect.width - 18, matches.Length * 36); Widgets.BeginScrollView(new Rect(0, 110, rect.width, rect.height - 114), ref scroll, view); for (int i = 0; i < matches.Length; i++) if (Widgets.ButtonText(new Rect(0, i * 36, view.width, 32), matches[i])) { choose(matches[i]); Close(); }
+                Widgets.EndScrollView();
+            }
         }
     }
-
     internal sealed class Window_QualityClose : Window
     {
-        private readonly Window_QualityOptions owner;
-        public override Vector2 InitialSize => new Vector2(600, 200);
-        public Window_QualityClose(Window_QualityOptions owner)
-        {
-            this.owner = owner;
-            forcePause = true; absorbInputAroundWindow = true; doCloseX = true;
-        }
+        private readonly Window_QualityOptions owner; public override Vector2 InitialSize => new Vector2(600, 200);
+        public Window_QualityClose(Window_QualityOptions owner) { this.owner = owner; forcePause = true; absorbInputAroundWindow = true; doCloseX = true; }
         public override void DoWindowContents(Rect rect)
         {
-            Widgets.Label(new Rect(0, 0, rect.width, 70), "QEverything.Options.ClosePrompt".Translate());
-            float width = (rect.width - 16) / 3;
-            if (Widgets.ButtonText(new Rect(0, 85, width, 40), "QEverything.Options.Save".Translate())) { Close(); owner.Finish(true); }
-            if (Widgets.ButtonText(new Rect(width + 8, 85, width, 40), "QEverything.Options.Discard".Translate())) { Close(); owner.Finish(false); }
-            if (Widgets.ButtonText(new Rect(2 * (width + 8), 85, width, 40), "QEverything.Options.Continue".Translate())) Close();
+            Widgets.Label(new Rect(0, 0, rect.width, 70), "QEverything.Options.ClosePrompt".Translate()); float w = (rect.width - 16) / 3;
+            if (Widgets.ButtonText(new Rect(0, 85, w, 40), "QEverything.Options.Save".Translate())) { Close(); owner.Finish(true); }
+            if (Widgets.ButtonText(new Rect(w + 8, 85, w, 40), "QEverything.Options.Discard".Translate())) { Close(); owner.Finish(false); }
+            if (Widgets.ButtonText(new Rect(2 * (w + 8), 85, w, 40), "QEverything.Options.Continue".Translate())) Close();
         }
     }
 }

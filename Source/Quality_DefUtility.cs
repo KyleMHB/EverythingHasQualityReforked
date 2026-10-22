@@ -27,8 +27,6 @@ namespace QualityEverything
     internal static class QualityDefUtility
     {
         private static readonly ThingCategoryDef BuildingsSecurityCategory = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("BuildingsSecurity");
-        private static readonly ThingCategoryDef BuildingsFurnitureCategory = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("BuildingsFurniture");
-        private static readonly ThingCategoryDef BuildingsProductionCategory = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("BuildingsProduction");
         private static readonly ThingCategoryDef GrenadesCategory = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("Grenades");
 
         public static bool HasCategory(ThingDef def, ThingCategoryDef category)
@@ -39,18 +37,6 @@ namespace QualityEverything
         public static bool IsExcludedFromQuality(ThingDef def)
         {
             return def == null || def.plant != null || def.IsCorpse || def.race != null;
-        }
-
-        public static bool IsBuildingFurnitureOrProduction(ThingDef def)
-        {
-            return HasCategory(def, BuildingsFurnitureCategory)
-                || HasCategory(def, BuildingsProductionCategory)
-                || HasCategory(def, ThingCategoryDefOf.BuildingsArt);
-        }
-
-        public static bool IsFoodPartition(ThingDef def)
-        {
-            return def != null && !def.IsDrug && def.IsNutritionGivingIngestible;
         }
 
         public static bool IsWeaponLike(ThingDef def)
@@ -67,27 +53,6 @@ namespace QualityEverything
                 && def.Claimable
                 && !def.IsBlueprint
                 && !def.IsFrame;
-        }
-
-        public static bool IsOtherCustomizationCandidate(ThingDef def)
-        {
-            if (def == null)
-            {
-                return false;
-            }
-
-            if (!(HasCategory(def, ThingCategoryDefOf.Manufactured) || def.IsDrug || def.IsMedicine || def.IsIngestible))
-            {
-                return false;
-            }
-
-            return !def.IsStuff
-                && !def.IsCorpse
-                && def.plant == null
-                && !def.IsShell
-                && !def.IsApparel
-                && !IsWeaponLike(def)
-                && def.building == null;
         }
 
         public static QualityBucket GetBucket(ThingDef def)
@@ -240,19 +205,6 @@ namespace QualityEverything
             }
         }
 
-        private static bool GetIndividualOrCategorySetting(
-            bool useIndividualSettings,
-            Dictionary<string, bool> dict,
-            string defName,
-            bool categoryDefault)
-        {
-            if (!useIndividualSettings)
-            {
-                return categoryDefault;
-            }
-
-            return dict.TryGetValue(defName, out bool enabled) && enabled;
-        }
     }
 
     internal static class QualityCompSync

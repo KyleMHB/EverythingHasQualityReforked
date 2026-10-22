@@ -19,7 +19,7 @@ if (Test-Path -LiteralPath (Join-Path $target 'About/About.xml')) {
 if ($source -eq $target -or $source.StartsWith($target + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Destination overlaps the prepared package.' }
 if (Test-Path -LiteralPath $target) {
     foreach ($entry in Get-ChildItem -LiteralPath $target -Force) {
-        if ($entry.Name -notin @('About', 'Common', '1.6', '1.7', 'Assemblies', 'LoadFolders.xml')) {
+        if ($entry.Name -notin @('About', 'Common', '1.6', '1.7', 'Assemblies', 'LoadFolders.xml', 'LICENSE', 'build-manifest.json')) {
             throw "Destination contains an unowned entry: $($entry.Name). Use a clean installation folder."
         }
     }
@@ -31,7 +31,7 @@ foreach ($owned in @('About', 'Common', '1.6', '1.7', 'Assemblies')) {
     if (-not $ownedPath.StartsWith($target + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid owned destination.' }
     if (Test-Path -LiteralPath $ownedPath) { Remove-Item -LiteralPath $ownedPath -Recurse -Force }
 }
-foreach ($entry in @('About', 'Common', '1.6', '1.7', 'LoadFolders.xml')) {
+foreach ($entry in @('About', 'Common', '1.6', '1.7', 'LoadFolders.xml', 'LICENSE', 'build-manifest.json')) {
     Copy-Item -LiteralPath (Join-Path $source $entry) -Destination $target -Recurse -Force
 }
 & (Join-Path $PSScriptRoot 'validate-package.ps1') -PackagePath $target

@@ -1,9 +1,33 @@
 param([Parameter(Mandatory)][string]$PackagePath)
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path -LiteralPath $PackagePath).Path
-$allowedRoots = @('About', 'Common', '1.6', '1.7', 'LoadFolders.xml')
+$allowedRoots = @('About', 'Common', '1.6', '1.7', 'LoadFolders.xml', 'LICENSE', 'build-manifest.json')
 foreach ($entry in Get-ChildItem -LiteralPath $root -Force) {
     if ($entry.Name -notin $allowedRoots) { throw "Unexpected package entry: $($entry.Name)" }
+}
+$licensePath = Join-Path $root 'LICENSE'
+if (-not (Test-Path -LiteralPath $licensePath -PathType Leaf) -or
+    (Get-FileHash -LiteralPath $licensePath -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'LICENSE') -Algorithm SHA256).Hash) {
+    throw 'Package must include the complete inherited LICENSE notice.'
+}
+$manifest = Get-Content -LiteralPath (Join-Path $root 'build-manifest.json') -Raw | ConvertFrom-Json
+if ($manifest.schemaVersion -ne 1 -or $manifest.source.commit -notmatch '^[a-f0-9]{40}$' -or $manifest.source.dirty -isnot [bool] -or
+    -not $manifest.sdk -or -not $manifest.references.rimWorld16 -or -not $manifest.references.harmony -or
+    @($manifest.source.inputs).Count -eq 0 -or @($manifest.references.managed17).Count -ne 3) {
+    throw 'Invalid or incomplete build provenance.'
+}
+$expectedFiles = @{}
+foreach ($entry in $manifest.files) {
+    if (-not $entry.path -or $entry.sha256 -notmatch '^[A-Fa-f0-9]{64}$' -or $expectedFiles.ContainsKey($entry.path)) { throw 'Invalid package file inventory.' }
+    $expectedFiles[$entry.path] = $entry.sha256
+}
+$actualFiles = @(Get-ChildItem -LiteralPath $root -File -Recurse -Force | Where-Object { $_.FullName -ne (Join-Path $root 'build-manifest.json') })
+if ($actualFiles.Count -ne $expectedFiles.Count) { throw 'Package file inventory does not match its manifest.' }
+foreach ($file in $actualFiles) {
+    $relative = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
+    if (-not $expectedFiles.ContainsKey($relative) -or (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash -ne $expectedFiles[$relative]) {
+        throw "Package file differs from its build manifest: $relative"
+    }
 }
 [xml]$folders = Get-Content -LiteralPath (Join-Path $root 'LoadFolders.xml') -Raw
 foreach ($version in @('1.6', '1.7')) {
@@ -27,4 +51,4 @@ foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse -Force) {
 }
 [xml]$about = Get-Content -LiteralPath (Join-Path $root 'About/About.xml') -Raw
 if ('brrainz.harmony' -notin @($about.ModMetaData.modDependencies.li.packageId)) { throw 'External Harmony dependency is missing.' }
-Write-Output 'Package layout, assembly targets, dependency metadata and XML are valid.'
+Write-Output 'Package layout, assembly targets, dependency metadata, license, file hashes and XML are valid.'

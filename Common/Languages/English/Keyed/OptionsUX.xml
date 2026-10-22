@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Options.UX.Assignment>Quality assignment</QEverything.Options.UX.Assignment>
+  <QEverything.Options.UX.Effects>Quality effects</QEverything.Options.UX.Effects>
+  <QEverything.Options.UX.ChooseEffects>Choose effects and strength</QEverything.Options.UX.ChooseEffects>
+  <QEverything.Options.UX.EffectItems>Items these effects apply to</QEverything.Options.UX.EffectItems>
+  <QEverything.Options.UX.Undo>Undo change</QEverything.Options.UX.Undo>
+  <QEverything.Options.UX.AllItems>All items</QEverything.Options.UX.AllItems>
+  <QEverything.Options.UX.DefaultYes>Yes, by default</QEverything.Options.UX.DefaultYes>
+  <QEverything.Options.UX.DefaultNo>No, by default</QEverything.Options.UX.DefaultNo>
+  <QEverything.Options.UX.ApplyEffects>Apply enabled effects</QEverything.Options.UX.ApplyEffects>
+  <QEverything.Options.UX.GiveQuality>Give quality</QEverything.Options.UX.GiveQuality>
+  <QEverything.Options.UX.NoQuality>Donâ€™t add quality</QEverything.Options.UX.NoQuality>
+  <QEverything.Options.UX.AllowEffects>Apply enabled effects</QEverything.Options.UX.AllowEffects>
+  <QEverything.Options.UX.BlockEffects>Exclude from effects</QEverything.Options.UX.BlockEffects>
+  <QEverything.Options.UX.UseCategory>Use category setting</QEverything.Options.UX.UseCategory>
+  <QEverything.Options.UX.UseParent>Use parent setting</QEverything.Options.UX.UseParent>
+  <QEverything.Options.UX.CustomItems>Show custom items</QEverything.Options.UX.CustomItems>
+  <QEverything.Options.UX.ScopeRuleHelp>Item exceptions and deeper category rules override this default.</QEverything.Options.UX.ScopeRuleHelp>
+  <QEverything.Options.UX.TargetsHelp>Enabled effects apply to eligible items. Exclude items here to make exceptions; this does not give them quality.</QEverything.Options.UX.TargetsHelp>
+  <QEverything.Options.UX.AssignmentHelp>Choose where this mod gives quality. Existing vanilla and other-mod quality is preserved.</QEverything.Options.UX.AssignmentHelp>
+  <QEverything.Options.UX.SearchIn>Search item names in: {0}</QEverything.Options.UX.SearchIn>
+  <QEverything.Options.UX.ClearSearch>Clear</QEverything.Options.UX.ClearSearch>
+  <QEverything.Options.UX.Mod>Mod: {0}</QEverything.Options.UX.Mod>
+  <QEverything.Options.UX.AllMods>All mods</QEverything.Options.UX.AllMods>
+  <QEverything.Options.UX.Show>Show: {0}</QEverything.Options.UX.Show>
+  <QEverything.Options.UX.CustomOnly>Only customized</QEverything.Options.UX.CustomOnly>
+  <QEverything.Options.UX.SelectResults>Select all {0} results</QEverything.Options.UX.SelectResults>
+  <QEverything.Options.UX.AllCategories>Search all categories</QEverything.Options.UX.AllCategories>
+  <QEverything.Options.UX.ClearFilters>Clear all filters</QEverything.Options.UX.ClearFilters>
+  <QEverything.Options.UX.Selected>{0} selected Â· {1} hidden by filters</QEverything.Options.UX.Selected>
+  <QEverything.Options.UX.BackResults>Back to results</QEverything.Options.UX.BackResults>
+  <QEverything.Options.UX.ReviewSelected>Review selected</QEverything.Options.UX.ReviewSelected>
+  <QEverything.Options.UX.ClearSelection>Clear selection</QEverything.Options.UX.ClearSelection>
+  <QEverything.Options.UX.SelectionHelp>Tick items to select them. Selection is kept across searches and categories.</QEverything.Options.UX.SelectionHelp>
+  <QEverything.Options.UX.Applied>Updated {0} selected item rules in the draft. Selection kept.</QEverything.Options.UX.Applied>
+  <QEverything.Options.UX.CategoryTree>Category branches</QEverything.Options.UX.CategoryTree>
+  <QEverything.Options.UX.EffectsAllowed>Effects allowed</QEverything.Options.UX.EffectsAllowed>
+  <QEverything.Options.UX.EffectsBlocked>Effects excluded</QEverything.Options.UX.EffectsBlocked>
+  <QEverything.Options.UX.QualityYes>Quality managed by mod</QEverything.Options.UX.QualityYes>
+  <QEverything.Options.UX.QualityNo>Quality not added</QEverything.Options.UX.QualityNo>
+  <QEverything.Options.UX.NativeKept>Native quality kept</QEverything.Options.UX.NativeKept>
+  <QEverything.Options.UX.NoResults>No matching item names in {0}. Try Search all categories or Clear all filters. Your selection is kept.</QEverything.Options.UX.NoResults>
+  <QEverything.Options.UX.SupportInfo>Adapter information (not a guarantee for every item)</QEverything.Options.UX.SupportInfo>
+  <QEverything.Options.UX.Done>Done</QEverything.Options.UX.Done>
+  <QEverything.Options.UX.FindMod>Search source mods (filters items; does not enable or disable mods)</QEverything.Options.UX.FindMod>
+  <QEverything.Options.UX.AlreadyApplied>Selected items already use that setting. No changes made.</QEverything.Options.UX.AlreadyApplied>
+  <QEverything.Options.UX.ScopeSummary>{0}/{1} included · {2} item exceptions · {3} child-category rules</QEverything.Options.UX.ScopeSummary>
+  <QEverything.Options.UX.ParentSummary>Parent: {0} · {1} item exceptions · {2} category rules</QEverything.Options.UX.ParentSummary>
+  <QEverything.Options.UX.FieldRange>Use {0}</QEverything.Options.UX.FieldRange>
+  <QEverything.Options.UX.LastValid>Previous valid value is kept until corrected.</QEverything.Options.UX.LastValid>
+  <QEverything.Options.UX.MixedParent>varies by item group</QEverything.Options.UX.MixedParent>
+</LanguageData>

@@ -26,10 +26,26 @@ class SettingsChecks
             Check(!resolution.Enabled && resolution.Conflict && resolution.SourceId == "ZExclude", "exclude tie and truthful reason independent of order");
         }
         var defaults = new QualityConfiguration();
+        foreach (string field in new[] { "tableFactor", "awfulSupplyFactor", "legSupplyFactor" })
+            foreach (float value in new[] { -1f, 0f, 1f, 10f, 10.01f, 11f, float.NaN, float.PositiveInfinity })
+            {
+                var draft = new QualityConfiguration();
+                typeof(ProductionSettings).GetField(field).SetValue(draft.Production, value);
+                bool inputValid = QualityNumericRange.ForInput("production:" + field).Contains(value);
+                Check(inputValid == !draft.Validate().Contains(field), "inline and Save agree for " + field + " = " + value);
+            }
+        Check(!QualityNumericRange.ForInput("production:awfulSupplyFactor").TryParse("", out _)
+            && !QualityNumericRange.Effect.TryParse("-", out _)
+            && !QualityNumericRange.Effect.TryParse("NaN", out _)
+            && QualityNumericRange.Effect.TryParse("0.01", out _), "partial and invalid input stays outside the draft");
         var nativeWeapon = new RuleTarget("NativeGun", "Weapon", true, new CategoryPath[0]);
         Check(!QualityRules.Resolve(nativeWeapon, defaults.Assignment).Enabled && QualityRules.Resolve(nativeWeapon, defaults.Participation).Enabled,
             "native-quality effects participation is independent of assignment defaults");
         Check(defaults.Effects.Values.All(e => !e.Enabled), "fresh effects are disabled");
+        var medium = QualityEffectCatalog.Curve(EffectId.BuildingDurability, true);
+        var mediumCost = QualityEffectCatalog.Curve(EffectId.ConsumerDemand, true);
+        Check(medium[0] == .6f && medium[2] == 1f && medium[6] == 2.5f && medium.Zip(medium.Skip(1), (a, b) => b > a).All(v => v), "medium curve endpoints, neutral Normal and increasing benefits");
+        Check(medium.Zip(mediumCost, (benefit, cost) => Math.Abs(benefit * cost - 1f) < .00001f).All(v => v), "medium costs use reciprocal benefits");
         var legacy = QualityConfiguration.MigrateLegacyXml(@"<ModSettings>
           <useTableQuality>False</useTableQuality><tableFactor>0.7</tableFactor><supplyQuality>False</supplyQuality>
           <minWeaponQuality>1</minWeaponQuality><minWeapoQuality>5</minWeapoQuality><maxWeapoQuality>6</maxWeapoQuality>
@@ -59,6 +75,11 @@ class SettingsChecks
         Check(session.Save().Count == 0 && session.Saved.Production.tableFactor == .2f && session.Active.Production.tableFactor == .7f, "save only changes next-session state");
         session.Draft.Production.tableFactor = .9f; session.Discard();
         Check(session.Draft.Production.tableFactor == .2f, "discard restores saved state");
+        var undoDraft = session.Draft.Clone();
+        undoDraft.Production.tableFactor = .6f;
+        session.ReplaceDraft(undoDraft);
+        undoDraft.Production.tableFactor = .9f;
+        Check(session.Draft.Production.tableFactor == .6f && session.Saved.Production.tableFactor == .2f && session.Active.Production.tableFactor == .7f, "undo replaces only draft and clones its snapshot");
         session.Draft.Production.tableFactor = float.PositiveInfinity;
         Check(session.Save().Count != 0 && session.Saved.Production.tableFactor == .2f, "invalid save leaves saved intact");
         Console.WriteLine("Resolver, migration, roundtrip, validation and draft isolation checks passed.");

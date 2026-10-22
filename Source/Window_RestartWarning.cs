@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +10,7 @@ using Verse;
 
 namespace QualityEverything
 {
+    // Retained for external callers of the old public API. Current options use a close guard.
     public class Window_RestartWarning : Window
     {
         private readonly string label;

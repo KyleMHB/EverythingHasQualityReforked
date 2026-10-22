@@ -1,60 +1,80 @@
 [h1]Description[/h1]
-Everything Has Quality Reforked gives more RimWorld items quality, with inherited category rules, individual exceptions and optional quality effects. It supports RimWorld 1.6 and 1.7 and requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]Harmony[/url] before this mod.
+You choose what gets quality and what that quality does. Configure quality assignment and effects separately for individual items or whole categories. Give granite walls quality, enable durability for them, and leave other items or effects alone.
 
-Cozarkian created Everything Has Quality. pudy248 made the intermediate fork, and KyleMHB maintains this refork.
+Everything has quality and it matters has a revamped settings interface and optional quality effects for RimWorld 1.6 and 1.7.
 
-[h1]Quality rules[/h1]
-Choose defaults for buildings, resources, ingredients, meals, drugs, medicine, apparel, weapons, shells and other eligible items. Set quality bounds and production options for materials, work tables, skills and inspirations.
-
-Use Include, Exclude or Inherit on an item or category branch. An item exception wins over its category. The deepest category rule wins over a broader branch, and equally specific conflicting rules exclude. Excluding assignment leaves quality supplied by the game or another mod intact. Optional effects have their own participation rules.
-
-The options show translated names, source mods and the rule behind each result. Search and filters narrow the list. Bulk actions apply to all matches and leave unrelated rules alone.
-
-[h1]Optional effects[/h1]
-All added effects start disabled on fresh installs and upgrades. Preview the mild or Progression preset before applying it to the draft, or choose effects individually. Native quality curves stay in place.
-
+[h1]Features[/h1]
 [list]
-[*]Separate maximum-hit-point effects for buildings, weapons and apparel.
-[*]Worktable speed, research speed and door opening speed.
-[*]Generator output, power demand, battery capacity and charging efficiency. Charging efficiency cannot exceed 100%.
-[*]Food nutrition and inherent ingestion-poisoning risk. Cooking contamination, saved contamination and rotten-food rules stay native.
-[*]Medicine potency for supported native tending and surgery calculations, within the game's limits.
-[*]Drug benefit strength and duration for supported ordinary go-juice, wake-up, yayo and smokeleaf highs. Support checks reject changed or custom schemas. Selected benefits include positive mood, pain relief, supported capacity/work/focus bonuses, rest and psyfocus gains. Penalties, addiction, overdose and native redosing stay in place.
-[*]Existing equipment bonuses in work/yield, movement/survival, medical, social/trade/animal and psycasting groups. Items do not gain bonuses they lack.
-[*]Separate melee, ranged and turret cooldown effects, plus trap damage. Turret firing uses one cooldown route.
-[*]A capped bed-rest contribution from ordinary unpowered native dressers and end tables. Only one contribution per kind counts. Default total limits are +2 and -0.5 percentage points. Other facilities and the bed's own native quality behavior stay unchanged.
+[*]Configure what gets quality. Set rules for whole groups, categories or individual items.
+[*]Use the revamped interface to search by name, filter by source mod, review selected items and undo draft changes.
+[*]Make quality affect durability, work speed, power, food, medicine, supported drug benefits and combat cooldowns. Choose the effects and their targets.
 [/list]
 
-Storage capacity and installed-bionic effects are omitted. The inspected storage integration needs invasive cache updates, and installed bionics need broader per-part installation/removal support. This mod adds no required framework for either.
+[i]Examples use the Medium preset for added effects. HP is relative to Normal quality. Market value shows the vanilla quality multiplier before caps and rounding, at full condition. Actual trade prices also depend on negotiation and other factors.[/i]
 
-[h1]Production[/h1]
-Material, work-table, skill and inspiration options control generated quality. Colony mechs doing supported work use their fixed mech skill level. Pawns themselves do not receive item quality.
+[h2]Granite walls that take more damage[/h2]
+Building durability enabled. The same granite wall, from Awful to Legendary.
 
-When Resources/Ingredients Affect Quality is enabled, a full fermenting-barrel batch records the stack-weighted quality of accepted wort. Finished beer inherits that quality within its configured bounds. The batch data survives saving, and the barrel's own quality does not affect the result.
+[img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/granite-wall.png[/img]
 
-[h1]Save, restart and removal[/h1]
-Save commits options for the next RimWorld session. Restart RimWorld to activate them. Tab changes do not save. Discard abandons draft edits, and closing with unsaved edits offers Save, Discard or Continue editing.
+[i]Quality affects durability only when you enable that effect for these walls.[/i]
 
-Legacy selections and saved values migrate, including recoverable entries for unavailable mods. New definitions inherit rules. Removing mod-added quality support can discard those item quality values when you later save. Keep a backup before changing support or removing the mod.
+[h2]Assault rifles with shorter cooldowns[/h2]
+Weapon durability and ranged cooldown enabled. Compare recovery between bursts, maximum hit points and market value.
 
-Durability settings preserve absolute hit points and clamp excess when the maximum falls. They do not heal items. Genuine item quality changes preserve condition percentage. Battery capacity changes preserve absolute energy and clamp excess without adding charge.
+[img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/assault-rifle.png[/img]
 
-Existing active supported drug highs retain their saved dose strength/duration after those options are disabled. New doses use the new settings after restart. Uninstalling returns native strength and decay and drops saved surgery medicine corrections. Removal is not lossless.
+[i]Normal cooldown is 1.70 seconds. Aiming time and the interval between shots within a burst are unchanged.[/i]
 
-[h1]Progression and other mods[/h1]
-The explicit Progression preset preserves detected prisoner-jumpsuit and Dubs Bad Hygiene exclusions. Supported native factory and Processor Framework output policies keep their selected fixed-quality behavior. The preset does not change research gates, replaced content or load order. Review its preview and keep your pack's required order.
+[h2]Wooden beds, with their native quality benefits[/h2]
+Building durability enabled. Vanilla rest effectiveness stays in place alongside the added durability effect.
 
-Compatibility options report unavailable adapters and unsupported items. Custom drug consumers, powered/custom furniture and other stat-effect providers need individual assessment. Progression gameplay, startup-cache behavior and multiplayer remain unverified. Quality also separates stacks by tier, so enabling high-volume resources can increase stack counts.
+[img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/wooden-bed.png[/img]
 
-[h1]Credits and license[/h1]
-Thanks to Cozarkian, pudy248 and Harmony authors Brrainz and pardeike. This refork inherits the original Everything Has Quality MIT license.
+[i]Rest effectiveness uses vanilla quality rules. No linked furniture is included.[/i]
+
+[h2]Your rules. A rebuilt interface.[/h2]
+Search · Filter by mod · Review selected · Undo
+
+[img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/quality-settings.jpg[/img]
+
+[h1]How to use[/h1]
+[list]
+[*]Open Mod settings and choose Everything Has Quality.
+[*]Use Quality assignment to choose which eligible items receive quality.
+[*]Use Quality effects to enable effects and select their targets. Preview Mild, Medium or Progression, or configure effects individually.
+[*]Save and restart RimWorld to activate your changes.
+[/list]
+
+[h1]Settings and configuration[/h1]
+Added effects start disabled on new installations and upgrades. Item exceptions override category and group defaults. Batch actions affect selected items, including selections hidden by filters. Review selected lets you check them before applying changes.
+
+Production settings control how materials, work tables, skills and inspirations influence quality. Quality assignment and effect participation have separate rules.
+
+[h1]Requirements and dependencies[/h1]
+Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]Harmony[/url]. Load Harmony before this mod.
+
+[h1]Compatibility and save safety[/h1]
+Excluding an item preserves quality supplied by RimWorld or another mod. The Compatibility page explains unsupported items and effects. Storage capacity and installed-bionic effects are omitted. Multiplayer is unverified.
+
+Quality separates stacks by tier and can increase stack counts. Back up your save before removing quality support or uninstalling. Saved quality values can be lost, and lower durability or battery capacity can clamp excess hit points or charge. See the settings guide for effect limits and removal details.
+
+[h1]Fork history[/h1]
+Cozarkian created Everything Has Quality, and pudy248 continued it in EverythingHasQualityFork. This refork continues that work with a revamped settings interface, configurable assignment rules and optional quality effects.
+
+[h1]Credits[/h1]
+Thanks to Cozarkian, pudy248 and Harmony authors Brrainz and pardeike. KyleMHB maintains this refork.
+
+[h1]License[/h1]
+This refork inherits the original Everything Has Quality MIT license.
 [h1]Links[/h1]
 Support me on Ko-fi. This does not imply endorsement by the original authors.
 
 [url=https://ko-fi.com/I7L525WMJ6][img]https://img.shields.io/badge/Support_me_on_Ko--fi-72a4f2?style=for-the-badge&logo=kofi&logoColor=white[/img][/url]
 [url=https://github.com/KyleMHB/EverythingHasQualityReforked][img]https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url]
 [list]
-[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3710884766]Everything Has Quality Reforked on Steam Workshop[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3710884766]Everything has quality and it matters on Steam Workshop[/url]
+[*][url=https://github.com/KyleMHB/EverythingHasQualityReforked/blob/main/docs/quality-guide.md]Settings and removal guide[/url]
 [*][url=https://github.com/KyleMHB/EverythingHasQualityReforked/issues]Issue tracker[/url]
 [*][url=https://github.com/Cozarkian/EverythingHasQuality]Original Everything Has Quality source[/url]
 [*][url=https://github.com/pudy248/EverythingHasQualityFork]EverythingHasQualityFork source[/url]

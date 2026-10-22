@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.IO;
 using System.Xml.Linq;
@@ -37,9 +37,11 @@ namespace QualityEverything
         }
         public override void DoSettingsWindowContents(Rect rect)
         {
-            Widgets.Label(new Rect(rect.x, rect.y, rect.width, 85), "QEverything.Options.Intro".Translate());
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y + 95, rect.width, 36), "QEverything.Options.Open".Translate())) Find.WindowStack.Add(new Window_QualityOptions());
-            Widgets.Label(new Rect(rect.x, rect.y + 145, rect.width, 65), (QualitySettingsState.RestartPending ? "QEverything.Options.RestartPending" : "QEverything.Options.ActiveSaved").Translate());
+            if (!Find.WindowStack.IsOpen<Window_QualityOptions>())
+            {
+                var host = Find.WindowStack.Windows.OfType<Dialog_ModSettings>().LastOrDefault();
+                Find.WindowStack.Add(new Window_QualityOptions(() => host?.Close()));
+            }
         }
     }
 }
