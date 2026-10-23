@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <QEverything.Options.Intro>Quality rules and production options activate after restarting RimWorld. Open the editor to browse definitions, edit a draft and save changes for the next session.</QEverything.Options.Intro>
-  <QEverything.Options.Open>Open quality options</QEverything.Options.Open>
+  <QEverything.Options.Open>Open quality editor</QEverything.Options.Open>
+  <QEverything.Options.SavedSummary>Saved: {0} of {1} item types have quality; {2} effect switches enabled. Effect availability varies by item and adapter.</QEverything.Options.SavedSummary>
+  <QEverything.Options.RestartAll>All saved changes, including curves and production, take effect after restarting RimWorld.</QEverything.Options.RestartAll>
+  <QEverything.Options.Cancel>Cancel</QEverything.Options.Cancel>
+  <QEverything.Options.EditorTitle>Quality editor</QEverything.Options.EditorTitle>
   <QEverything.Options.RestartPending>Saved changes require a restart.</QEverything.Options.RestartPending>
   <QEverything.Options.ActiveSaved>Active and saved settings match.</QEverything.Options.ActiveSaved>
   <QEverything.Options.DraftPending>Draft has unsaved changes.</QEverything.Options.DraftPending>

@@ -197,6 +197,36 @@ class SettingsChecks
         while (edits.Undo()) undoCount++;
         Check(undoCount == 30 && editsSession.Draft.Production.tableFactor == .04f,
             "editor retains the most recent thirty complete snapshots");
+        var closeSession = new QualityConfigurationSession(defaults);
+        var closeEditor = new QualityEditorActions(closeSession);
+        Check(!closeEditor.NeedsCloseConfirmation, "clean editor closes without a prompt");
+        closeEditor.EditNumber("production:tableFactor", "-", .4f, v => closeSession.Draft.Production.tableFactor = v);
+        Check(closeEditor.NeedsCloseConfirmation
+            && !closeEditor.TryClose(EditorCloseAction.Save, out var closeErrors) && closeErrors.Count > 0,
+            "invalid partial input requires a prompt and cannot close through Save");
+        Check(!closeEditor.TryClose(EditorCloseAction.KeepEditing, out closeErrors)
+            && closeEditor.NumberText("production:tableFactor", .4f) == "-",
+            "keep editing retains partial input");
+        Check(closeEditor.TryClose(EditorCloseAction.Discard, out closeErrors)
+            && !closeEditor.NeedsCloseConfirmation && !closeEditor.HasInvalidInput,
+            "discard closes and clears partial input");
+        closeEditor.Edit(c => c.Production.tableFactor = .9f);
+        Check(!closeEditor.TryClose(EditorCloseAction.Save, out closeErrors, () => { throw new System.IO.IOException("Disk full"); })
+            && closeErrors.Any(e => e.Contains("Disk full")) && closeEditor.NeedsCloseConfirmation
+            && closeSession.Draft.Production.tableFactor == .9f && closeSession.Saved.Production.tableFactor == .4f,
+            "failed close-save retains the draft and a useful persistence error");
+        Check(closeEditor.TryClose(EditorCloseAction.Save, out closeErrors, () => { })
+            && !closeEditor.NeedsCloseConfirmation && closeSession.Saved.Production.tableFactor == .9f
+            && closeSession.Active.Production.tableFactor == .4f,
+            "successful close-save persists next-session settings while leaving Active unchanged");
+        var summary = defaults.Clone();
+        summary.Assignment.Default = true;
+        summary.VanillaRemoval.Default = true;
+        var summaryTarget = new RuleTarget("SummaryGun", "Weapon", true, new CategoryPath[0]);
+        Check(!QualityEditorActions.HasQuality(summary, summaryTarget, true, true)
+            && QualityEditorActions.HasQuality(summary, summaryTarget, true, false)
+            && QualityEditorActions.HasQuality(summary, summaryTarget, false, false),
+            "summary includes native and assigned quality but excludes planned native removal even with assignment enabled");
         Console.WriteLine("Resolver, migration, roundtrip, validation and draft isolation checks passed.");
     }
 }

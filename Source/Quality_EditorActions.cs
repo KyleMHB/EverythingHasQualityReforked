@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace QualityEverything
 {
+    internal enum EditorCloseAction { Save, Discard, KeepEditing }
     // One edit boundary for native controls and standalone behavioral checks.
     internal sealed class QualityEditorActions
     {
@@ -14,6 +15,20 @@ namespace QualityEverything
         private string beforeIdentity, gesture;
         private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
         public bool HasInvalidInput => buffers.Any(p => !QualityNumericRange.ForInput(p.Key).TryParse(p.Value, out _));
+        public bool NeedsCloseConfirmation => HasInvalidInput || session.Draft.Serialize() != session.Saved.Serialize();
+        public static bool HasQuality(QualityConfiguration configuration, RuleTarget target, bool nativeQuality, bool removableVanillaQuality)
+        {
+            if (nativeQuality) return !removableVanillaQuality || !QualityRules.Resolve(target, configuration.VanillaRemoval).Enabled;
+            return QualityRules.Resolve(target, configuration.Assignment).Enabled;
+        }
+        public bool TryClose(EditorCloseAction action, out List<string> errors, Action persist = null)
+        {
+            errors = new List<string>();
+            if (action == EditorCloseAction.KeepEditing) return false;
+            if (action == EditorCloseAction.Discard) { Discard(); return true; }
+            errors = Save(persist);
+            return errors.Count == 0;
+        }
         public string NumberText(string key, float value) => buffers.TryGetValue(key, out var text) ? text : value.ToString("R", CultureInfo.InvariantCulture);
         public bool EditNumber(string key, string text, float value, Action<float> set)
         {
