@@ -10,6 +10,7 @@ namespace QualityEverything
     {
         // Runtime callers only see copies. The startup snapshot is never exposed for mutation.
         private static QualityConfigurationSession session = new QualityConfigurationSession(new QualityConfiguration());
+        public static QualityEditorActions Editor { get; private set; } = new QualityEditorActions(session);
         public static QualityConfiguration Active => session.Active;
         internal static QualityConfiguration ActiveSnapshot => session.ActiveSnapshot;
         public static QualityConfiguration Saved => session.Saved;
@@ -55,18 +56,20 @@ namespace QualityEverything
         {
             Revision++;
         }
-        public static void ReplaceDraft(QualityConfiguration configuration) { session.ReplaceDraft(configuration); Changed(); }
+        public static void ReplaceDraft(QualityConfiguration configuration) { session.ReplaceDraft(configuration); Editor.SynchronizeInputs(); Changed(); }
         public static void Discard()
         {
-            session.Discard();
+            Editor.Discard();
             Changed();
         }
         public static List<string> Save()
         {
-            var errors = session.Save();
-            if (errors.Count != 0) return errors;
-            Mod_QEverything.settings?.Write();
-            Changed();
+            var errors = Editor.Save(() =>
+            {
+                if (Mod_QEverything.settings == null) throw new InvalidOperationException("Settings unavailable");
+                Mod_QEverything.settings.Write();
+            });
+            if (errors.Count == 0) Changed();
             return errors;
         }
         public static void Load(QualityConfiguration configuration)
@@ -96,6 +99,7 @@ namespace QualityEverything
             // belong to the startup configuration, so imported options wait for restart.
             if (runtimeInitialized) session.Import(configuration);
             else session = new QualityConfigurationSession(configuration);
+            Editor = new QualityEditorActions(session);
             foreach (var field in typeof(ProductionSettings).GetFields()) typeof(ModSettings_QEverything).GetField(field.Name)?.SetValue(null, field.GetValue(ActiveSnapshot.Production));
             Changed();
         }

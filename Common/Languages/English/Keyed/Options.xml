@@ -14,6 +14,7 @@
   <QEverything.Options.Continue>Continue editing</QEverything.Options.Continue>
   <QEverything.Options.Close>Close</QEverything.Options.Close>
   <QEverything.Options.RemovalWarning>Removing mod-added quality support can discard those quality values after restart and a later save.</QEverything.Options.RemovalWarning>
+  <QEverything.Options.SaveFailed>Settings could not be saved. Your draft is still available; try saving again.</QEverything.Options.SaveFailed>
   <QEverything.Options.InvalidInput>Enter finite values within the allowed range. Minimum quality cannot exceed maximum quality.</QEverything.Options.InvalidInput>
   <QEverything.Options.ResetAll>Reset everything</QEverything.Options.ResetAll>
   <QEverything.Options.ResetConfirm>Reset all rules, effects and production to passive fresh-install defaults in the draft? Saved settings change only when you save.</QEverything.Options.ResetConfirm>

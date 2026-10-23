@@ -392,10 +392,19 @@ namespace QualityEverything
             Saved = loaded.Clone();
             Draft = loaded.Clone();
         }
-        public List<string> Save()
+        public List<string> Save(Action persist = null)
         {
             var errors = Draft.Validate();
-            if (errors.Count == 0) Saved = Draft.Clone();
+            if (errors.Count != 0) return errors;
+            var previous = Saved;
+            // Verse serializes Saved, so stage it while writing and roll back on failure.
+            Saved = Draft.Clone();
+            try { persist?.Invoke(); }
+            catch (Exception error)
+            {
+                Saved = previous;
+                errors.Add("Persistence: " + error.Message);
+            }
             return errors;
         }
         public void ReplaceDraft(QualityConfiguration configuration) => Draft = configuration.Clone();
