@@ -141,6 +141,62 @@ class SettingsChecks
         Check(session.Draft.Production.tableFactor == .6f && session.Saved.Production.tableFactor == .2f && session.Active.Production.tableFactor == .7f, "undo replaces only draft and clones its snapshot");
         session.Draft.Production.tableFactor = float.PositiveInfinity;
         Check(session.Save().Count != 0 && session.Saved.Production.tableFactor == .2f, "invalid save leaves saved intact");
+        var editsSession = new QualityConfigurationSession(defaults);
+        var edits = new QualityEditorActions(editsSession);
+        edits.Edit(c => c.Production.tableFactor = .8f);
+        Check(edits.CanUndo && edits.Undo() && editsSession.Draft.Production.tableFactor == .4f,
+            "editor edit captures the previous draft before mutation");
+        edits.Edit(c => c.Production.tableFactor = .4f);
+        Check(!edits.CanUndo, "no-op editor actions create no undo step");
+        edits.BeginGesture("worktable");
+        edits.Edit(c => c.Production.tableFactor = .6f);
+        edits.Edit(c => c.Production.tableFactor = .9f);
+        edits.EndGesture();
+        Check(edits.Undo() && editsSession.Draft.Production.tableFactor == .4f && !edits.CanUndo,
+            "completed slider gesture is one undo step from before the first movement");
+        edits.BeginGesture("strength");
+        edits.Edit(c => c.Effects["BuildingDurability"].Factors[2] = 1.5f);
+        edits.Edit(c => c.Effects["BuildingDurability"].Factors[2] = 1f);
+        edits.EndGesture();
+        Check(!edits.CanUndo, "gesture returning to its initial value creates no history");
+        edits.EditNumber("production:tableFactor", "-", .4f, v => editsSession.Draft.Production.tableFactor = v);
+        Check(edits.HasInvalidInput && edits.NumberText("production:tableFactor", .4f) == "-"
+            && editsSession.Draft.Production.tableFactor == .4f && edits.Save().Count > 0,
+            "partial numeric input stays visible and blocks Save without replacing the last valid draft");
+        edits.EditNumber("production:tableFactor", "0.7", .4f, v => editsSession.Draft.Production.tableFactor = v);
+        Check(!edits.HasInvalidInput && edits.Undo() && edits.NumberText("production:tableFactor", .4f) == "0.4",
+            "undo synchronizes exact numeric fields after a recovered edit");
+        edits.Edit(c => c.Production.tableFactor = .8f);
+        edits.Discard();
+        Check(!edits.CanUndo && editsSession.Draft.Production.tableFactor == .4f && !edits.HasInvalidInput,
+            "discard restores saved state and clears edit history and buffers");
+        edits.Edit(c => c.Production.tableFactor = .7f);
+        edits.Reset();
+        Check(editsSession.Draft.Production.tableFactor == .4f && edits.Undo() && editsSession.Draft.Production.tableFactor == .7f,
+            "restoring defaults is undoable");
+        Check(edits.Save(() => { throw new System.IO.IOException("Disk full"); }).Count > 0
+            && editsSession.Draft.Production.tableFactor == .7f && editsSession.Saved.Production.tableFactor == .4f
+            && editsSession.Active.Production.tableFactor == .4f && edits.CanUndo,
+            "persistence failure keeps draft, saved, active and undo intact");
+        Check(edits.Save(() => { }).Count == 0 && editsSession.Saved.Production.tableFactor == .7f
+            && editsSession.Active.Production.tableFactor == .4f && !edits.CanUndo,
+            "successful persistence updates saved only and clears undo");
+        edits.Edit(c => c.Assignment.Items["MissingModItem"] = RuleChoice.Exclude);
+        edits.Edit(c => c.Effects["BuildingDurability"].Factors[2] = 1.234567f);
+        edits.BeginGesture("worktable");
+        edits.Edit(c => c.Production.tableFactor = .1f);
+        edits.Edit(c => c.Production.tableFactor = .2f);
+        edits.EndGesture();
+        Check(edits.Undo() && editsSession.Draft.Production.tableFactor == .7f
+            && editsSession.Draft.Assignment.Items["MissingModItem"] == RuleChoice.Exclude
+            && editsSession.Draft.Effects["BuildingDurability"].Factors[2] == 1.234567f,
+            "gesture undo preserves exact custom Normal and unavailable item rules");
+        edits.Discard();
+        for (int i = 0; i < 35; i++) edits.Edit(c => c.Production.tableFactor = i / 100f);
+        int undoCount = 0;
+        while (edits.Undo()) undoCount++;
+        Check(undoCount == 30 && editsSession.Draft.Production.tableFactor == .04f,
+            "editor retains the most recent thirty complete snapshots");
         Console.WriteLine("Resolver, migration, roundtrip, validation and draft isolation checks passed.");
     }
 }

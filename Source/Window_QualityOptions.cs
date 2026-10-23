@@ -28,8 +28,7 @@ namespace QualityEverything
         private bool participation, pricing, removing, targetView, closing;
         private int page;
         private readonly Action afterClose;
-        private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
-        private readonly Stack<QualityConfiguration> undo = new Stack<QualityConfiguration>();
+        private QualityEditorActions Editor => QualitySettingsState.Editor;
         private Vector2 productionScroll, effectScroll, compatibilityScroll;
         private string error = "";
         private readonly HashSet<string> expanded = new HashSet<string>();
@@ -61,24 +60,25 @@ namespace QualityEverything
         public override void PostClose() { base.PostClose(); afterClose?.Invoke(); }
         public override bool OnCloseRequest()
         {
-            if (!closing && (QualitySettingsState.Dirty || buffers.Any(p => !BufferIsValid(p.Key, p.Value, out _))))
+            if (!closing && (QualitySettingsState.Dirty || Editor.HasInvalidInput))
             { if (!Find.WindowStack.IsOpen<Window_QualityClose>()) Find.WindowStack.Add(new Window_QualityClose(this)); return false; }
             return true;
         }
         internal void Finish(bool save) { if (save && !Save()) return; if (!save) QualitySettingsState.Discard(); closing = true; Close(); }
         private bool Save()
         {
-            if (buffers.Any(p => !BufferIsValid(p.Key, p.Value, out _))) { error = T("InvalidInput"); return false; }
-            var errors = QualitySettingsState.Save(); error = errors.Count == 0 ? T("RestartPending") : T("InvalidInput") + " " + string.Join(", ", errors);
-            if (errors.Count == 0) undo.Clear(); return errors.Count == 0;
+            if (Editor.HasInvalidInput) { error = T("InvalidInput"); return false; }
+            var errors = QualitySettingsState.Save(); error = errors.Count == 0 ? T("RestartPending") : T(errors.Any(e => e.StartsWith("Persistence:", StringComparison.Ordinal)) ? "SaveFailed" : "InvalidInput") + " " + string.Join(", ", errors);
+            return errors.Count == 0;
         }
-        private void RememberDraft() { if (undo.Count >= 30) { var recent = undo.Take(29).Reverse().ToArray(); undo.Clear(); foreach (var item in recent) undo.Push(item); } undo.Push(Draft.Clone()); }
-        private void DraftChanged() { QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = marketValue.FilterKey = vanillaRemoval.FilterKey = null; error = ""; }
+        private void RememberDraft() { Editor.EndGesture(); Editor.BeginEdit(); }
+        private void DraftChanged() { if (Editor.CompleteEdit()) QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = marketValue.FilterKey = vanillaRemoval.FilterKey = null; error = ""; }
         public override void DoWindowContents(Rect rect)
         {
             var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color;
             try
             {
+                if (Event.current.rawType == EventType.MouseUp && Editor.EndGesture()) QualitySettingsState.Changed();
                 Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production"), U("MarketValue"), U("VanillaQuality") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
                 for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
                 participation = page == 1;
@@ -92,9 +92,9 @@ namespace QualityEverything
                 else if (page == 3) DrawRules(body);
                 else if (page == 4) DrawRules(body);
                 Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RemovalWarning")); float w = (rect.width - 32) / 5;
-                if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && undo.Count > 0) { QualitySettingsState.ReplaceDraft(undo.Pop()); buffers.Clear(); DraftChanged(); }
-                if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); buffers.Clear(); undo.Clear(); error = ""; }
-                if (Widgets.ButtonText(new Rect(rect.x + 2 * (w + 8), rect.yMax - 34, w, 32), T("ResetAll"))) Confirm(T("ResetConfirm"), () => { RememberDraft(); Mod_SettingsUtility.RestoreDefaults(); buffers.Clear(); DraftChanged(); });
+                if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && Editor.Undo()) { QualitySettingsState.Changed(); GUI.FocusControl(null); DraftChanged(); }
+                if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); GUI.FocusControl(null); error = ""; }
+                if (Widgets.ButtonText(new Rect(rect.x + 2 * (w + 8), rect.yMax - 34, w, 32), T("ResetAll"))) Confirm(T("ResetConfirm"), () => { Editor.Reset(); QualitySettingsState.Changed(); GUI.FocusControl(null); DraftChanged(); });
                 if (Widgets.ButtonText(new Rect(rect.x + 3 * (w + 8), rect.yMax - 34, w, 32), T("Save"))) Save();
                 if (Widgets.ButtonText(new Rect(rect.x + 4 * (w + 8), rect.yMax - 34, w, 32), T("Close"))) Close();
             }
@@ -265,8 +265,9 @@ namespace QualityEverything
         private static void SetRule(Dictionary<string, RuleChoice> rules, string id, RuleChoice choice) { if (choice == RuleChoice.Inherit) rules.Remove(id); else rules[id] = choice; }
         private void FloatField(Rect rect, string key, float value, Action<float> set)
         {
-            if (!buffers.TryGetValue(key, out string text)) text = value.ToString("R", CultureInfo.InvariantCulture);
-            string edited = Widgets.TextField(rect, text); buffers[key] = edited;
+            string text = Editor.NumberText(key, value);
+            GUI.SetNextControlName("quality-number-" + key);
+            string edited = Widgets.TextField(rect, text);
             bool valid = BufferIsValid(key, edited, out float number);
             if (!valid)
             {
@@ -275,7 +276,7 @@ namespace QualityEverything
                 TooltipHandler.TipRegion(rect, U("FieldRange", RangeHint(key)) + " " + U("LastValid"));
             }
             if (edited == text) return;
-            if (valid && number != value) { RememberDraft(); set(number); DraftChanged(); }
+            if (Editor.EditNumber(key, edited, value, set)) { QualitySettingsState.Changed(); DraftChanged(); }
         }
         private static string RangeHint(string key) => QualityNumericRange.ForInput(key).Hint;
         private static bool BufferIsValid(string key, string text, out float number) => QualityNumericRange.ForInput(key).TryParse(text, out number);

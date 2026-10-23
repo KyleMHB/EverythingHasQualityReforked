@@ -113,7 +113,8 @@ namespace QualityEverything
                 Draft.EnablePresetProduction();
                 if (progression) QualityProgression.Apply(Draft);
                 else foreach (EffectId id in ids) Draft.Effects[id.ToString()] = new EffectSettings { Enabled = true, Factors = QualityEffectCatalog.Curve(id, medium) };
-                foreach (string key in buffers.Keys.Where(k => k.StartsWith("effect:", StringComparison.Ordinal)).ToArray()) buffers.Remove(key);
+                Editor.SynchronizeInputs();
+                GUI.FocusControl(null);
                 DraftChanged();
             }));
         }
@@ -163,7 +164,23 @@ namespace QualityEverything
                         Widgets.Label(new Rect(0, y, view.width * .63f, 30), label);
                         var input = new Rect(view.width * .65f, y, view.width * .35f, 30);
                         if (value is int tier) DrawTier(input, field, tier, 0, 6);
-                        else FloatField(input, "production:" + field.Name, (float)value, v => field.SetValue(Draft.Production, v));
+                        else
+                        {
+                            FloatField(input, "production:" + field.Name, (float)value, v => field.SetValue(Draft.Production, v));
+                            if (field.Name == "tableFactor")
+                            {
+                                var slider = new Rect(0, y + 32, view.width * .61f, 22);
+                                if (Event.current.type == EventType.MouseDown && slider.Contains(Event.current.mousePosition)) Editor.BeginGesture("worktable");
+                                float currentShare = Draft.Production.tableFactor;
+                                float next = Widgets.HorizontalSlider(slider, currentShare, 0f, 1f);
+                                if (next != currentShare)
+                                {
+                                    Editor.Edit(c => c.Production.tableFactor = next);
+                                    Editor.SynchronizeInput("production:tableFactor");
+                                    QualitySettingsState.Changed();
+                                }
+                            }
+                        }
                     }
                     y += value is float ? 58 : 42;
                 }
