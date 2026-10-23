@@ -72,6 +72,16 @@ namespace QualityEverything
             if (errors.Count == 0) Changed();
             return errors;
         }
+        public static bool TryClose(EditorCloseAction action, out List<string> errors)
+        {
+            bool closed = Editor.TryClose(action, out errors, () =>
+            {
+                if (Mod_QEverything.settings == null) throw new InvalidOperationException("Settings unavailable");
+                Mod_QEverything.settings.Write();
+            });
+            if (closed) Changed();
+            return closed;
+        }
         public static void Load(QualityConfiguration configuration)
         {
             var errors = configuration.Validate();
