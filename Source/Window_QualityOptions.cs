@@ -25,7 +25,7 @@ namespace QualityEverything
         private sealed class CategoryNode { public ThingCategoryDef Def; public string Path; public int Depth; public string[] Ancestors; }
         private readonly BrowserState assignment = new BrowserState(), targets = new BrowserState(), marketValue = new BrowserState(), vanillaRemoval = new BrowserState();
         private BrowserState Browser => removing ? vanillaRemoval : pricing ? marketValue : participation ? targets : assignment;
-        private bool participation, pricing, removing, targetView, closing;
+        private bool participation, pricing, removing, closing;
         private int page;
         private QualityEditorActions Editor => QualitySettingsState.Editor;
         private Vector2 productionScroll, effectScroll, compatibilityScroll;
@@ -39,7 +39,7 @@ namespace QualityEverything
         private int countPage = -1;
         private QualityConfiguration Draft => QualitySettingsState.Draft;
         private RuleSet Rules => removing ? Draft.VanillaRemoval : pricing ? Draft.MarketValue : participation ? Draft.Participation : Draft.Assignment;
-        public override Vector2 InitialSize => new Vector2(1120, 820);
+        public override Vector2 InitialSize => new Vector2(Math.Min(1480, Verse.UI.screenWidth - 40), Math.Min(900, Verse.UI.screenHeight - 40));
         private static string T(string key) => ("QEverything.Options." + key).Translate().ToString();
         private static string U(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T("UX." + key), args);
         private static string GroupLabel(string id) => T("Group." + id);
@@ -75,23 +75,20 @@ namespace QualityEverything
         private void DraftChanged() { if (Editor.CompleteEdit()) QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = marketValue.FilterKey = vanillaRemoval.FilterKey = null; error = ""; }
         public override void DoWindowContents(Rect rect)
         {
-            var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color;
+            var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color; var enabled = GUI.enabled;
             try
             {
                 if (Event.current.rawType == EventType.MouseUp && Editor.EndGesture()) QualitySettingsState.Changed();
                 Text.Font = GameFont.Medium; Widgets.Label(new Rect(rect.x, rect.y, rect.width, 32), T("EditorTitle"));
-                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production"), U("MarketValue"), U("VanillaQuality") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
+                Text.Font = GameFont.Small; var titles = new[] { W("ItemsTab"), W("EffectsTab"), W("ProductionTab"), T("Compatibility") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
                 for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y + 36, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
-                participation = page == 1;
-                pricing = page == 3;
-                removing = page == 4;
+                participation = pricing = removing = false;
                 Widgets.Label(new Rect(rect.x, rect.y + 74, rect.width, 28), (Editor.HasInvalidInput ? T("InvalidInput") : QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));
                 var body = new Rect(rect.x, rect.y + 108, rect.width, Math.Max(100, rect.height - 200));
-                if (page == 0) DrawRules(body);
-                else if (page == 1) { float half = (body.width - 8) / 2; if (Widgets.ButtonText(new Rect(body.x, body.y, half, 30), U("ChooseEffects"), drawBackground: targetView)) targetView = false; if (Widgets.ButtonText(new Rect(body.x + half + 8, body.y, half, 30), U("EffectItems"), drawBackground: !targetView)) targetView = true; body.y += 38; body.height -= 38; if (targetView) DrawRules(body); else DrawEffects(body); }
+                if (page == 0) DrawWorkbench(body);
+                else if (page == 1) DrawEffects(body);
                 else if (page == 2) DrawProduction(body);
-                else if (page == 3) DrawRules(body);
-                else if (page == 4) DrawRules(body);
+                else DrawCompatibility(body);
                 Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RestartAll")); float w = (rect.width - 32) / 5;
                 bool guiEnabled = GUI.enabled; GUI.enabled = guiEnabled && Editor.CanUndo;
                 if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && Editor.Undo()) { QualitySettingsState.Changed(); GUI.FocusControl(null); DraftChanged(); }
@@ -101,7 +98,7 @@ namespace QualityEverything
                 if (Widgets.ButtonText(new Rect(rect.x + 3 * (w + 8), rect.yMax - 34, w, 32), T("Save"))) Finish(true);
                 if (Widgets.ButtonText(new Rect(rect.x + 4 * (w + 8), rect.yMax - 34, w, 32), T("Cancel"))) Finish(false);
             }
-            finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; }
+            finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; GUI.enabled = enabled; }
         }
         private static void Confirm(string text, Action action) => Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(text, action));
         private string ScopeName => Browser.Category.Length > 0 ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(Browser.Category)?.LabelCap.ToString() ?? Browser.Category) : Browser.Group.Length > 0 ? GroupLabel(Browser.Group) : U("AllItems");

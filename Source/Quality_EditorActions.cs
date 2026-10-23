@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace QualityEverything
 {
+    internal enum EditorRule { Assignment, Participation, Price, Removal }
     internal enum EditorCloseAction { Save, Discard, KeepEditing }
     // One edit boundary for native controls and standalone behavioral checks.
     internal sealed class QualityEditorActions
@@ -20,6 +21,18 @@ namespace QualityEverything
         {
             if (nativeQuality) return !removableVanillaQuality || !QualityRules.Resolve(target, configuration.VanillaRemoval).Enabled;
             return QualityRules.Resolve(target, configuration.Assignment).Enabled;
+        }
+        public static RuleSet RulesFor(QualityConfiguration configuration, EditorRule rule) => rule == EditorRule.Assignment ? configuration.Assignment : rule == EditorRule.Participation ? configuration.Participation : rule == EditorRule.Price ? configuration.MarketValue : configuration.VanillaRemoval;
+        public static RuleTarget TargetFor(EditorRule rule, RuleTarget target, bool nativeQuality, bool removable)
+        {
+            bool supported = rule == EditorRule.Removal ? removable : rule == EditorRule.Participation ? target.Supported || nativeQuality : rule == EditorRule.Price ? target.Supported && (!nativeQuality || removable) : target.Supported && !nativeQuality;
+            return new RuleTarget(target.Id, target.Group, supported, target.Categories);
+        }
+        public bool SetItemRule(EditorRule rule, RuleTarget target, bool nativeQuality, bool removable, RuleChoice choice)
+        {
+            if (choice != RuleChoice.Inherit && !TargetFor(rule, target, nativeQuality, removable).Supported) return false;
+            EndGesture();
+            return Edit(c => { var items = RulesFor(c, rule).Items; if (choice == RuleChoice.Inherit) items.Remove(target.Id); else items[target.Id] = choice; });
         }
         public bool TryClose(EditorCloseAction action, out List<string> errors, Action persist = null)
         {

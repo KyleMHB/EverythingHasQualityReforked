@@ -6,6 +6,21 @@ class SettingsChecks
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
     static void Main()
     {
+        var itemSession = new QualityConfigurationSession(new QualityConfiguration());
+        var itemEditor = new QualityEditorActions(itemSession);
+        var editable = new RuleTarget("Workbench", "Building", true, new CategoryPath[0]);
+        Check(itemEditor.SetItemRule(EditorRule.Assignment, editable, false, false, RuleChoice.Include), "item menu enables eligible assignment");
+        Check(itemSession.Draft.Assignment.Items[editable.Id] == RuleChoice.Include && !itemSession.Saved.Assignment.Items.ContainsKey(editable.Id) && !itemSession.Active.Assignment.Items.ContainsKey(editable.Id), "item command edits draft only");
+        Check(itemEditor.Undo() && !itemSession.Draft.Assignment.Items.ContainsKey(editable.Id) && !itemEditor.CanUndo, "one item choice produces one undo");
+        Check(!itemEditor.SetItemRule(EditorRule.Assignment, editable, true, true, RuleChoice.Include), "assignment cannot replace native quality");
+        Check(!itemEditor.SetItemRule(EditorRule.Price, editable, true, false, RuleChoice.Exclude) && !itemEditor.SetItemRule(EditorRule.Removal, editable, true, false, RuleChoice.Include), "provider quality and pricing protected at command boundary");
+        Check(itemEditor.SetItemRule(EditorRule.Removal, editable, true, true, RuleChoice.Include) && !QualityEditorActions.HasQuality(itemSession.Draft, editable, true, true), "eligible removal changes draft outcome");
+        Check(itemEditor.SetItemRule(EditorRule.Removal, editable, true, true, RuleChoice.Exclude) && QualityEditorActions.HasQuality(itemSession.Draft, editable, true, true), "always keep restores vanilla draft quality");
+        itemEditor.SetItemRule(EditorRule.Participation, editable, true, true, RuleChoice.Exclude);
+        Check(itemEditor.SetItemRule(EditorRule.Removal, editable, true, true, RuleChoice.Inherit) && !itemSession.Draft.VanillaRemoval.Items.ContainsKey(editable.Id) && itemSession.Draft.Participation.Items.ContainsKey(editable.Id), "use removal rule touches only removal exception");
+        var absent = new RuleTarget("MissingMod", "", false, new CategoryPath[0]);
+        itemSession.Draft.MarketValue.Items[absent.Id] = RuleChoice.Include;
+        Check(!itemEditor.SetItemRule(EditorRule.Price, absent, false, false, RuleChoice.Exclude) && itemEditor.SetItemRule(EditorRule.Price, absent, false, false, RuleChoice.Inherit), "missing definitions allow cleanup but no unsupported writes");
         var rules = new RuleSet();
         rules.Groups["Stuff"] = true;
         rules.Categories["Resources"] = RuleChoice.Include;
