@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Options.UX.MarketValue>Market value</QEverything.Options.UX.MarketValue>
+  <QEverything.Options.UX.ScaleMarketValue>Quality price scaling</QEverything.Options.UX.ScaleMarketValue>
+  <QEverything.Options.UX.MarketValueHelp>Choose where quality changes market value and colony wealth, including eligible vanilla items. Set a global default, then group, category or item overrides. Disabling scaling removes quality premiums and discounts while keeping other price modifiers. Other mods' native quality remains protected. Presets leave these rules unchanged. Save and restart to apply.</QEverything.Options.UX.MarketValueHelp>
+  <QEverything.Options.UX.MarketValueItemHelp>These rules affect quality added by this mod and standard quality on eligible vanilla and expansion items. Other mods' native quality remains protected. Save and restart to apply.</QEverything.Options.UX.MarketValueItemHelp>
+  <QEverything.Options.UX.AllowPriceScaling>Allow price scaling</QEverything.Options.UX.AllowPriceScaling>
+  <QEverything.Options.UX.BlockPriceScaling>Disable price scaling</QEverything.Options.UX.BlockPriceScaling>
+  <QEverything.Options.UX.PriceScalingAllowed>Quality price scaling allowed</QEverything.Options.UX.PriceScalingAllowed>
+  <QEverything.Options.UX.PriceScalingBlocked>Quality price scaling disabled</QEverything.Options.UX.PriceScalingBlocked>
+  <QEverything.Options.UX.NativePriceKept>Other-mod or custom quality pricing protected</QEverything.Options.UX.NativePriceKept>
+</LanguageData>

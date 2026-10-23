@@ -211,22 +211,45 @@ namespace QualityEverything
     {
         // Ownership by reference preserves native/custom properties even after repeated synchronization.
         private static readonly Dictionary<ThingDef, CompProperties> owned = new Dictionary<ThingDef, CompProperties>();
+        private static readonly Dictionary<ThingDef, List<KeyValuePair<int, CompProperties>>> removedVanilla = new Dictionary<ThingDef, List<KeyValuePair<int, CompProperties>>>();
         public static void SyncAllDefs()
         {
             QualityCatalog.Build();
-            foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
+            foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading) SyncDef(def);
+        }
+        internal static void SyncDef(ThingDef def)
+        {
+            if (QualityCatalog.RemovesVanillaQuality(def))
             {
-                bool assigned = QualityDefUtility.ShouldReceiveQuality(def);
-                if (!assigned)
+                // Only standard quality on explicitly selected vanilla defs is removable.
+                // Preserve every unrelated property and retain originals for repeated synchronization.
+                if (!removedVanilla.ContainsKey(def))
                 {
-                    if (owned.TryGetValue(def, out var property)) { def.comps?.Remove(property); owned.Remove(def); }
-                    continue;
+                    var removed = new List<KeyValuePair<int, CompProperties>>();
+                    for (int i = 0; i < (def.comps?.Count ?? 0); i++)
+                        if (def.comps[i]?.compClass == typeof(CompQuality)) removed.Add(new KeyValuePair<int, CompProperties>(i, def.comps[i]));
+                    removedVanilla[def] = removed;
                 }
-                if (def.comps?.Exists(p => p?.compClass != null && typeof(CompQuality).IsAssignableFrom(p.compClass)) == true) continue;
-                def.comps ??= new List<CompProperties>();
-                var added = new CompProperties { compClass = typeof(CompQuality) };
-                def.comps.Add(added); owned[def] = added;
+                def.comps?.RemoveAll(p => p?.compClass == typeof(CompQuality));
+                return;
             }
+            if (removedVanilla.TryGetValue(def, out var originals))
+            {
+                def.comps ??= new List<CompProperties>();
+                foreach (var original in originals)
+                    if (!def.comps.Contains(original.Value)) def.comps.Insert(Math.Min(original.Key, def.comps.Count), original.Value);
+                removedVanilla.Remove(def);
+            }
+            bool assigned = QualityDefUtility.ShouldReceiveQuality(def);
+            if (!assigned)
+            {
+                if (owned.TryGetValue(def, out var property)) { def.comps?.Remove(property); owned.Remove(def); }
+                return;
+            }
+            if (def.comps?.Exists(p => p?.compClass != null && typeof(CompQuality).IsAssignableFrom(p.compClass)) == true) return;
+            def.comps ??= new List<CompProperties>();
+            var added = new CompProperties { compClass = typeof(CompQuality) };
+            def.comps.Add(added); owned[def] = added;
         }
     }
 }

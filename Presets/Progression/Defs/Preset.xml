@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <ModlistConfigurator.ModlistPresetDef>
+    <defName>ConfigurableQualityProgression</defName>
+    <presetLabel>Configurable Quality - Progression</presetLabel>
+    <version>1.0.0</version>
+  </ModlistConfigurator.ModlistPresetDef>
+</Defs>

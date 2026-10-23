@@ -139,7 +139,7 @@ namespace QualityEverything
                 }
                 catch (System.Exception error)
                 {
-                    Log.Warning("Everything Has Quality: settings could not be loaded; using defaults. " + error.Message);
+                    Log.Warning("Configurable Quality: settings could not be loaded; using defaults. " + error.Message);
                     QualitySettingsState.Load(new QualityConfiguration { LegacyBackup = configurationXml ?? "" });
                 }
             }

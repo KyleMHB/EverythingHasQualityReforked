@@ -25,11 +25,11 @@ namespace QualityEverything
             }
             catch (Exception error)
             {
-                Log.Warning("Everything Has Quality: legacy settings backup failed: " + error.Message);
+                Log.Warning("Configurable Quality: legacy settings backup failed: " + error.Message);
             }
             settings = GetSettings<ModSettings_QEverything>();
         }
-        public override string SettingsCategory() => "Everything Has Quality";
+        public override string SettingsCategory() => "Configurable Quality";
         // The native dialog writes settings in PreClose. It can only serialize Saved.
         public override void WriteSettings()
         {

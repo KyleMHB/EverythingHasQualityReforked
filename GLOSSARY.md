@@ -25,3 +25,15 @@ A named branch of RimWorld's item-category hierarchy, including categories added
 
 **Item exception**:
 An explicit Include or Exclude rule for one kind of item. Inherit removes that exception and follows the applicable category or group rule.
+
+**Scope rule**:
+A default for all items, a quality group, or a category branch. More specific rules and item exceptions take precedence over it.
+
+**Individual effect exclusion**:
+An exception that disables one mod quality effect for an item type. Its other effects and native quality bonuses remain governed separately.
+
+**Quality curve**:
+The seven multipliers that define how one mod quality effect varies from Awful through Legendary. A custom curve may also change the Normal-tier multiplier.
+
+**User preset**:
+A named snapshot of this mod's complete quality configuration, including its rules, effects, individual effect exclusions, and production options.
