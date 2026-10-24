@@ -14,6 +14,13 @@ namespace QualityEverything
         public bool Removable { get; }
         public EditorItem(RuleTarget target, bool nativeQuality, bool removable) { Target = target; NativeQuality = nativeQuality; Removable = removable; }
     }
+    internal readonly struct QualityLimit
+    {
+        public string Group { get; }
+        public int Minimum { get; }
+        public int Maximum { get; }
+        public QualityLimit(string group, int minimum, int maximum) { Group = group; Minimum = minimum; Maximum = maximum; }
+    }
     internal enum CurveBase { Custom, Mild, Medium }
     internal struct CurveSelection
     {
@@ -105,6 +112,50 @@ namespace QualityEverything
         {
             EndGesture();
             return Edit(c => { foreach (EffectId id in Enum.GetValues(typeof(EffectId))) c.Effects[id.ToString()].Enabled = false; });
+        }
+        private static readonly string[] limitGroups = { "Edifice", "Work", "Security", "Stuff", "Ing", "Tasty", "Meal", "Drug", "Med", "Manuf", "Apparel", "Weapon", "Shell" };
+        public IReadOnlyList<QualityLimit> QualityLimits(bool defaults = false)
+        {
+            var production = defaults ? new ProductionSettings() : session.Draft.Production;
+            return limitGroups.Select(group => new QualityLimit(group,
+                (int)typeof(ProductionSettings).GetField("min" + group + "Quality").GetValue(production),
+                (int)typeof(ProductionSettings).GetField("max" + group + "Quality").GetValue(production))).ToArray();
+        }
+        public bool SetQualityLimit(string group, int minimum, int maximum)
+        {
+            if (!limitGroups.Contains(group) || minimum < 0 || maximum > 6 || minimum > maximum) return false;
+            EndGesture();
+            return Edit(c =>
+            {
+                typeof(ProductionSettings).GetField("min" + group + "Quality").SetValue(c.Production, minimum);
+                typeof(ProductionSettings).GetField("max" + group + "Quality").SetValue(c.Production, maximum);
+            });
+        }
+        public bool RestoreQualityLimitDefaults()
+        {
+            var defaults = QualityLimits(true);
+            EndGesture();
+            return Edit(c =>
+            {
+                foreach (var range in defaults)
+                {
+                    typeof(ProductionSettings).GetField("min" + range.Group + "Quality").SetValue(c.Production, range.Minimum);
+                    typeof(ProductionSettings).GetField("max" + range.Group + "Quality").SetValue(c.Production, range.Maximum);
+                }
+            });
+        }
+        public bool SetWorktableShare(float value)
+        {
+            if (!QualityNumericRange.Production("tableFactor").Contains(value)) return false;
+            bool changed = Edit(c => c.Production.tableFactor = value);
+            SynchronizeInput("production:tableFactor");
+            return changed;
+        }
+        public bool EditProductionNumber(string name, string text)
+        {
+            var field = typeof(ProductionSettings).GetField(name);
+            if (field == null || field.FieldType != typeof(float)) throw new ArgumentException(nameof(name));
+            return EditNumber("production:" + name, text, (float)field.GetValue(session.Draft.Production), v => field.SetValue(session.Draft.Production, v));
         }
         public bool SetProviderPolicy(bool enabled)
         {

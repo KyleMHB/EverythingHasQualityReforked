@@ -4,6 +4,54 @@ using QualityEverything;
 partial class SettingsChecks
 {
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
+    static void CheckProductionControls()
+    {
+        var session = new QualityConfigurationSession(new QualityConfiguration());
+        var editor = new QualityEditorActions(session);
+        string startup = session.Active.Serialize();
+        editor.BeginGesture("worktable");
+        editor.SetWorktableShare(.7f); editor.SetWorktableShare(1f); editor.EndGesture();
+        Check(session.Draft.Production.tableFactor == 1f && editor.Undo() && !editor.CanUndo && session.Draft.Production.tableFactor == .4f, "worktable drag has one Undo step");
+        Check(!editor.SetWorktableShare(1.01f) && !editor.SetWorktableShare(float.NaN), "worktable slider rejects invalid share");
+        editor.EditProductionNumber("tableFactor", "0.625");
+        Check(session.Draft.Production.tableFactor == .625f && editor.NumberText("production:tableFactor", 0) == "0.625", "exact worktable share retained");
+        editor.EditProductionNumber("tableFactor", "-");
+        Check(editor.HasInvalidInput && editor.Save().Count > 0 && session.Draft.Production.tableFactor == .625f, "partial weighting blocks save without replacing valid draft");
+        editor.SetWorktableShare(.5f);
+        Check(!editor.HasInvalidInput && editor.NumberText("production:tableFactor", .5f) == "0.5", "slider deliberately synchronizes exact input");
+        foreach (string field in new[] { "awfulSupplyFactor", "poorSupplyFactor", "normalSupplyFactor", "goodSupplyFactor", "excSupplyFactor", "masterSupplyFactor", "legSupplyFactor" })
+        {
+            editor.EditProductionNumber(field, "10");
+            Check(!editor.HasInvalidInput && (float)typeof(ProductionSettings).GetField(field).GetValue(session.Draft.Production) == 10f, "supply accepts actual upper boundary");
+            foreach (string invalid in new[] { "-0.01", "10.01", "NaN", "Infinity", "-" })
+            {
+                editor.EditProductionNumber(field, invalid);
+                Check(editor.HasInvalidInput && editor.Save().Count > 0 && (float)typeof(ProductionSettings).GetField(field).GetValue(session.Draft.Production) == 10f, "invalid supply remains recoverable");
+            }
+            editor.EditProductionNumber(field, "0");
+            Check(!editor.HasInvalidInput && (float)typeof(ProductionSettings).GetField(field).GetValue(session.Draft.Production) == 0f, "supply accepts zero boundary");
+        }
+        Check(session.Saved.Serialize() == startup && session.Active.Serialize() == startup, "production edits preserve saved and running snapshots");
+        editor.Save();
+        session.Draft.Assignment.Items["Steel"] = RuleChoice.Exclude;
+        session.Draft.Production.inspiredCooking = true;
+        session.Draft.Production.edificeQuality = true;
+        string beforeLimits = session.Draft.Serialize();
+        var defaults = editor.QualityLimits(true);
+        Check(defaults.Count == 13 && defaults.Single(r => r.Group == "Ing").Minimum == 2
+            && defaults.Single(r => r.Group == "Weapon").Maximum == 6 && defaults.Single(r => r.Group == "Apparel").Maximum == 6
+            && defaults.Where(r => r.Group != "Weapon" && r.Group != "Apparel").All(r => r.Maximum == 4), "preview uses actual thirteen group defaults");
+        Check(beforeLimits == session.Draft.Serialize() && !editor.CanUndo, "previewing range defaults does not edit draft");
+        Check(!editor.SetQualityLimit("Ing", 5, 4) && !editor.SetQualityLimit("Ing", -1, 4) && !editor.SetQualityLimit("Ing", 0, 7), "range command rejects inverted and invalid tiers");
+        foreach (var range in defaults) Check(editor.SetQualityLimit(range.Group, 3, 3), "each range accepts exact equal tier bounds");
+        string customLimits = session.Draft.Serialize();
+        Check(editor.RestoreQualityLimitDefaults() && editor.QualityLimits().Single(r => r.Group == "Ing").Minimum == 2
+            && editor.QualityLimits().Single(r => r.Group == "Edifice").Maximum == 4, "restore applies actual defaults");
+        Check(session.Draft.Serialize() == beforeLimits, "range restore preserves supply, switches, legacy fields and assignment choices exactly");
+        Check(editor.Undo() && session.Draft.Serialize() == customLimits, "all thirteen default restorations undo together");
+        string activeBeforeSave = session.Active.Serialize();
+        Check(editor.Save().Count == 0 && session.Saved.Serialize() == customLimits && session.Active.Serialize() == activeBeforeSave, "production Save affects next restart only");
+    }
     static void CheckEffectCurves()
     {
         var session = new QualityConfigurationSession(new QualityConfiguration());
@@ -137,6 +185,7 @@ partial class SettingsChecks
     static void Main()
     {
         CheckUserPresets();
+        CheckProductionControls();
         CheckBulkSelection();
         CheckEffectCurves();
         CheckCompatibilityCommands();
