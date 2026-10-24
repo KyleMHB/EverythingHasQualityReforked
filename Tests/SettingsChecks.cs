@@ -62,8 +62,62 @@ class SettingsChecks
         Check(editor.HasInvalidInput, "linked caps retain distinct existing upper bounds");
         editor.Undo(); Check(!editor.HasInvalidInput, "undo synchronizes all invalid curve and cap buffers");
     }
+    static void CheckBulkSelection()
+    {
+        var editor = new QualityEditorActions(new QualityConfigurationSession(new QualityConfiguration()));
+        editor.SetSelected("Steel", true);
+        Check(editor.BulkMode && editor.SelectedIds.SequenceEqual(new[] { "Steel" }), "one checked item enters explicit bulk mode");
+        editor.SelectResults(new[] { "Cloth", "Wood" });
+        editor.SelectResults(new[] { "Cloth" });
+        Check(editor.SelectedIds.Count == 3 && editor.HiddenSelectedCount(new[] { "Cloth" }) == 2
+            && editor.HiddenSelectedCount(new string[0]) == 3, "select results preserves cross-filter selections and exposes hidden targets");
+        editor.ClearSelection();
+        Check(!editor.BulkMode && editor.SelectedIds.Count == 0 && !editor.CanUndo, "clear selection returns to item mode without a draft edit");
+        foreach (var rule in new[] { EditorRule.Assignment, EditorRule.Participation, EditorRule.Price, EditorRule.Removal })
+        {
+            var baseline = new QualityConfiguration();
+            QualityEditorActions.RulesFor(baseline, rule).Items["Unselected"] = RuleChoice.Exclude;
+            QualityEditorActions.RulesFor(baseline, rule).Items["Unavailable"] = RuleChoice.Include;
+            QualityEditorActions.RulesFor(baseline, rule).Categories["Buildings"] = RuleChoice.Exclude;
+            var session = new QualityConfigurationSession(baseline);
+            var batch = new QualityEditorActions(session);
+            var available = new[] { new EditorItem(new RuleTarget("A", "Building", true, new CategoryPath[0]), rule == EditorRule.Removal, rule == EditorRule.Removal),
+                new EditorItem(new RuleTarget("B", "Building", true, new CategoryPath[0]), rule == EditorRule.Removal, rule == EditorRule.Removal),
+                new EditorItem(new RuleTarget("Unavailable", "", false, new CategoryPath[0]), false, false),
+                new EditorItem(new RuleTarget("Unselected", "Building", true, new CategoryPath[0]), false, false) };
+            batch.SelectResults(new[] { "A", "B", "Unavailable" });
+            Check(batch.EligibleSelected(rule, available).Count == 2, "eligible count excludes unsupported selected targets for " + rule);
+            Check(batch.SetSelectedRule(rule, available, RuleChoice.Include), "batch writes eligible cross-filter targets for " + rule);
+            var rules = QualityEditorActions.RulesFor(session.Draft, rule);
+            Check(rules.Items["A"] == RuleChoice.Include && rules.Items["B"] == RuleChoice.Include
+                && rules.Items["Unselected"] == RuleChoice.Exclude && rules.Items["Unavailable"] == RuleChoice.Include
+                && rules.Categories["Buildings"] == RuleChoice.Exclude && session.Saved.Serialize() == baseline.Serialize()
+                && session.Active.Serialize() == baseline.Serialize(), "bulk preserves other targets, scope and startup snapshots for " + rule);
+            Check(batch.Undo() && session.Draft.Serialize() == baseline.Serialize() && !batch.CanUndo, "entire batch restores with one Undo for " + rule);
+            batch.SetSelectedRule(rule, available, RuleChoice.Exclude);
+            Check(QualityEditorActions.RulesFor(session.Draft, rule).Items["A"] == RuleChoice.Exclude, "bulk disable/keep writes exception for " + rule);
+            batch.SetSelectedRule(rule, available, RuleChoice.Inherit);
+            Check(!QualityEditorActions.RulesFor(session.Draft, rule).Items.ContainsKey("A")
+                && QualityEditorActions.RulesFor(session.Draft, rule).Items["Unavailable"] == RuleChoice.Include, "bulk use rule preserves unsupported data for " + rule);
+            Check(!batch.SetSelectedRule(rule, available, RuleChoice.Inherit), "no-op batch creates no edit for " + rule);
+        }
+        var protectedSession = new QualityConfigurationSession(new QualityConfiguration());
+        var protectedEditor = new QualityEditorActions(protectedSession);
+        var provider = new EditorItem(new RuleTarget("Provider", "Weapon", true, new CategoryPath[0]), true, false);
+        var vanilla = new EditorItem(new RuleTarget("Vanilla", "Weapon", true, new CategoryPath[0]), true, true);
+        protectedEditor.SelectResults(new[] { "Provider", "Vanilla" });
+        Check(!protectedEditor.SetSelectedRule(EditorRule.Assignment, new[] { provider, vanilla }, RuleChoice.Include)
+            && protectedEditor.EligibleSelected(EditorRule.Price, new[] { provider }).Count == 0
+            && protectedEditor.EligibleSelected(EditorRule.Removal, new[] { provider, vanilla }).Single().Target.Id == "Vanilla",
+            "bulk native-quality assignment and provider pricing/removal remain protected");
+        protectedEditor.SetSelectedRule(EditorRule.Removal, new[] { provider, vanilla }, RuleChoice.Include);
+        Check(QualityEditorActions.HasQuality(protectedSession.Draft, provider.Target, true, false)
+            && !QualityEditorActions.HasQuality(protectedSession.Draft, vanilla.Target, true, true)
+            && protectedEditor.SelectedIds.Count == 2, "bulk removal changes only eligible vanilla draft outcome and retains selection");
+    }
     static void Main()
     {
+        CheckBulkSelection();
         CheckEffectCurves();
         var itemSession = new QualityConfigurationSession(new QualityConfiguration());
         var itemEditor = new QualityEditorActions(itemSession);
