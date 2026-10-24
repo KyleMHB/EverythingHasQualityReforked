@@ -80,7 +80,7 @@ namespace QualityEverything
             {
                 if (Event.current.rawType == EventType.MouseUp && Editor.EndGesture()) QualitySettingsState.Changed();
                 Text.Font = GameFont.Medium; Widgets.Label(new Rect(rect.x, rect.y, rect.width, 32), T("EditorTitle"));
-                Text.Font = GameFont.Small; var titles = new[] { W("ItemsTab"), W("EffectsTab"), W("ProductionTab"), T("Compatibility") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
+                Text.Font = GameFont.Small; DrawPresetHeader(new Rect(rect.xMax - 230, rect.y, 205, 30)); var titles = new[] { W("ItemsTab"), W("EffectsTab"), W("ProductionTab"), T("Compatibility") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
                 for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y + 36, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
                 participation = pricing = removing = false;
                 Widgets.Label(new Rect(rect.x, rect.y + 74, rect.width, 28), (Editor.HasInvalidInput ? T("InvalidInput") : QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));

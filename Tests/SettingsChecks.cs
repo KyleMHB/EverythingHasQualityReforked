@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using QualityEverything;
-class SettingsChecks
+partial class SettingsChecks
 {
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
     static void CheckEffectCurves()
@@ -136,6 +136,7 @@ class SettingsChecks
     }
     static void Main()
     {
+        CheckUserPresets();
         CheckBulkSelection();
         CheckEffectCurves();
         CheckCompatibilityCommands();
