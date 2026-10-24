@@ -51,6 +51,7 @@ namespace QualityEverything
             if (Widgets.ButtonText(new Rect(rect.x + rect.width * .90f, y, rect.width * .10f, 30), W("Clear"))) { s.Search = s.Source = ""; s.ResultFilter = 0; }
             RefreshWorkbench(); y += 36;
             Widgets.Label(new Rect(rect.x, y, rect.width, 26), string.Format(W("Counts"), scopeTotal, s.Filtered.Count)); y += 28;
+            y += DrawBulkSelectionBar(new Rect(rect.x, y, rect.width, 68));
             // Measure complete outcome labels before reserving a persistent inspector.
             float outcome = new[] { W("Enabled"), W("Disabled"), W("NoQuality"), W("Native"), W("Protected"), W("Unavailable"), W("RemovalPlanned"), W("Unsupported") }.Max(v => Text.CalcSize(v + " *").x) + 18;
             float itemWidth = Math.Max(170, Text.CalcSize(W("Item")).x + 40);
@@ -63,7 +64,8 @@ namespace QualityEverything
             {
                 var entry = WorkbenchEntry(focusedItem);
                 var inspector = new Rect(table.xMax + 12, y, inspectorWidth, rect.yMax - y);
-                if (entry == null) Widgets.Label(inspector, W("FocusHelp"));
+                if (Editor.BulkMode) DrawBulkInspector(inspector, ref bulkScroll);
+                else if (entry == null) Widgets.Label(inspector, W("FocusHelp"));
                 else DrawWorkbenchInspector(inspector, entry, ref inspectorScroll);
             }
         }
@@ -86,13 +88,16 @@ namespace QualityEverything
                 {
                     var entry = assignment.Filtered[i]; float y = i * row;
                     if (focusedItem == entry.Target.Id) Widgets.DrawHighlightSelected(new Rect(0, y, width, row));
-                    if (Widgets.ButtonText(new Rect(0, y + 2, itemWidth - 4, row - 4), entry.Label + (inline ? "" : "\n" + W("Details")), drawBackground: false))
-                    { focusedItem = entry.Target.Id; focusedWorkbenchEntry = entry; if (!inline) Find.WindowStack.Add(new Window_WorkbenchDetails(this, entry)); }
+                    bool check = Editor.IsSelected(entry.Target.Id), before = check;
+                    Widgets.CheckboxLabeled(new Rect(0, y + 16, 28, 28), "", ref check);
+                    if (check != before) Editor.SetSelected(entry.Target.Id, check);
+                    if (Widgets.ButtonText(new Rect(32, y + 2, itemWidth - 36, row - 4), entry.Label + (inline || Editor.BulkMode ? "" : "\n" + W("Details")), drawBackground: false))
+                    { focusedItem = entry.Target.Id; focusedWorkbenchEntry = entry; if (!inline && !Editor.BulkMode) Find.WindowStack.Add(new Window_WorkbenchDetails(this, entry)); }
                     for (int c = 0; c < 3; c++)
                     {
                         var kind = (EditorRule)c;
                         var cell = new Rect(itemWidth + c * outcomeWidth, y + 6, outcomeWidth - 4, row - 12);
-                        if (Widgets.ButtonText(cell, Outcome(entry, kind), drawBackground: false)) { focusedItem = entry.Target.Id; focusedWorkbenchEntry = entry; OpenItemMenu(entry, kind == EditorRule.Assignment && entry.NativeQuality ? EditorRule.Removal : kind); }
+                        if (Widgets.ButtonText(cell, Outcome(entry, kind), drawBackground: false)) { focusedItem = entry.Target.Id; focusedWorkbenchEntry = entry; if (Editor.BulkMode) { if (!inline) Find.WindowStack.Add(new Window_WorkbenchBulk(this)); } else OpenItemMenu(entry, kind == EditorRule.Assignment && entry.NativeQuality ? EditorRule.Removal : kind); }
                     }
                 }
             }
