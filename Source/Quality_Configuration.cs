@@ -4,7 +4,7 @@ using System.Linq;
 using System.Globalization;
 using System.Xml.Linq;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal enum RuleChoice
     {
@@ -13,11 +13,13 @@ namespace QualityEverything
 
     internal sealed class RuleSet
     {
+        public bool Default;
         public Dictionary<string, bool> Groups = new Dictionary<string, bool>(StringComparer.Ordinal);
         public Dictionary<string, RuleChoice> Categories = new Dictionary<string, RuleChoice>(StringComparer.Ordinal);
         public Dictionary<string, RuleChoice> Items = new Dictionary<string, RuleChoice>(StringComparer.Ordinal);
         public RuleSet Clone() => new RuleSet
         {
+            Default = Default,
             Groups = new Dictionary<string, bool>(Groups, StringComparer.Ordinal),
             Categories = new Dictionary<string, RuleChoice>(Categories, StringComparer.Ordinal),
             Items = new Dictionary<string, RuleChoice>(Items, StringComparer.Ordinal)
@@ -90,43 +92,45 @@ namespace QualityEverything
                 if (source == null || StringComparer.Ordinal.Compare(category.Id, source) < 0) source = category.Id;
             }
             if (depth >= 0) return new RuleResolution(include && !exclude, "Category", exclude ? excludedSource : source, include && exclude);
-            return new RuleResolution(rules.Groups.TryGetValue(item.Group, out bool enabled) && enabled, "Group", item.Group);
+            return rules.Groups.TryGetValue(item.Group, out bool enabled)
+                ? new RuleResolution(enabled, "Group", item.Group)
+                : new RuleResolution(rules.Default, "Global", "");
         }
     }
 
     internal sealed class ProductionSettings
     {
-        public bool useMaterialQuality = true;
-        public bool useTableQuality = true;
-        public bool useSkillReq = true;
+        public bool useMaterialQuality = false;
+        public bool useTableQuality = false;
+        public bool useSkillReq = false;
         public int stdSupplyQuality = 2;
         public float tableFactor = .4f;
-        public bool inspiredButchering = true;
-        public bool inspiredChemistry = true;
-        public bool inspiredCooking = true;
-        public bool inspiredConstruction = true;
-        public bool inspiredGathering = true;
-        public bool inspiredHarvesting = true;
-        public bool inspiredMining = true;
-        public bool inspiredStonecutting = true;
+        public bool inspiredButchering = false;
+        public bool inspiredChemistry = false;
+        public bool inspiredCooking = false;
+        public bool inspiredConstruction = false;
+        public bool inspiredGathering = false;
+        public bool inspiredHarvesting = false;
+        public bool inspiredMining = false;
+        public bool inspiredStonecutting = false;
         public bool skilledAnimals = false;
         public bool skilledButchering = false;
         public bool skilledHarvesting = false;
         public bool skilledMining = false;
         public bool skilledStoneCutting = false;
-        public bool edificeQuality = true;
+        public bool edificeQuality = false;
         public int minEdificeQuality = 0;
         public int maxEdificeQuality = 4;
-        public bool workQuality = true;
+        public bool workQuality = false;
         public int minWorkQuality = 0;
         public int maxWorkQuality = 4;
-        public bool securityQuality = true;
+        public bool securityQuality = false;
         public int minSecurityQuality = 0;
         public int maxSecurityQuality = 4;
-        public bool stuffQuality = true;
+        public bool stuffQuality = false;
         public int minStuffQuality = 0;
         public int maxStuffQuality = 4;
-        public bool ingredientQuality = true;
+        public bool ingredientQuality = false;
         public int minIngQuality = 2;
         public int maxIngQuality = 4;
         public int minTastyQuality = 0;
@@ -140,7 +144,7 @@ namespace QualityEverything
         public bool medQuality = false;
         public int minMedQuality = 0;
         public int maxMedQuality = 4;
-        public bool manufQuality = true;
+        public bool manufQuality = false;
         public int minManufQuality = 0;
         public int maxManufQuality = 4;
         public bool apparelQuality = false;
@@ -152,7 +156,7 @@ namespace QualityEverything
         public bool shellQuality = false;
         public int minShellQuality = 0;
         public int maxShellQuality = 4;
-        public bool multSupplyFactor = true;
+        public bool multSupplyFactor = false;
         public float awfulSupplyFactor = .8f;
         public float poorSupplyFactor = .9f;
         public float normalSupplyFactor = 1f;
@@ -160,6 +164,10 @@ namespace QualityEverything
         public float excSupplyFactor = 1.2f;
         public float masterSupplyFactor = 1.3f;
         public float legSupplyFactor = 1.4f;
+        internal static ProductionSettings LegacyDefaults() => new ProductionSettings
+        {
+            useMaterialQuality = true, useTableQuality = true, useSkillReq = true, inspiredButchering = true, inspiredChemistry = true, inspiredCooking = true, inspiredConstruction = true, inspiredGathering = true, inspiredHarvesting = true, inspiredMining = true, inspiredStonecutting = true, edificeQuality = true, workQuality = true, securityQuality = true, stuffQuality = true, ingredientQuality = true, manufQuality = true, multSupplyFactor = true
+        };
         public ProductionSettings Clone() => (ProductionSettings)MemberwiseClone();
     }
 
@@ -184,9 +192,12 @@ namespace QualityEverything
 
     internal sealed class QualityConfiguration
     {
+        public bool ProgressionCompatibility;
         public ProductionSettings Production = new ProductionSettings();
         public RuleSet Assignment = new RuleSet();
+        public RuleSet VanillaRemoval = new RuleSet();
         public RuleSet Participation = new RuleSet();
+        public RuleSet MarketValue = new RuleSet();
         public Dictionary<string, EffectSettings> Effects = new Dictionary<string, EffectSettings>(StringComparer.Ordinal);
         public Dictionary<string, bool> InactiveLegacy = new Dictionary<string, bool>(StringComparer.Ordinal);
         public string LegacyBackup = "";
@@ -194,22 +205,26 @@ namespace QualityEverything
         public float LinkedFurnitureBonusCap = .02f, LinkedFurniturePenaltyCap = .005f;
         public QualityConfiguration()
         {
-            foreach (string group in new[] { "Stuff","WorkBuilding","SecurityBuilding","Building","Weapon","Shell","Apparel","Drug","Medicine","Meal","TastyIngredient","Ingredient","Manufactured" }
-         )
-            {
-                Assignment.Groups[group] = group == "Stuff" || group == "WorkBuilding" || group == "SecurityBuilding" || group == "Building" || group == "TastyIngredient" || group == "Ingredient" || group == "Manufactured";
-                Participation.Groups[group] = true;
-            }
+            Participation.Default = true;
+            MarketValue.Default = true;
             foreach (EffectId id in Enum.GetValues(typeof(EffectId))) Effects[id.ToString()] = new EffectSettings
             {
                 Factors = QualityEffectCatalog.Curve(id)
             };
         }
+        internal void EnablePresetProduction()
+        {
+            Production = ProductionSettings.LegacyDefaults();
+            foreach (var pair in GroupFields) Assignment.Groups[pair.Key] = (bool)typeof(ProductionSettings).GetField(pair.Value).GetValue(Production);
+        }
         public QualityConfiguration Clone() => new QualityConfiguration
         {
+            ProgressionCompatibility = ProgressionCompatibility,
             Production = Production.Clone(),
             Assignment = Assignment.Clone(),
+            VanillaRemoval = VanillaRemoval.Clone(),
             Participation = Participation.Clone(),
+            MarketValue = MarketValue.Clone(),
             Effects = Effects.ToDictionary(p => p.Key, p => p.Value.Clone(), StringComparer.Ordinal),
             InactiveLegacy = new Dictionary<string, bool>(InactiveLegacy, StringComparer.Ordinal),
             LegacyBackup = LegacyBackup,
@@ -243,15 +258,19 @@ namespace QualityEverything
             root.Add(new XElement("effects", Effects.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("effect", new XAttribute("id", p.Key), new XAttribute("enabled", p.Value.Enabled), string.Join(",", p.Value.Factors.Select(v => v.ToString("R", CultureInfo.InvariantCulture)))))));
             root.Add(new XElement("inactive", InactiveLegacy.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("item", new XAttribute("id", p.Key), p.Value))));
             root.Add(new XElement("legacyBackup", LegacyBackup), new XElement("linkedBonusCap", LinkedFurnitureBonusCap.ToString("R", CultureInfo.InvariantCulture)), new XElement("linkedPenaltyCap", LinkedFurniturePenaltyCap.ToString("R", CultureInfo.InvariantCulture)));
+            root.Add(WriteRules("marketValue", MarketValue));
+            root.Add(WriteRules("vanillaRemoval", VanillaRemoval));
+            root.Add(new XElement("progressionCompatibility", ProgressionCompatibility));
             return root.ToString(SaveOptions.DisableFormatting);
         }
-        static XElement WriteRules(string name, RuleSet rules) => new XElement(name,
+        static XElement WriteRules(string name, RuleSet rules) => new XElement(name, new XAttribute("default", rules.Default),
          new XElement("groups", rules.Groups.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("rule", new XAttribute("id", p.Key), p.Value))),
          new XElement("categories", rules.Categories.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("rule", new XAttribute("id", p.Key), p.Value))),
          new XElement("items", rules.Items.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("rule", new XAttribute("id", p.Key), p.Value))));
         static void ReadRules(XElement node, RuleSet rules)
         {
             if (node == null) return;
+            if (bool.TryParse((string)node.Attribute("default"), out bool global)) rules.Default = global;
             foreach (var el in node.Element("groups")?.Elements() ?? Enumerable.Empty<XElement>()) if (!string.IsNullOrEmpty((string)el.Attribute("id")) && bool.TryParse(el.Value, out bool b)) rules.Groups[(string)el.Attribute("id")] = b;
             foreach (var kind in new[] { "categories","items" }
          ) foreach (var el in node.Element(kind)?.Elements() ?? Enumerable.Empty<XElement>()) if (!string.IsNullOrEmpty((string)el.Attribute("id")) && Enum.TryParse(el.Value, out RuleChoice r) && Enum.IsDefined(typeof(RuleChoice), r)) (kind == "categories" ? rules.Categories : rules.Items)[(string)el.Attribute("id")] = r;
@@ -261,6 +280,7 @@ namespace QualityEverything
             var result = new QualityConfiguration();
             if (string.IsNullOrEmpty(xml)) return result;
             var root = XElement.Parse(xml);
+            if (bool.TryParse(root.Element("progressionCompatibility")?.Value, out bool progression)) result.ProgressionCompatibility = progression;
             foreach (var field in typeof(ProductionSettings).GetFields())
             {
                 string text = root.Element("production")?.Element(field.Name)?.Value;
@@ -274,6 +294,8 @@ namespace QualityEverything
             }
             ReadRules(root.Element("assignment"), result.Assignment);
             ReadRules(root.Element("participation"), result.Participation);
+            ReadRules(root.Element("marketValue"), result.MarketValue);
+            ReadRules(root.Element("vanillaRemoval"), result.VanillaRemoval);
             foreach (var effect in root.Element("effects")?.Elements() ?? Enumerable.Empty<XElement>())
             {
                 string id = (string)effect.Attribute("id");
@@ -309,12 +331,15 @@ namespace QualityEverything
         public static QualityConfiguration MigrateLegacyXml(string xml)
         {
             var legacy = XElement.Parse(xml);
+            if (!legacy.Elements().Any(e => typeof(ProductionSettings).GetField(e.Name.LocalName) != null || e.Name.LocalName == "supplyQuality" || e.Name.LocalName.StartsWith("indiv"))) return new QualityConfiguration();
             var production = new XElement("production", legacy.Elements().Select(e => new XElement(e)));
             if (legacy.Element("supplyQuality") != null) production.SetElementValue("multSupplyFactor", legacy.Element("supplyQuality").Value);
             foreach (string bound in new[] { "min","max" }
          )
                 if (legacy.Element(bound + "WeaponQuality") == null && legacy.Element(bound + "WeapoQuality") != null)
                     production.SetElementValue(bound + "WeaponQuality", legacy.Element(bound + "WeapoQuality").Value);
+            foreach (var field in typeof(ProductionSettings).GetFields())
+                if (production.Element(field.Name) == null) production.Add(new XElement(field.Name, Convert.ToString(field.GetValue(ProductionSettings.LegacyDefaults()), CultureInfo.InvariantCulture)));
             var result = Parse(new XElement("quality", production).ToString());
             result.LegacyBackup = xml;
             foreach (var pair in GroupFields) result.Assignment.Groups[pair.Key] = (bool)typeof(ProductionSettings).GetField(pair.Value).GetValue(result.Production);
@@ -374,6 +399,11 @@ namespace QualityEverything
             return errors;
         }
         public void ReplaceDraft(QualityConfiguration configuration) => Draft = configuration.Clone();
+        public void Import(QualityConfiguration configuration)
+        {
+            Saved = configuration.Clone();
+            Draft = configuration.Clone();
+        }
         public void Discard()
         {
             Draft = Saved.Clone();

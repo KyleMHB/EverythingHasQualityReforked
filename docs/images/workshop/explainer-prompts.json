@@ -1,0 +1,106 @@
+{
+  "renderer": "scripts/render-workshop-art.py",
+  "font": "RimWordFont",
+  "fontSource": "Local RimWordFont.ttf; no generated lettering; font file is not redistributed.",
+  "gameAssets": "Original DDS sprites read from the local RimWorld Assets.zip; wall and bed use native material colours.",
+  "objects": [
+    "Wall_Atlas_Bricks.psd.dds",
+    "Bed_south.psd.dds",
+    "Bed_southm.psd.dds",
+    "AssaultRifle.png.dds",
+    "Shelf_south.psd.dds",
+    "DoorSimple_MenuIcon.psd.dds",
+    "TableMachining_south.psd.dds",
+    "Heater.psd.dds",
+    "Silver_a.psd.dds",
+    "WoodFloor.psd.dds"
+  ],
+  "assets": [
+    "quality-choices.png",
+    "quality-effects.png",
+    "quality-wealth.png",
+    "quality-rules.png",
+    "quality-strength.png",
+    "granite-wall.png",
+    "assault-rifle.png",
+    "wooden-bed.png",
+    "title-1920x1080.png",
+    "About/Preview.png",
+    "About/Preview.gif"
+  ],
+  "imageGenerationUsed": false,
+  "chartValues": {
+    "mild": [
+      0.95,
+      0.98,
+      1.0,
+      1.02,
+      1.05,
+      1.1,
+      1.2
+    ],
+    "medium": [
+      0.6,
+      0.8,
+      1.0,
+      1.375,
+      1.75,
+      2.125,
+      2.5
+    ],
+    "progression": [
+      0.95,
+      0.98,
+      1.0,
+      1.02,
+      1.05,
+      1.1,
+      1.2
+    ],
+    "mild_cost": [
+      1.05,
+      1.02,
+      1.0,
+      0.98,
+      0.95,
+      0.9,
+      0.8
+    ],
+    "medium_cost": [
+      1.6666666666666667,
+      1.25,
+      1.0,
+      0.7272727272727273,
+      0.5714285714285714,
+      0.47058823529411764,
+      0.4
+    ],
+    "market": [
+      0.5,
+      0.75,
+      1.0,
+      1.25,
+      1.5,
+      2.5,
+      5.0
+    ],
+    "rest": [
+      0.86,
+      0.92,
+      1.0,
+      1.08,
+      1.14,
+      1.25,
+      1.6
+    ],
+    "cooldown": 1.7
+  },
+  "chartValueSources": [
+    "Source/Quality_Configuration.cs",
+    "Source/Quality_Progression.cs",
+    "Installed Core Stats_Basics_General.xml",
+    "Installed Core Stats_Building_Special.xml",
+    "Installed Core RangedIndustrial.xml"
+  ],
+  "chartRounding": "HP percentages show factors before integer rounding; cooldown seconds show two decimals; native market factors precede gain caps and rounding."
+}

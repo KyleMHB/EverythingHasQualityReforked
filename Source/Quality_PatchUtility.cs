@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityPatchUtility
     {

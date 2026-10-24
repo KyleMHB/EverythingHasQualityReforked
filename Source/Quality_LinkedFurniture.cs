@@ -5,7 +5,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityLinkedFurniture
     {
@@ -32,7 +32,7 @@ namespace QualityEverything
             QualityEffects.SetCapability(EffectId.LinkedFurniture, sources.Count > 0, "QEverything.Furniture.Support".Translate());
             active = sources.Count > 0 && QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(nameof(EffectId.LinkedFurniture), out var effect) && effect.Enabled;
             if (!active) return;
-            var harmony = new Harmony("rimworld.qualityframework.furniture");
+            var harmony = new Harmony("kylemhb.configurablequality.furniture");
             try
             {
                 var added = AccessTools.Method(typeof(CompAffectedByFacilities), "Notify_NewLink");

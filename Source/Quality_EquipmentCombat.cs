@@ -6,11 +6,11 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityEquipmentCombat
     {
-        private const string Owner = "rimworld.qualityframework";
+        private const string Owner = "kylemhb.configurablequality";
         private sealed class GearStat
         {
             public StatDef Stat;

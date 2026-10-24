@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
-    public class ModSettings_QEverything : ModSettings
+    public class ModSettings_ConfigurableQuality : ModSettings
     {
 
         public static bool useMaterialQuality;
@@ -112,12 +112,12 @@ namespace QualityEverything
         public static List<string> otherKeys = new List<string>();
         public static List<bool> otherValues = new List<bool>();
 
-        static ModSettings_QEverything()
+        static ModSettings_ConfigurableQuality()
         {
             // Preserve the public compatibility fields, with one source for scalar defaults.
             var defaults = new ProductionSettings();
             foreach (var field in typeof(ProductionSettings).GetFields())
-                typeof(ModSettings_QEverything).GetField(field.Name).SetValue(null, field.GetValue(defaults));
+                typeof(ModSettings_ConfigurableQuality).GetField(field.Name).SetValue(null, field.GetValue(defaults));
         }
 
         private string configurationXml;
@@ -139,7 +139,7 @@ namespace QualityEverything
                 }
                 catch (System.Exception error)
                 {
-                    Log.Warning("Everything Has Quality: settings could not be loaded; using defaults. " + error.Message);
+                    Log.Warning("Configurable Quality: settings could not be loaded; using defaults. " + error.Message);
                     QualitySettingsState.Load(new QualityConfiguration { LegacyBackup = configurationXml ?? "" });
                 }
             }

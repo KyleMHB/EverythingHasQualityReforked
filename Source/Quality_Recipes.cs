@@ -7,7 +7,7 @@ using Verse;
 using UnityEngine;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     [HarmonyPatch]
     class Quality_Recipes
@@ -57,7 +57,7 @@ namespace QualityEverything
         {
             float value = -1;
             int numIng = 0;
-            if (ingredients != null && ModSettings_QEverything.useMaterialQuality)
+            if (ingredients != null && ModSettings_ConfigurableQuality.useMaterialQuality)
             {
                 float total = 0;
                 foreach (Thing ingredient in ingredients)
@@ -69,10 +69,10 @@ namespace QualityEverything
                 }
                 if (numIng > 0) value = total / numIng;
             }
-            if (billGiver is Building_WorkTable table && ModSettings_QEverything.useTableQuality)
+            if (billGiver is Building_WorkTable table && ModSettings_ConfigurableQuality.useTableQuality)
             {
-                int tableValue = (int)(table.TryGetComp<CompQuality>()?.Quality ?? (QualityCategory)ModSettings_QEverything.minWorkQuality);
-                value = numIng == 0 ? tableValue : value * (1 - ModSettings_QEverything.tableFactor) + tableValue * ModSettings_QEverything.tableFactor;
+                int tableValue = (int)(table.TryGetComp<CompQuality>()?.Quality ?? (QualityCategory)ModSettings_ConfigurableQuality.minWorkQuality);
+                value = numIng == 0 ? tableValue : value * (1 - ModSettings_ConfigurableQuality.tableFactor) + tableValue * ModSettings_ConfigurableQuality.tableFactor;
             }
             return value < 0 ? -1 : Mathf.Clamp(GenMath.RoundRandom(value), 0, 6);
         }

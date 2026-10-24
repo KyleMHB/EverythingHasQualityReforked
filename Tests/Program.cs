@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using QualityEverything;
+using ConfigurableQuality;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;

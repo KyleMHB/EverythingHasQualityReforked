@@ -34,9 +34,9 @@ foreach ($version in @('1.6', '1.7')) {
     $entries = @($folders.loadFolders.SelectSingleNode("v$version").li)
     if ($entries.Count -ne 2 -or $entries[0] -ne $version -or $entries[1] -ne 'Common') { throw "Incorrect load folders for $version." }
     $assemblies = @(Get-ChildItem -LiteralPath (Join-Path $root "$version/Assemblies") -File -Recurse)
-    if ($assemblies.Count -ne 1 -or $assemblies[0].Name -ne 'QualityEverything.dll') { throw "Expected exactly one mod assembly for $version." }
+    if ($assemblies.Count -ne 1 -or $assemblies[0].Name -ne 'ConfigurableQuality.dll') { throw "Expected exactly one mod assembly for $version." }
     $identity = [Reflection.AssemblyName]::GetAssemblyName($assemblies[0].FullName)
-    if ($identity.Name -ne 'QualityEverything') { throw "Incorrect assembly identity for $version." }
+    if ($identity.Name -ne 'ConfigurableQuality') { throw "Incorrect assembly identity for $version." }
     # Metadata remains readable without loading either game's runtime.
     $bytes = [IO.File]::ReadAllBytes($assemblies[0].FullName)
     $metadata = [Text.Encoding]::UTF8.GetString($bytes)
@@ -45,7 +45,7 @@ foreach ($version in @('1.6', '1.7')) {
 }
 foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse -Force) {
     $relative = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
-    if ($file.Extension -eq '.dll' -and $relative -notin @('1.6/Assemblies/QualityEverything.dll', '1.7/Assemblies/QualityEverything.dll')) { throw "Unexpected assembly: $relative" }
+    if ($file.Extension -eq '.dll' -and $relative -notin @('1.6/Assemblies/ConfigurableQuality.dll', '1.7/Assemblies/ConfigurableQuality.dll')) { throw "Unexpected assembly: $relative" }
     if ($file.Extension -in @('.pdb', '.exe', '.deps.json', '.runtimeconfig.json') -or $file.Name -match '\.(deps|runtimeconfig)\.json$') { throw "Runtime/debug artifact: $relative" }
     if ($file.Extension -eq '.xml') { [xml](Get-Content -LiteralPath $file.FullName -Raw) | Out-Null }
 }

@@ -4,7 +4,7 @@ using RimWorld;
 using Verse;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     public class TraderFixes
     {

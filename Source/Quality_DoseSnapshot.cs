@@ -1,6 +1,6 @@
 using System;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Constant-size sufficient statistics for proportional blending of remaining native severity.
     // Native caps scale all captured contributions equally; elapsed decay retains their proportions.

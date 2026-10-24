@@ -1,18 +1,18 @@
 param(
     [Parameter(Mandatory)][string]$Destination,
-    [string]$PackagePath = (Join-Path $PSScriptRoot 'artifacts/package/EverythingHasQualityReforked')
+    [string]$PackagePath = (Join-Path $PSScriptRoot 'artifacts/package/ConfigurableQuality')
 )
 $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'validate-package.ps1') -PackagePath $PackagePath
 $source = (Resolve-Path -LiteralPath $PackagePath).Path
 $target = [IO.Path]::GetFullPath($Destination).TrimEnd('\', '/')
 # Restrict replacement to this mod's explicitly named installation, never the Mods root.
-if ([IO.Path]::GetFileName($target) -ne 'EverythingHasQualityReforked' -or $target -eq $PSScriptRoot -or $target.StartsWith($PSScriptRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
-    throw 'Destination must be an external folder named EverythingHasQualityReforked.'
+if ([IO.Path]::GetFileName($target) -notin @('ConfigurableQuality', 'EverythingHasQualityReforked') -or $target -eq $PSScriptRoot -or $target.StartsWith($PSScriptRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Destination must be an external folder named ConfigurableQuality.'
 }
 if (Test-Path -LiteralPath (Join-Path $target 'About/About.xml')) {
     [xml]$existing = Get-Content -LiteralPath (Join-Path $target 'About/About.xml') -Raw
-    if ($existing.ModMetaData.packageId -ne 'Cozarkian.QualityFramework') { throw 'Destination belongs to another mod.' }
+    if ($existing.ModMetaData.packageId -notin @('KyleMHB.ConfigurableQuality', 'Cozarkian.QualityFramework')) { throw 'Destination belongs to another mod.' }
 } elseif (Test-Path -LiteralPath $target) {
     if (@(Get-ChildItem -LiteralPath $target -Force).Count -gt 0) { throw 'Destination is nonempty and has no matching mod metadata.' }
 }

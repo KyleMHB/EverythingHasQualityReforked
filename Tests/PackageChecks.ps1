@@ -1,4 +1,4 @@
-param([string]$PackagePath = (Join-Path $PSScriptRoot '../artifacts/package/EverythingHasQualityReforked'))
+param([string]$PackagePath = (Join-Path $PSScriptRoot '../artifacts/package/ConfigurableQuality'))
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path -Parent $PSScriptRoot
 $package = (Resolve-Path -LiteralPath $PackagePath).Path
@@ -8,8 +8,8 @@ $fixture = [IO.Path]::GetFullPath((Join-Path $temporaryParent $fixtureName))
 # The fixture is outside the repository so it exercises the real deployment guards.
 if (-not $fixture.StartsWith($temporaryParent + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid fixture path.' }
 $candidateParent = Join-Path $fixture 'candidate'
-$candidate = Join-Path $candidateParent 'EverythingHasQualityReforked'
-$installed = Join-Path $fixture 'installed/EverythingHasQualityReforked'
+$candidate = Join-Path $candidateParent 'ConfigurableQuality'
+$installed = Join-Path $fixture 'installed/ConfigurableQuality'
 function Expect-Rejection([string]$Expected) {
     try { & (Join-Path $repository 'validate-package.ps1') -PackagePath $candidate | Out-Null }
     catch {

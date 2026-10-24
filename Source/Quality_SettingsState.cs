@@ -4,7 +4,7 @@ using System.Linq;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualitySettingsState
     {
@@ -20,6 +20,8 @@ namespace QualityEverything
         }
         private static int comparedRevision = -1;
         private static bool dirty, restartPending;
+        private static bool runtimeInitialized;
+        internal static void FreezeActive() => runtimeInitialized = true;
         private static string Identity(QualityConfiguration configuration)
         {
             var copy = configuration.Clone();
@@ -63,7 +65,7 @@ namespace QualityEverything
         {
             var errors = session.Save();
             if (errors.Count != 0) return errors;
-            Mod_QEverything.settings?.Write();
+            Mod_ConfigurableQuality.settings?.Write();
             Changed();
             return errors;
         }
@@ -88,10 +90,13 @@ namespace QualityEverything
                     var max = typeof(ProductionSettings).GetField("max" + field.Name.Substring(3));
                     if (max != null && (int)field.GetValue(configuration.Production) > (int)max.GetValue(configuration.Production)) field.SetValue(configuration.Production, max.GetValue(configuration.Production));
                 }
-                Log.Warning("Everything Has Quality: repaired invalid saved options: " + string.Join(", ", errors));
+                Log.Warning("Configurable Quality: repaired invalid saved options: " + string.Join(", ", errors));
             }
-            session = new QualityConfigurationSession(configuration);
-            foreach (var field in typeof(ProductionSettings).GetFields()) typeof(ModSettings_QEverything).GetField(field.Name)?.SetValue(null, field.GetValue(ActiveSnapshot.Production));
+            // Importers can reload ModSettings during play. Runtime defs and caches still
+            // belong to the startup configuration, so imported options wait for restart.
+            if (runtimeInitialized) session.Import(configuration);
+            else session = new QualityConfigurationSession(configuration);
+            foreach (var field in typeof(ProductionSettings).GetFields()) typeof(ModSettings_ConfigurableQuality).GetField(field.Name)?.SetValue(null, field.GetValue(ActiveSnapshot.Production));
             Changed();
         }
         public static readonly Dictionary<string, string> GroupFields = QualityConfiguration.GroupFields;
@@ -102,6 +107,7 @@ namespace QualityEverything
         public ThingDef Def;
         public RuleTarget Target;
         public bool NativeQuality;
+        public bool RemovableVanillaQuality;
         public string Label, Source;
     }
 
@@ -110,7 +116,8 @@ namespace QualityEverything
         public static readonly List<QualityCatalogEntry> Entries = new List<QualityCatalogEntry>();
         private static readonly Dictionary<ThingDef, QualityCatalogEntry> byDef = new Dictionary<ThingDef, QualityCatalogEntry>();
         private static readonly HashSet<QualityBucket> activeGroups = new HashSet<QualityBucket>();
-        private static readonly Dictionary<ThingDef, RuleResolution> activeAssignment = new Dictionary<ThingDef, RuleResolution>(), activeParticipation = new Dictionary<ThingDef, RuleResolution>();
+        private static readonly HashSet<ThingDef> activeVanillaRemoval = new HashSet<ThingDef>();
+        private static readonly Dictionary<ThingDef, RuleResolution> activeAssignment = new Dictionary<ThingDef, RuleResolution>(), activeParticipation = new Dictionary<ThingDef, RuleResolution>(), activeMarketValue = new Dictionary<ThingDef, RuleResolution>();
         public static int Revision
         {
             get; private set;
@@ -142,12 +149,19 @@ namespace QualityEverything
                     Def = def,
                     Target = new RuleTarget(def.defName, QualityDefUtility.GetBucket(def).ToString(), supported, paths.Select(p => new CategoryPath(p.Key, p.Value)).ToArray()),
                     NativeQuality = native,
+                    RemovableVanillaQuality = CanRemoveVanillaQuality(def, supported, native),
                     Label = def.LabelCap,
                     Source = source
                 };
                 Entries.Add(entry);
                 byDef[def] = entry;
                 activeAssignment[def] = QualityRules.Resolve(entry.Target, QualitySettingsState.ActiveSnapshot.Assignment);
+                if (entry.RemovableVanillaQuality && QualityRules.Resolve(entry.Target, QualitySettingsState.ActiveSnapshot.VanillaRemoval).Enabled)
+                {
+                    activeVanillaRemoval.Add(def);
+                    activeAssignment[def] = new RuleResolution(false, "VanillaRemoval", def.defName);
+                }
+                activeMarketValue[def] = QualityRules.Resolve(new RuleTarget(entry.Target.Id, entry.Target.Group, supported || entry.RemovableVanillaQuality, entry.Target.Categories), QualitySettingsState.ActiveSnapshot.MarketValue);
                 if (activeAssignment[def].Enabled) activeGroups.Add(QualityDefUtility.GetBucket(def));
                 activeParticipation[def] = QualityRules.Resolve(new RuleTarget(entry.Target.Id, entry.Target.Group, supported || native, entry.Target.Categories), QualitySettingsState.ActiveSnapshot.Participation);
             }
@@ -155,8 +169,12 @@ namespace QualityEverything
             Revision++;
         }
         public static QualityCatalogEntry Get(ThingDef def) => def != null && byDef.TryGetValue(def, out var result) ? result : null;
+        internal static bool CanRemoveVanillaQuality(ThingDef def, bool supported, bool native) => supported && native && def?.modContentPack?.IsOfficialMod == true
+            && def.comps != null && !def.comps.Any(p => p?.compClass != null && p.compClass != typeof(CompQuality) && typeof(CompQuality).IsAssignableFrom(p.compClass));
         public static bool Assigned(ThingDef def) => def != null && activeAssignment.TryGetValue(def, out var result) && result.Enabled;
+        public static bool RemovesVanillaQuality(ThingDef def) => def != null && activeVanillaRemoval.Contains(def);
         public static bool Participates(ThingDef def) => def != null && activeParticipation.TryGetValue(def, out var result) && result.Enabled;
+        public static bool ScalesMarketValue(ThingDef def) => def == null || !activeMarketValue.TryGetValue(def, out var result) || result.Enabled;
         public static bool AnyAssigned(params QualityBucket[] groups) => groups.Any(activeGroups.Contains);
     }
 

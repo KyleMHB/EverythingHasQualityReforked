@@ -1,5 +1,5 @@
 using System;
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityEnergyCalculation
     {

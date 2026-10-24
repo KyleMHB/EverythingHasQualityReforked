@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Source/Quality_Configuration.cs" Link="Quality_Configuration.cs" />
+    <Compile Include="../../Source/Quality_NumericRange.cs" Link="Quality_NumericRange.cs" />
+  </ItemGroup>
+</Project>

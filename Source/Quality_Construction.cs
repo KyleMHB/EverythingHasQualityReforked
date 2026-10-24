@@ -8,7 +8,7 @@ using Verse;
 using Verse.AI;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     [HarmonyPatch]
     public static class Quality_Construction
@@ -43,9 +43,10 @@ namespace QualityEverything
         }
         public static int CalculateMaterialQuality(Frame frame)
         {
+            if (!ModSettings_ConfigurableQuality.useMaterialQuality) return -1;
             float materialQuality = -1;
             ThingDef thingDef = frame.def.entityDefToBuild as ThingDef;
-            if (ModSettings_QEverything.useMaterialQuality && thingDef != null && QualityDefUtility.ShouldReceiveQuality(thingDef) && thingDef.HasComp(typeof(CompQuality)))
+            if (ModSettings_ConfigurableQuality.useMaterialQuality && thingDef != null && QualityDefUtility.ShouldReceiveQuality(thingDef) && thingDef.HasComp(typeof(CompQuality)))
             {
                 int numIng = 0;
                 for (int i = 0; i < frame.resourceContainer.Count; i++)
@@ -66,7 +67,7 @@ namespace QualityEverything
                     //Log.Message("Value is " + materialQuality.ToString() + " for " + numIng + " resources");
                 }
             }
-            return GenMath.RoundRandom(materialQuality);
+            return materialQuality < 0 ? -1 : GenMath.RoundRandom(materialQuality);
         }
 
         //Prevents pawns from picking up stacks that can't stack when gathering construction materials

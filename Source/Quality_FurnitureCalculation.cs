@@ -1,6 +1,6 @@
 using System;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // At most one contribution from each verified native furniture kind.
     internal struct QualityFurnitureContribution

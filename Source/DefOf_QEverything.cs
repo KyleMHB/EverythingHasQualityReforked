@@ -1,6 +1,6 @@
 using RimWorld;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Retain the public fields for existing callers while using one DefOf declaration.
     public static class DefOf_QEverything

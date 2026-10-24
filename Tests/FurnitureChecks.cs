@@ -1,5 +1,5 @@
 using System;
-using QualityEverything;
+using ConfigurableQuality;
 class FurnitureChecks
 {
     static void Equal(float actual, float expected, string name) { if (float.IsNaN(actual) || Math.Abs(actual - expected) > .000001f) throw new Exception(name + ": " + actual); }

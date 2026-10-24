@@ -1,5 +1,5 @@
 using System;
-using QualityEverything;
+using ConfigurableQuality;
 class DurabilityChecks
 {
     static void Check(int actual, int expected, string name) { if (actual != expected) throw new Exception(name + ": expected " + expected + ", got " + actual); }

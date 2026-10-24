@@ -9,11 +9,11 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityConsumableEffects
     {
-        internal static readonly Harmony Harmony = new Harmony("rimworld.qualityframework.consumables");
+        internal static readonly Harmony Harmony = new Harmony("kylemhb.configurablequality.consumables");
         private static readonly Dictionary<ThingDef, List<StatDef>> activeStats = new Dictionary<ThingDef, List<StatDef>>();
         public static void Register()
         {

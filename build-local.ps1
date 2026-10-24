@@ -5,7 +5,7 @@ param(
     [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release'
 )
 $ErrorActionPreference = 'Stop'
-$arguments = @('build', (Join-Path $PSScriptRoot 'Source/QualityEverything.csproj'), '-c', $Configuration,
+$arguments = @('build', (Join-Path $PSScriptRoot 'Source/ConfigurableQuality.csproj'), '-c', $Configuration,
     "-p:RimWorldVersion=$GameVersion", '-p:NuGetAudit=false', '-p:UseSharedCompilation=false')
 if ($GameVersion -eq '1.7') {
     foreach ($assembly in @('Assembly-CSharp.dll', 'UnityStubs.dll', 'Waylith.UnityCompat.dll')) {

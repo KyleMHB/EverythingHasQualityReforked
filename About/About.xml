@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Everything has quality and it matters</name>
+	<name>Configurable Quality</name>
 	<author>KyleMHB</author>
   <supportedVersions>
 		<li>1.6</li>
 		<li>1.7</li>
   </supportedVersions>
-  <packageId>Cozarkian.QualityFramework</packageId>
+  <packageId>KyleMHB.ConfigurableQuality</packageId>
   <modDependencies>
 		<li>
 			<packageId>brrainz.harmony</packageId>
@@ -15,5 +15,6 @@
 			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
   </modDependencies>
-  <description>Expands item quality with inherited category rules and individual exceptions. Optional quality effects start disabled and can be enabled through previewable presets or separate controls. Save options and restart RimWorld to activate changes. Includes selected durability, production, equipment, combat, power, battery, food, medicine, ordinary-drug and native linked-furniture effects. Storage capacity and installed-bionic effects are omitted. Back up saves before removing mod-added quality support or uninstalling. Requires Harmony.</description>
+  <loadAfter><li>Garethp.ModlistConfigurator</li></loadAfter>
+  <description>Configure which eligible item types have quality and what quality changes. Use separate global defaults with group, category and item overrides for assignment, effects and market-value scaling. Fresh installations leave gameplay unchanged until settings or a preset are applied. Price-scaling rules can also cover eligible vanilla items. Separate opt-in rules can remove standard quality from selected vanilla items, including official expansions. Other mods' items and custom quality components stay protected. Save options and restart RimWorld to activate changes. Includes selected durability, production, equipment, combat, power, battery, food, medicine, ordinary-drug and native linked-furniture effects. Storage capacity and installed-bionic effects are omitted. Back up saves before removing quality support or uninstalling. Includes a Progression preset with pack-specific exclusions and Auto Mod Config support. Requires Harmony.</description>
 </ModMetaData>

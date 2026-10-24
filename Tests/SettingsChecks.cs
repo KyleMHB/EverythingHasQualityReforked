@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using QualityEverything;
+using ConfigurableQuality;
 class SettingsChecks
 {
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
@@ -26,6 +26,65 @@ class SettingsChecks
             Check(!resolution.Enabled && resolution.Conflict && resolution.SourceId == "ZExclude", "exclude tie and truthful reason independent of order");
         }
         var defaults = new QualityConfiguration();
+        var passiveTarget = new RuleTarget("Passive", "Building", true, new CategoryPath[0]);
+        Check(!QualityRules.Resolve(passiveTarget, defaults.Assignment).Enabled
+            && !QualityRules.Resolve(passiveTarget, defaults.VanillaRemoval).Enabled
+            && QualityRules.Resolve(passiveTarget, defaults.MarketValue).Enabled
+            && typeof(ProductionSettings).GetFields().Where(f => f.FieldType == typeof(bool)).All(f => !(bool)f.GetValue(defaults.Production)), "fresh install has no gameplay-changing options enabled");
+        Check(!QualityRules.Resolve(passiveTarget, QualityConfiguration.MigrateLegacyXml("<ModSettings />").Assignment).Enabled, "empty config does not activate legacy defaults");
+        var globalRules = defaults.Clone();
+        globalRules.Assignment.Default = true;
+        Check(QualityRules.Resolve(passiveTarget, globalRules.Assignment).Enabled, "global assignment fallback applies");
+        globalRules.Assignment.Groups["Building"] = false;
+        Check(!QualityRules.Resolve(passiveTarget, globalRules.Assignment).Enabled, "group overrides global");
+        globalRules.VanillaRemoval.Default = true;
+        globalRules.MarketValue.Default = false;
+        var globalReload = QualityConfiguration.Parse(globalRules.Serialize());
+        Check(globalReload.Assignment.Default && globalReload.VanillaRemoval.Default && !globalReload.MarketValue.Default
+            && !globalReload.Assignment.Groups["Building"], "global rules and overrides roundtrip independently");
+        var preset = defaults.Clone(); preset.EnablePresetProduction(); preset.ProgressionCompatibility = true;
+        Check(QualityConfiguration.Parse(preset.Serialize()).ProgressionCompatibility, "Progression provider-policy marker survives config-manager export/import");
+        Check(QualityRules.Resolve(passiveTarget, preset.Assignment).Enabled && preset.Production.useMaterialQuality
+            && preset.MarketValue.Default && !preset.VanillaRemoval.Default, "preset activates assignment and production without changing pricing or removal");
+        Check(defaults.VanillaRemoval.Groups.Values.All(v => !v) && QualityConfiguration.Parse("<quality />").VanillaRemoval.Groups.Values.All(v => !v),
+            "fresh and existing configurations never remove vanilla quality by default");
+        var removalDraft = defaults.Clone();
+        removalDraft.VanillaRemoval.Categories["Weapons"] = RuleChoice.Include;
+        removalDraft.VanillaRemoval.Items["KeepRifle"] = RuleChoice.Exclude;
+        var removalRoundtrip = QualityConfiguration.Parse(removalDraft.Serialize());
+        Check(removalRoundtrip.VanillaRemoval.Categories["Weapons"] == RuleChoice.Include
+            && removalRoundtrip.VanillaRemoval.Items["KeepRifle"] == RuleChoice.Exclude
+            && defaults.VanillaRemoval.Categories.Count == 0, "vanilla removal rules persist independently and clone without sharing");
+        Check(defaults.MarketValue.Default && defaults.MarketValue.Groups.Values.All(v => v) && QualityConfiguration.Parse("<quality />").MarketValue.Groups.Values.All(v => v),
+            "new and existing settings preserve quality pricing by default");
+        var valueSession = new QualityConfigurationSession(defaults);
+        valueSession.Draft.MarketValue.Categories["Buildings"] = RuleChoice.Exclude;
+        Check(valueSession.Saved.MarketValue.Categories.Count == 0 && valueSession.Active.MarketValue.Categories.Count == 0,
+            "market-value draft does not change saved or active settings");
+        Check(valueSession.Save().Count == 0 && valueSession.Saved.MarketValue.Categories["Buildings"] == RuleChoice.Exclude && valueSession.Active.MarketValue.Categories.Count == 0,
+            "market-value switch activates only after restart");
+        var reloadedValue = QualityConfiguration.Parse(valueSession.Saved.Serialize());
+        Check(reloadedValue.MarketValue.Categories["Buildings"] == RuleChoice.Exclude && reloadedValue.Clone().MarketValue.Categories["Buildings"] == RuleChoice.Exclude,
+            "market-value category rule survives save, reload and clone");
+        reloadedValue.Assignment.Groups["Building"] = true;
+        var wall = new RuleTarget("Wall", "Building", true, new[] { new CategoryPath("Buildings", 1), new CategoryPath("Walls", 2) });
+        Check(!QualityRules.Resolve(wall, reloadedValue.MarketValue).Enabled && QualityRules.Resolve(wall, reloadedValue.Assignment).Enabled,
+            "market-value category exclusions do not remove quality assignment");
+        reloadedValue.MarketValue.Categories["Walls"] = RuleChoice.Include;
+        Check(QualityRules.Resolve(wall, reloadedValue.MarketValue).Enabled, "deeper market-value category overrides its parent");
+        reloadedValue.MarketValue.Items["Wall"] = RuleChoice.Exclude;
+        Check(!QualityRules.Resolve(wall, reloadedValue.MarketValue).Enabled, "market-value item exception overrides category");
+        var importedValue = new QualityConfigurationSession(defaults);
+        importedValue.Import(reloadedValue);
+        Check(importedValue.Active.MarketValue.Categories.Count == 0 && importedValue.Saved.MarketValue.Categories.Count == 2
+            && importedValue.Draft.MarketValue.Items["Wall"] == RuleChoice.Exclude,
+            "runtime settings import updates saved and draft without changing active pricing");
+        reloadedValue.MarketValue.Items.Clear();
+        Check(importedValue.Saved.MarketValue.Items.ContainsKey("Wall"), "imported settings are independent snapshots");
+        var sharedXml = new System.Xml.Linq.XElement("ModSettings", new System.Xml.Linq.XAttribute("Class", "ConfigurableQuality.ModSettings_ConfigurableQuality"),
+            new System.Xml.Linq.XElement("qualityConfiguration", importedValue.Saved.Serialize())).ToString();
+        var sharedConfiguration = QualityConfiguration.Parse(System.Xml.Linq.XElement.Parse(sharedXml).Element("qualityConfiguration").Value);
+        Check(sharedConfiguration.Serialize() == importedValue.Saved.Serialize(), "standard mod-settings XML preserves complete config for sharing and preset imports");
         foreach (string field in new[] { "tableFactor", "awfulSupplyFactor", "legSupplyFactor" })
             foreach (float value in new[] { -1f, 0f, 1f, 10f, 10.01f, 11f, float.NaN, float.PositiveInfinity })
             {

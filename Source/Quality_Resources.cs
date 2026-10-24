@@ -7,7 +7,7 @@ using RimWorld;
 using Verse;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     [HarmonyPatch]
     class Quality_Resources
@@ -83,7 +83,7 @@ namespace QualityEverything
             int maxQuality = QualityDefUtility.GetMaxQuality(thing.def);
             QualityCategory qc;
             if (worker != null && relevantSkill != null &&
-               ((relevantSkill == SkillDefOf.Mining && ModSettings_QEverything.skilledMining) || (relevantSkill == SkillDefOf.Plants && ModSettings_QEverything.skilledHarvesting) || (relevantSkill == SkillDefOf.Animals && ModSettings_QEverything.skilledAnimals)))
+               ((relevantSkill == SkillDefOf.Mining && ModSettings_ConfigurableQuality.skilledMining) || (relevantSkill == SkillDefOf.Plants && ModSettings_ConfigurableQuality.skilledHarvesting) || (relevantSkill == SkillDefOf.Animals && ModSettings_ConfigurableQuality.skilledAnimals)))
             {
                 qc = Quality_Generator.GenerateQualityCreatedByPawn(worker, relevantSkill, thing);
             }

@@ -1,5 +1,5 @@
 using System;
-using QualityEverything;
+using ConfigurableQuality;
 class EnergyChecks
 {
     static void Equal(float actual, float expected, string name) { if (Math.Abs(actual - expected) > .001f || float.IsNaN(actual)) throw new Exception(name + ": " + actual); }

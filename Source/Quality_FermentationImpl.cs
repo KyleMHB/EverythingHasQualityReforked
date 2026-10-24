@@ -4,7 +4,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     public sealed class CompProperties_FermentationQualityTracker : CompProperties
     {
@@ -99,7 +99,7 @@ namespace QualityEverything
 
         private static void Prefix(Building_FermentingBarrel __instance, Thing wort, ref AddWortState __state)
         {
-            if (!ModSettings_QEverything.useMaterialQuality || wort == null)
+            if (!ModSettings_ConfigurableQuality.useMaterialQuality || wort == null)
             {
                 return;
             }
@@ -139,7 +139,7 @@ namespace QualityEverything
 
         private static void Prefix(Building_FermentingBarrel __instance, ref TakeOutBeerState __state)
         {
-            if (!ModSettings_QEverything.useMaterialQuality)
+            if (!ModSettings_ConfigurableQuality.useMaterialQuality)
             {
                 return;
             }

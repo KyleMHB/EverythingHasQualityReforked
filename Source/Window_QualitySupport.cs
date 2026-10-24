@@ -5,7 +5,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // This is a conservative definition-level preview, not a second implementation of adapter eligibility.
     internal sealed class Window_QualitySupport : Window

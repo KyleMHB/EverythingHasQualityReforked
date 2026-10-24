@@ -1,5 +1,5 @@
 using System;
-using QualityEverything;
+using ConfigurableQuality;
 using HarmonyLib;
 using System.Runtime.CompilerServices;
 class EquipmentChecks
@@ -15,8 +15,8 @@ class EquipmentChecks
     static void CheckAdapterComposition()
     {
         var target = typeof(EquipmentChecks).GetMethod(nameof(QualityChangeFixture));
-        string[] internalOwners = { "rimworld.qualityframework", "rimworld.qualityframework.energy", "rimworld.qualityframework.consumables", "rimworld.qualityframework.furniture", "rimworld.qualityframework.native-output" };
-        string[] foreignOwners = { "other.quality.provider", "rimworld.qualityframework.unknown" };
+        string[] internalOwners = { "kylemhb.configurablequality", "kylemhb.configurablequality.energy", "kylemhb.configurablequality.consumables", "kylemhb.configurablequality.furniture", "kylemhb.configurablequality.native-output" };
+        string[] foreignOwners = { "other.quality.provider", "kylemhb.configurablequality.unknown" };
         try
         {
             foreach (string owner in internalOwners)

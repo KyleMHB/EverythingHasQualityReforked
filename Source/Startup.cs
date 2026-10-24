@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using RimWorld;
 using Verse;
 using Verse.AI;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     [StaticConstructorOnStartup]
     public class Startup
@@ -24,6 +25,8 @@ namespace QualityEverything
         private static void Initialize()
         {
             QualityProgression.Initialize();
+            QualityProgression.PrepareStartup();
+            QualitySettingsState.FreezeActive();
             QualityCatalog.Build();
             RunHarmony();
             Quality_CompPatch.DefPatch();
@@ -32,21 +35,21 @@ namespace QualityEverything
             QualityConsumableEffects.Register();
             QualityEquipmentCombat.Register();
             QualityLinkedFurniture.Register();
-            QualityNativeOutput.Register();
+            if (QualityCatalog.Entries.Any(e => QualityCatalog.Assigned(e.Def))) QualityNativeOutput.Register();
         }
 
         public static void RunHarmony()
         {
-            Harmony harmony = new Harmony("rimworld.qualityframework");
+            Harmony harmony = new Harmony("kylemhb.configurablequality");
             // Any ingredient can have incompatible stacks, including native/provider quality
             // when this mod's Stuff assignment is disabled.
             MethodInfo mJump = AccessTools.FindIncludingInnerTypes(typeof(Toils_Haul), t => AccessTools.FirstMethod(t, m => m.Name.Contains("JumpIfAlsoCollectingNextTargetInQueue") && m.ReturnType == typeof(void)));
-            if (mJump != null)
+            if (mJump != null && QualityCatalog.Entries.Any(e => QualityCatalog.Assigned(e.Def)))
             {
                 harmony.Patch(mJump, null, null, new HarmonyMethod(typeof(Quality_Construction), "CollectNextTarget_Transpiler"));
                 stuffPatchRan = true;
             }
-            else
+            else if (mJump == null)
             {
                 Log.Error("QEverything: unable to find haul queue method for stack compatibility patch.");
             }

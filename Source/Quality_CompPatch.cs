@@ -2,7 +2,7 @@ using RimWorld;
 using Verse;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     [HarmonyPatch]
     public static class Quality_CompPatch

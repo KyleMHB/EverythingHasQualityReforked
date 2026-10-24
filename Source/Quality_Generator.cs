@@ -5,7 +5,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     public class Quality_Generator
     {
@@ -18,11 +18,11 @@ namespace QualityEverything
         {
             if (def == null || !QualityDefUtility.ShouldReceiveQuality(def))
                 return QualityUtility.GenerateQualityCreatedByPawn(pawn, relevantSkill, consumeInspiration);
-            if (ModSettings_QEverything.skilledStoneCutting && def.thingCategories?.Contains(ThingCategoryDefOf.StoneBlocks) == true && relevantSkill == null)
+            if (ModSettings_ConfigurableQuality.skilledStoneCutting && def.thingCategories?.Contains(ThingCategoryDefOf.StoneBlocks) == true && relevantSkill == null)
             {
                 relevantSkill = SkillDefOf.Crafting;
             }
-            if (relevantSkill == null || (!ModSettings_QEverything.skilledButchering && (def.IsMeat || def.IsLeather)))
+            if (relevantSkill == null || (!ModSettings_ConfigurableQuality.skilledButchering && (def.IsMeat || def.IsLeather)))
             {
                 return (QualityCategory)Mathf.Clamp((int)QualityUtility.GenerateQuality(QualityGenerator.BaseGen), QualityDefUtility.GetMinQuality(def), QualityDefUtility.GetMaxQuality(def));
             }
@@ -54,7 +54,7 @@ namespace QualityEverything
                 level = skill.Level;
             }
 
-            if (ModSettings_QEverything.useSkillReq)
+            if (ModSettings_ConfigurableQuality.useSkillReq)
             {
                 if (recipeSkillReq != null)
                 {
@@ -75,38 +75,38 @@ namespace QualityEverything
             InspirationDef inspirationDef = InspirationUtility.CheckInspired(def, relevantSkill);
             bool inspired = (consumeInspiration && inspirationDef != null && pawn.InspirationDef == inspirationDef);
 
-            if ((ModSettings_QEverything.useMaterialQuality || ModSettings_QEverything.useTableQuality) && supplyQuality >= 0)
+            if ((ModSettings_ConfigurableQuality.useMaterialQuality || ModSettings_ConfigurableQuality.useTableQuality) && supplyQuality >= 0)
             {
-                if (ModSettings_QEverything.multSupplyFactor)
+                if (ModSettings_ConfigurableQuality.multSupplyFactor)
                 {
                     switch(supplyQuality)
 					{
                         case 0:
-                            level = (int)(level * ModSettings_QEverything.awfulSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.awfulSupplyFactor);
                             break;
                         case 1:
-                            level = (int)(level * ModSettings_QEverything.poorSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.poorSupplyFactor);
                             break;
                         case 2:
-                            level = (int)(level * ModSettings_QEverything.normalSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.normalSupplyFactor);
                             break;
                         case 3:
-                            level = (int)(level * ModSettings_QEverything.goodSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.goodSupplyFactor);
                             break;
                         case 4:
-                            level = (int)(level * ModSettings_QEverything.excSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.excSupplyFactor);
                             break;
                         case 5:
-                            level = (int)(level * ModSettings_QEverything.masterSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.masterSupplyFactor);
                             break;
                         case 6:
-                            level = (int)(level * ModSettings_QEverything.legSupplyFactor);
+                            level = (int)(level * ModSettings_ConfigurableQuality.legSupplyFactor);
                             break;
                     }
                 }
                 else
                 {
-                    level += supplyQuality - Mathf.Min(maxQuality, ModSettings_QEverything.stdSupplyQuality);
+                    level += supplyQuality - Mathf.Min(maxQuality, ModSettings_ConfigurableQuality.stdSupplyQuality);
                 }
             }
             qualityCategory = QualityUtility.GenerateQualityCreatedByPawn(level, inspired);

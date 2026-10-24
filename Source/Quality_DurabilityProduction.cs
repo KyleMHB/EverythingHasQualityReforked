@@ -5,7 +5,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityDurabilityProduction
     {

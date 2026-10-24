@@ -7,7 +7,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // One adapter owns every native battery capacity/efficiency consumer. Shared Props remain untouched.
     internal static class QualityEnergyEffects
@@ -26,7 +26,7 @@ namespace QualityEverything
         {
             if (registered) return;
             registered = true;
-            var harmony = new Harmony("rimworld.qualityframework.energy");
+            var harmony = new Harmony("kylemhb.configurablequality.energy");
             bool power = false, battery = false;
             string powerReason = "QEverything.Energy.PowerAvailable".Translate().ToString();
             string batteryReason = "QEverything.Energy.BatteryAvailable".Translate().ToString();

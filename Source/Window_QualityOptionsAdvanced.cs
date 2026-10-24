@@ -7,7 +7,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal sealed partial class Window_QualityOptions
     {
@@ -110,6 +110,7 @@ namespace QualityEverything
             Find.WindowStack.Add(new Window_QualityPresetReview(progression ? T("ProgressionPreset") : A(medium ? "Medium" : "Mild"), enabled, replaced, benefits, costs, sections, () =>
             {
                 RememberDraft();
+                Draft.EnablePresetProduction();
                 if (progression) QualityProgression.Apply(Draft);
                 else foreach (EffectId id in ids) Draft.Effects[id.ToString()] = new EffectSettings { Enabled = true, Factors = QualityEffectCatalog.Curve(id, medium) };
                 foreach (string key in buffers.Keys.Where(k => k.StartsWith("effect:", StringComparison.Ordinal)).ToArray()) buffers.Remove(key);

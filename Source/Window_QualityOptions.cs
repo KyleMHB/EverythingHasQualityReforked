@@ -5,7 +5,7 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal sealed partial class Window_QualityOptions : Window
     {
@@ -23,9 +23,9 @@ namespace QualityEverything
             public void Restore(BrowserState f) { Search = f.Search; Group = f.Group; Category = f.Category; Source = f.Source; ResultFilter = f.ResultFilter; OverridesOnly = f.OverridesOnly; Reviewing = false; ListScroll = Vector2.zero; }
         }
         private sealed class CategoryNode { public ThingCategoryDef Def; public string Path; public int Depth; public string[] Ancestors; }
-        private readonly BrowserState assignment = new BrowserState(), targets = new BrowserState();
-        private BrowserState Browser => participation ? targets : assignment;
-        private bool participation, targetView, closing;
+        private readonly BrowserState assignment = new BrowserState(), targets = new BrowserState(), marketValue = new BrowserState(), vanillaRemoval = new BrowserState();
+        private BrowserState Browser => removing ? vanillaRemoval : pricing ? marketValue : participation ? targets : assignment;
+        private bool participation, pricing, removing, targetView, closing;
         private int page;
         private readonly Action afterClose;
         private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
@@ -38,9 +38,9 @@ namespace QualityEverything
         private readonly string[] groupIds = QualitySettingsState.GroupFields.Keys.ToArray();
         private readonly Dictionary<string, int[]> counts = new Dictionary<string, int[]>();
         private int countRevision = -1;
-        private bool countParticipation;
+        private int countPage = -1;
         private QualityConfiguration Draft => QualitySettingsState.Draft;
-        private RuleSet Rules => participation ? Draft.Participation : Draft.Assignment;
+        private RuleSet Rules => removing ? Draft.VanillaRemoval : pricing ? Draft.MarketValue : participation ? Draft.Participation : Draft.Assignment;
         public override Vector2 InitialSize => new Vector2(1120, 820);
         private static string T(string key) => ("QEverything.Options." + key).Translate().ToString();
         private static string U(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T("UX." + key), args);
@@ -73,20 +73,24 @@ namespace QualityEverything
             if (errors.Count == 0) undo.Clear(); return errors.Count == 0;
         }
         private void RememberDraft() { if (undo.Count >= 30) { var recent = undo.Take(29).Reverse().ToArray(); undo.Clear(); foreach (var item in recent) undo.Push(item); } undo.Push(Draft.Clone()); }
-        private void DraftChanged() { QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = null; error = ""; }
+        private void DraftChanged() { QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = marketValue.FilterKey = vanillaRemoval.FilterKey = null; error = ""; }
         public override void DoWindowContents(Rect rect)
         {
             var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color;
             try
             {
-                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
+                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production"), U("MarketValue"), U("VanillaQuality") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
                 for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
                 participation = page == 1;
+                pricing = page == 3;
+                removing = page == 4;
                 Widgets.Label(new Rect(rect.x, rect.y + 38, rect.width, 28), (QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));
                 var body = new Rect(rect.x, rect.y + 72, rect.width, Math.Max(100, rect.height - 164));
                 if (page == 0) DrawRules(body);
                 else if (page == 1) { float half = (body.width - 8) / 2; if (Widgets.ButtonText(new Rect(body.x, body.y, half, 30), U("ChooseEffects"), drawBackground: targetView)) targetView = false; if (Widgets.ButtonText(new Rect(body.x + half + 8, body.y, half, 30), U("EffectItems"), drawBackground: !targetView)) targetView = true; body.y += 38; body.height -= 38; if (targetView) DrawRules(body); else DrawEffects(body); }
                 else if (page == 2) DrawProduction(body);
+                else if (page == 3) DrawRules(body);
+                else if (page == 4) DrawRules(body);
                 Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RemovalWarning")); float w = (rect.width - 32) / 5;
                 if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && undo.Count > 0) { QualitySettingsState.ReplaceDraft(undo.Pop()); buffers.Clear(); DraftChanged(); }
                 if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); buffers.Clear(); undo.Clear(); error = ""; }
@@ -102,17 +106,26 @@ namespace QualityEverything
         {
             float left = Math.Min(260, rect.width * .28f); DrawBrowser(new Rect(rect.x, rect.y, left, rect.height));
             var area = new Rect(rect.x + left + 12, rect.y, rect.width - left - 12, rect.height); var s = Browser; float y = area.y;
+            bool global = Rules.Default, previousGlobal = global;
+            Widgets.CheckboxLabeled(new Rect(area.x, y, area.width, 28), U("GlobalDefault") + ": " + U(removing ? "RemoveVanillaQuality" : pricing ? "ScaleMarketValue" : participation ? "ApplyEffects" : "GiveQuality"), ref global);
+            if (global != previousGlobal) { RememberDraft(); Rules.Default = global; DraftChanged(); }
+            y += 34;
             Widgets.Label(new Rect(area.x, y, area.width, 24), ScopeName); y += 26;
             if (s.Group.Length > 0 || s.Category.Length > 0)
             {
-                string current = s.Group.Length > 0 ? U(Rules.Groups.TryGetValue(s.Group, out var yes) && yes ? "DefaultYes" : "DefaultNo") : RuleText(Rules.Categories.TryGetValue(s.Category, out var val) ? val : RuleChoice.Inherit, false);
-                if (Widgets.ButtonText(new Rect(area.x, y, area.width * .6f, 30), U(participation ? "ApplyEffects" : "GiveQuality") + ": " + current)) SelectScopeRule();
+                string current = s.Group.Length > 0 ? (Rules.Groups.TryGetValue(s.Group, out var yes) ? U(yes ? "DefaultYes" : "DefaultNo") : U("UseGlobal")) : RuleText(Rules.Categories.TryGetValue(s.Category, out var val) ? val : RuleChoice.Inherit, false);
+                if (Widgets.ButtonText(new Rect(area.x, y, area.width * .6f, 30), U(removing ? "RemoveVanillaQuality" : pricing ? "ScaleMarketValue" : participation ? "ApplyEffects" : "GiveQuality") + ": " + current)) SelectScopeRule();
                 if (Widgets.ButtonText(new Rect(area.x + area.width * .62f, y, area.width * .38f, 30), U("CustomItems"))) { s.Search = s.Source = ""; s.ResultFilter = 0; s.OverridesOnly = true; s.Reviewing = false; }
                 y += 34; Widgets.Label(new Rect(area.x, y, area.width, 24), ScopeSummary()); y += 27;
             }
-            else { Widgets.Label(new Rect(area.x, y, area.width, 40), U(participation ? "TargetsHelp" : "AssignmentHelp")); y += 42; }
+            else
+            {
+                string help = U(removing ? "VanillaRemovalHelp" : pricing ? "MarketValueHelp" : participation ? "TargetsHelp" : "AssignmentHelp");
+                float helpHeight = pricing || removing ? Text.CalcHeight(help, area.width) : 40;
+                Widgets.Label(new Rect(area.x, y, area.width, helpHeight), help); y += helpHeight + 2;
+            }
             Widgets.Label(new Rect(area.x, y, area.width, 22), U("SearchIn", ScopeName)); y += 22;
-            GUI.SetNextControlName(participation ? "quality-target-search" : "quality-assignment-search");
+            GUI.SetNextControlName(removing ? "quality-vanilla-removal-search" : pricing ? "quality-market-value-search" : participation ? "quality-target-search" : "quality-assignment-search");
             string next = Widgets.TextField(new Rect(area.x, y, area.width - 72, 30), s.Search); if (next != s.Search) { s.Search = next; s.ListScroll = Vector2.zero; }
             if (Widgets.ButtonText(new Rect(area.xMax - 66, y, 66, 30), U("ClearSearch"))) s.Search = ""; y += 34;
             float third = (area.width - 12) / 3;
@@ -138,23 +151,38 @@ namespace QualityEverything
         private string summaryKey, summaryText;
         private string ScopeSummary()
         {
-            var s = Browser; string key = participation + "|" + s.Group + "|" + s.Category;
+            var s = Browser; string key = page + "|" + s.Group + "|" + s.Category;
             if (summaryRevision == QualitySettingsState.Revision && summaryKey == key) return summaryText;
             summaryRevision = QualitySettingsState.Revision; summaryKey = key;
-            var scoped = QualityCatalog.Entries.Where(e => (s.Group.Length == 0 || e.Target.Group == s.Group) && (s.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == s.Category))).ToArray();
+            var scoped = QualityCatalog.Entries.Where(e => (!removing || e.RemovableVanillaQuality) && (s.Group.Length == 0 || e.Target.Group == s.Group) && (s.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == s.Category))).ToArray();
             int custom = scoped.Count(e => Rules.Items.ContainsKey(e.Target.Id));
             int deeper = scoped.SelectMany(e => e.Target.Categories).Select(c => c.Id).Distinct().Count(id => id != s.Category && Rules.Categories.ContainsKey(id));
             if (s.Category.Length == 0 || scoped.Length == 0) return summaryText = U("ScopeSummary", scoped.Count(e => Resolve(e).Enabled), scoped.Length, custom, deeper);
             var node = categoryNodes.First(n => n.Def.defName == s.Category);
             var ancestors = node.Ancestors.Select((id, i) => new CategoryPath(id, i + 1)).ToArray();
-            var parents = scoped.Select(e => QualityRules.Resolve(new RuleTarget("", e.Target.Group, true, ancestors), Rules)).Select(r => (r.Enabled ? T("Included") : T("Excluded")) + " / " + (r.ReasonKind == "Category" ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(r.SourceId)?.LabelCap.ToString() ?? r.SourceId) : GroupLabel(r.SourceId))).Distinct().ToArray();
+            var parents = scoped.Select(e => QualityRules.Resolve(new RuleTarget("", e.Target.Group, true, ancestors), Rules)).Select(r => (r.Enabled ? T("Included") : T("Excluded")) + " / " + (r.ReasonKind == "Category" ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(r.SourceId)?.LabelCap.ToString() ?? r.SourceId) : r.ReasonKind == "Global" ? U("GlobalDefault") : GroupLabel(r.SourceId))).Distinct().ToArray();
             return summaryText = U("ParentSummary", parents.Length == 1 ? parents[0] : U("MixedParent"), custom, deeper);
         }
-        private string RuleText(RuleChoice choice, bool item) => choice == RuleChoice.Inherit ? U(item ? "UseCategory" : "UseParent") : U(participation ? (choice == RuleChoice.Include ? "AllowEffects" : "BlockEffects") : (choice == RuleChoice.Include ? "GiveQuality" : "NoQuality"));
+        private string RuleText(RuleChoice choice, bool item) => choice == RuleChoice.Inherit ? U(item ? "UseCategory" : "UseParent") : U(removing ? (choice == RuleChoice.Include ? "RemoveVanillaQuality" : "KeepVanillaQuality") : pricing ? (choice == RuleChoice.Include ? "AllowPriceScaling" : "BlockPriceScaling") : participation ? (choice == RuleChoice.Include ? "AllowEffects" : "BlockEffects") : (choice == RuleChoice.Include ? "GiveQuality" : "NoQuality"));
         private void SelectScopeRule()
         {
-            var s = Browser; var choices = new List<FloatMenuOption>(); foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice)))
-            { if (s.Group.Length > 0 && choice == RuleChoice.Inherit) continue; var captured = choice; choices.Add(new FloatMenuOption(RuleText(choice, false), () => { if (s.Group.Length > 0) { bool current = Rules.Groups.TryGetValue(s.Group, out var b) && b; if (current == (captured == RuleChoice.Include)) return; } else if (!RuleChanges(Rules.Categories, s.Category, captured)) return; RememberDraft(); if (s.Group.Length > 0) Rules.Groups[s.Group] = captured == RuleChoice.Include; else SetRule(Rules.Categories, s.Category, captured); DraftChanged(); })); }
+            var s = Browser; var choices = new List<FloatMenuOption>();
+            foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice)))
+            {
+                var captured = choice;
+                choices.Add(new FloatMenuOption(s.Group.Length > 0 && choice == RuleChoice.Inherit ? U("UseGlobal") : RuleText(choice, false), () =>
+                {
+                    if (s.Group.Length > 0)
+                    {
+                        if (captured == RuleChoice.Inherit ? !Rules.Groups.ContainsKey(s.Group) : Rules.Groups.TryGetValue(s.Group, out bool current) && current == (captured == RuleChoice.Include)) return;
+                    }
+                    else if (!RuleChanges(Rules.Categories, s.Category, captured)) return;
+                    RememberDraft();
+                    if (s.Group.Length > 0) { if (captured == RuleChoice.Inherit) Rules.Groups.Remove(s.Group); else Rules.Groups[s.Group] = captured == RuleChoice.Include; }
+                    else SetRule(Rules.Categories, s.Category, captured);
+                    DraftChanged();
+                }));
+            }
             Find.WindowStack.Add(new FloatMenu(choices));
         }
         private int SelectionHidden(BrowserState s)
@@ -173,9 +201,9 @@ namespace QualityEverything
         private void ReviewSelected() { var s = Browser; if (!s.Reviewing) { s.Previous = s.Filters(); ClearFilters(); s.Reviewing = true; } else { if (s.Previous != null) s.Restore(s.Previous); s.Reviewing = false; } s.ListScroll = Vector2.zero; }
         private void RefreshCounts()
         {
-            if (countRevision == QualitySettingsState.Revision && countParticipation == participation) return; counts.Clear();
-            foreach (var e in QualityCatalog.Entries) { bool included = Resolve(e).Enabled; foreach (string key in e.Target.Categories.Select(c => "c:" + c.Id).Concat(new[] { "g:" + e.Target.Group })) { if (!counts.TryGetValue(key, out var pair)) counts[key] = pair = new int[2]; pair[included ? 0 : 1]++; } }
-            countRevision = QualitySettingsState.Revision; countParticipation = participation;
+            if (countRevision == QualitySettingsState.Revision && countPage == page) return; counts.Clear();
+            foreach (var e in QualityCatalog.Entries.Where(e => !removing || e.RemovableVanillaQuality)) { bool included = Resolve(e).Enabled; foreach (string key in e.Target.Categories.Select(c => "c:" + c.Id).Concat(new[] { "g:" + e.Target.Group })) { if (!counts.TryGetValue(key, out var pair)) counts[key] = pair = new int[2]; pair[included ? 0 : 1]++; } }
+            countRevision = QualitySettingsState.Revision; countPage = page;
         }
         private string CountLabel(string key) { if (!counts.TryGetValue(key, out var p)) return " (0)"; return " (" + p[0] + "/" + (p[0] + p[1]) + ")"; }
         private void DrawBrowser(Rect rect)
@@ -197,18 +225,27 @@ namespace QualityEverything
             Widgets.EndScrollView();
         }
         private void SelectSource() => Find.WindowStack.Add(new Window_QualitySource(value => { Browser.Source = value; Browser.ListScroll = Vector2.zero; }));
-        private RuleResolution Resolve(QualityCatalogEntry e) { var t = e.Target; return QualityRules.Resolve(participation ? new RuleTarget(t.Id, t.Group, t.Supported || e.NativeQuality, t.Categories) : t, Rules); }
+        private RuleResolution Resolve(QualityCatalogEntry e)
+        {
+            var t = e.Target;
+            return QualityRules.Resolve(removing ? new RuleTarget(t.Id, t.Group, e.RemovableVanillaQuality, t.Categories)
+                : pricing ? new RuleTarget(t.Id, t.Group, t.Supported && (!e.NativeQuality || e.RemovableVanillaQuality), t.Categories)
+                : participation ? new RuleTarget(t.Id, t.Group, t.Supported || e.NativeQuality, t.Categories) : t, Rules);
+        }
         private void Refresh()
         {
             var s = Browser; string key = QualityCatalog.Revision + "|" + QualitySettingsState.Revision + "|" + s.Search + "|" + s.Group + "|" + s.Category + "|" + s.Source + "|" + s.ResultFilter + "|" + s.OverridesOnly + "|" + s.Reviewing + "|" + (s.Reviewing ? s.SelectionRevision : 0);
             if (key == s.FilterKey) return; s.FilterKey = key; var entries = new List<QualityCatalogEntry>(QualityCatalog.Entries); var known = new HashSet<string>(entries.Select(e => e.Target.Id));
             foreach (string id in Rules.Items.Keys.Where(id => !known.Contains(id))) entries.Add(new QualityCatalogEntry { Target = new RuleTarget(id, "", false, new CategoryPath[0]), Label = id, Source = T("Unavailable") });
-            string query = s.Search.Trim(); s.Filtered = entries.Where(e => (query.Length == 0 || e.Label.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0) && (s.Group.Length == 0 || e.Target.Group == s.Group) && (s.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == s.Category)) && (s.Source.Length == 0 || e.Source == s.Source) && (!s.OverridesOnly || Rules.Items.ContainsKey(e.Target.Id)) && (s.ResultFilter == 0 || Resolve(e).Enabled == (s.ResultFilter == 1)) && (!s.Reviewing || s.Selected.Contains(e.Target.Id))).OrderBy(e => e.Label, StringComparer.CurrentCultureIgnoreCase).ToList();
+            string query = s.Search.Trim(); s.Filtered = entries.Where(e => (!removing || e.RemovableVanillaQuality || !known.Contains(e.Target.Id)) && (query.Length == 0 || e.Label.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0) && (s.Group.Length == 0 || e.Target.Group == s.Group) && (s.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == s.Category)) && (s.Source.Length == 0 || e.Source == s.Source) && (!s.OverridesOnly || Rules.Items.ContainsKey(e.Target.Id)) && (s.ResultFilter == 0 || Resolve(e).Enabled == (s.ResultFilter == 1)) && (!s.Reviewing || s.Selected.Contains(e.Target.Id))).OrderBy(e => e.Label, StringComparer.CurrentCultureIgnoreCase).ToList();
         }
         private string ResolutionText(QualityCatalogEntry e)
         {
-            var r = Resolve(e); string source = r.ReasonKind == "Group" ? GroupLabel(r.SourceId) : r.ReasonKind == "Category" ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(r.SourceId)?.LabelCap.ToString() ?? r.SourceId) : T(r.ReasonKind);
-            string status = U(participation ? (r.Enabled ? "EffectsAllowed" : "EffectsBlocked") : (r.Enabled ? "QualityYes" : "QualityNo")); if (!participation && e.NativeQuality && !r.Enabled) status = U("NativeKept"); return status + " / " + source;
+            var r = Resolve(e); string source = r.ReasonKind == "Group" ? GroupLabel(r.SourceId) : r.ReasonKind == "Category" ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(r.SourceId)?.LabelCap.ToString() ?? r.SourceId) : r.ReasonKind == "Global" ? U("GlobalDefault") : T(r.ReasonKind);
+            if (pricing && e.NativeQuality && !e.RemovableVanillaQuality) return U("NativePriceKept");
+            if (removing) return U(r.Enabled ? "VanillaRemovalPlanned" : "VanillaQualityKept") + " / " + source;
+            if (!participation && !pricing && e.RemovableVanillaQuality && QualityRules.Resolve(e.Target, Draft.VanillaRemoval).Enabled) return U("VanillaRemovalPlanned");
+            string status = U(pricing ? (r.Enabled ? "PriceScalingAllowed" : "PriceScalingBlocked") : participation ? (r.Enabled ? "EffectsAllowed" : "EffectsBlocked") : (r.Enabled ? "QualityYes" : "QualityNo")); if (!pricing && !participation && e.NativeQuality && !r.Enabled) status = U("NativeKept"); return status + " / " + source;
         }
         private void DrawItems(Rect rect)
         {
@@ -221,7 +258,7 @@ namespace QualityEverything
                 if (check) Widgets.DrawHighlightSelected(new Rect(0, y, view.width, row)); Widgets.CheckboxLabeled(new Rect(0, y + 9, 28, 28), "", ref check);
                 if (check != before) { s.SelectionRevision++; if (check) s.Selected.Add(e.Target.Id); else s.Selected.Remove(e.Target.Id); if (s.Reviewing && s.Selected.Count == 0) ReviewSelected(); }
                 if (Widgets.ButtonText(new Rect(34, y + 2, view.width * .43f - 34, row - 4), e.Label)) Find.WindowStack.Add(new Window_QualityItem(this, e));
-                Widgets.Label(new Rect(view.width * .45f, y + 3, view.width * .55f, row - 4), ResolutionText(e)); TooltipHandler.TipRegion(new Rect(30, y, view.width - 30, row), e.Target.Id + "\n" + e.Source + "\n" + (e.NativeQuality ? T("NativeProtected") : ""));
+                Widgets.Label(new Rect(view.width * .45f, y + 3, view.width * .55f, row - 4), ResolutionText(e)); TooltipHandler.TipRegion(new Rect(30, y, view.width - 30, row), e.Target.Id + "\n" + e.Source + "\n" + (e.RemovableVanillaQuality ? U("VanillaRemovalAvailable") : e.NativeQuality ? T("NativeProtected") : ""));
             }
             Widgets.EndScrollView();
         }
@@ -251,7 +288,7 @@ namespace QualityEverything
             {
                 Widgets.Label(new Rect(0, 0, rect.width, 34), entry.Label + " / " + entry.Source); Widgets.Label(new Rect(0, 42, rect.width, 58), owner.ResolutionText(entry)); float w = (rect.width - 16) / 3;
                 foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice))) { var captured = choice; if (Widgets.ButtonText(new Rect((int)choice * (w + 8), 105, w, 32), owner.RuleText(choice, true))) { if (RuleChanges(owner.Rules.Items, entry.Target.Id, captured)) { owner.RememberDraft(); SetRule(owner.Rules.Items, entry.Target.Id, captured); owner.DraftChanged(); } } }
-                Widgets.Label(new Rect(0, 147, rect.width, 54), owner.participation ? T("NeedsQuality") : T("NativeProtected"));
+                Widgets.Label(new Rect(0, 147, rect.width, 80), owner.removing ? U("VanillaRemovalWarning") : owner.pricing ? U("MarketValueItemHelp") : owner.participation ? T("NeedsQuality") : entry.RemovableVanillaQuality ? U("VanillaRemovalAvailable") : T("NativeProtected"));
                 if (owner.participation && Widgets.ButtonText(new Rect(0, 205, rect.width, 30), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry));
 
                 if (Widgets.ButtonText(new Rect(rect.width - 120, rect.height - 34, 120, 32), U("Done"))) Close();

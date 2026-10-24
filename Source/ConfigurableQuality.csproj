@@ -8,8 +8,8 @@
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <LangVersion>latest</LangVersion>
     <OutputType>Library</OutputType>
-    <RootNamespace>QualityEverything</RootNamespace>
-    <AssemblyName>QualityEverything</AssemblyName>
+    <RootNamespace>ConfigurableQuality</RootNamespace>
+    <AssemblyName>ConfigurableQuality</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Deterministic>true</Deterministic>

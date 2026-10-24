@@ -1,8 +1,8 @@
-﻿using RimWorld;
+using RimWorld;
 using Verse;
 using HarmonyLib;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     [DefOf]
     public static class DefOf_QFramework
@@ -38,7 +38,7 @@ namespace QualityEverything
             InspirationDef inspiration = __instance.def;
             if (inspiration == DefOf_QFramework.QF_Inspired_Butchering)
             {
-                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredButchering && ModSettings_QEverything.skilledButchering)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_ConfigurableQuality.inspiredButchering && ModSettings_ConfigurableQuality.skilledButchering)
                 {
                     return __result;
                 }
@@ -46,7 +46,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Gathering)
             {
-                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredGathering && ModSettings_QEverything.skilledAnimals)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_ConfigurableQuality.inspiredGathering && ModSettings_ConfigurableQuality.skilledAnimals)
                 {
                     return __result;
                 }
@@ -54,7 +54,7 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Harvesting)
             {
-                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredHarvesting && ModSettings_QEverything.skilledHarvesting)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_ConfigurableQuality.inspiredHarvesting && ModSettings_ConfigurableQuality.skilledHarvesting)
                 {
                     return __result;
                 }
@@ -62,23 +62,23 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Mining)
             {
-                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredMining && ModSettings_QEverything.skilledMining)
+                if (QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_ConfigurableQuality.inspiredMining && ModSettings_ConfigurableQuality.skilledMining)
                 {
                     return __result;
                 }
                 return 0f;
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Stonecutting)
-            { 
-                if(QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_QEverything.inspiredStonecutting && ModSettings_QEverything.skilledStoneCutting)
-                { 
+            {
+                if(QualityCatalog.AnyAssigned(QualityBucket.Stuff, QualityBucket.Ingredient, QualityBucket.TastyIngredient) && ModSettings_ConfigurableQuality.inspiredStonecutting && ModSettings_ConfigurableQuality.skilledStoneCutting)
+                {
                     return __result;
                 }
                 return 0f;
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Chemistry)
             {
-                if (ModSettings_QEverything.inspiredChemistry && QualityCatalog.AnyAssigned(QualityBucket.Drug, QualityBucket.Medicine))
+                if (ModSettings_ConfigurableQuality.inspiredChemistry && QualityCatalog.AnyAssigned(QualityBucket.Drug, QualityBucket.Medicine))
                 {
                     return __result;
                 }
@@ -86,16 +86,16 @@ namespace QualityEverything
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Construction)
             {
-                if (ModSettings_QEverything.inspiredConstruction && QualityCatalog.AnyAssigned(QualityBucket.Building, QualityBucket.WorkBuilding, QualityBucket.SecurityBuilding))
+                if (ModSettings_ConfigurableQuality.inspiredConstruction && QualityCatalog.AnyAssigned(QualityBucket.Building, QualityBucket.WorkBuilding, QualityBucket.SecurityBuilding))
                 {
                     return __result;
                 }
                 return 0f;
- 
+
             }
             if (inspiration == DefOf_QFramework.QF_Inspired_Cooking)
             {
-                if (ModSettings_QEverything.inspiredCooking && QualityCatalog.AnyAssigned(QualityBucket.Meal))
+                if (ModSettings_ConfigurableQuality.inspiredCooking && QualityCatalog.AnyAssigned(QualityBucket.Meal))
                 {
                     return __result;
                 }

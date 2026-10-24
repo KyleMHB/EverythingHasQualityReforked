@@ -1,5 +1,5 @@
 using System;
-using QualityEverything;
+using ConfigurableQuality;
 class ConsumableChecks
 {
     static void Near(float actual, float expected) { if (Math.Abs(actual - expected) > .0001f) throw new Exception($"Expected {expected}, got {actual}"); }

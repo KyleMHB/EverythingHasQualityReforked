@@ -8,7 +8,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Deliberately limited to four ordinary single-stage native highs. Unknown schemas remain native.
     internal static class QualityDrugEffects

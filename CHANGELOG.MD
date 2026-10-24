@@ -2,6 +2,33 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
+## 2026-10-25
+
+### Changed
+
+- Renamed the package to `KyleMHB.ConfigurableQuality` and the assembly and namespace to `ConfigurableQuality`. Existing settings are copied to the new configuration identity on first launch.
+- Updated the Progression config preset for the renamed package.
+
+## 2026-10-23
+
+### Added
+
+- Added an optional Progression preset for Auto Mod Config, with Mild factors and startup handling for the pack's jumpsuit and hygiene exclusions.
+- Added opt-in vanilla-quality removal with a global default and group, category and item overrides. Existing configurations keep vanilla quality unless removal is explicitly selected.
+- Added illustrated Workshop explainers for quality assignment, optional effects, price and wealth controls, rule inheritance and custom strength settings.
+- Added separate market-value rules with a global default and group, category and item overrides. Disabling scaling removes quality premiums and discounts from added quality and eligible vanilla items. Other mods' native quality stays protected.
+
+### Changed
+
+- Made fresh installations leave gameplay unchanged until settings or a preset are applied. Existing saved choices are retained.
+- Made presets enable standard assignment groups and production settings as well as effects.
+- Renamed the mod to Configurable Quality in the mod list, settings menu and public descriptions.
+- Replaced the title artwork and Workshop preview with the new name and a tagline explaining the configuration options.
+
+### Fixed
+
+- Kept active settings unchanged until restart when config-sharing tools import settings during play.
+
 ## 2026-10-21
 
 ### Fixed

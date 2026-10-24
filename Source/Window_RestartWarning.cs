@@ -8,7 +8,7 @@ using UnityEngine;
 using Verse;
 
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Retained for external callers of the old public API. Current options use a close guard.
     public class Window_RestartWarning : Window

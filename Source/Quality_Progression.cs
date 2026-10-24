@@ -6,7 +6,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal static class QualityProgression
     {
@@ -40,19 +40,33 @@ namespace QualityEverything
             catch (Exception error)
             {
                 HygieneStatus = "QEverything.Options.HygieneUnknown";
-                Log.Warning("Everything Has Quality: could not inspect Dubs Bad Hygiene QualityComps: " + error.GetType().Name);
+                Log.Warning("Configurable Quality: could not inspect Dubs Bad Hygiene QualityComps: " + error.GetType().Name);
             }
         }
 
-        internal static IEnumerable<ThingDef> Exclusions => exclusions.Distinct().Where(d => QualityCatalog.Get(d) != null).OrderBy(d => d.defName, StringComparer.Ordinal);
+        internal static IEnumerable<ThingDef> Exclusions => exclusions.Distinct().OrderBy(d => d.defName, StringComparer.Ordinal);
+        internal static void PrepareStartup()
+        {
+            var configuration = QualitySettingsState.Active;
+            if (!configuration.ProgressionCompatibility) return;
+            // Imported presets can be installed before provider defs/settings are available.
+            // Resolve exclusions now, retaining any explicit user exceptions already saved.
+            ApplyExclusions(configuration, false);
+            QualitySettingsState.Load(configuration);
+        }
         internal static void Apply(QualityConfiguration draft)
         {
+            draft.ProgressionCompatibility = true;
             foreach (EffectId id in Enum.GetValues(typeof(EffectId)))
                 draft.Effects[id.ToString()] = new EffectSettings { Enabled = QualityEffects.Available(id), Factors = QualityEffectCatalog.Curve(id) };
+            ApplyExclusions(draft, true);
+        }
+        private static void ApplyExclusions(QualityConfiguration draft, bool replace)
+        {
             foreach (ThingDef def in Exclusions)
             {
-                draft.Assignment.Items[def.defName] = RuleChoice.Exclude;
-                draft.Participation.Items[def.defName] = RuleChoice.Exclude;
+                if (replace || !draft.Assignment.Items.ContainsKey(def.defName)) draft.Assignment.Items[def.defName] = RuleChoice.Exclude;
+                if (replace || !draft.Participation.Items.ContainsKey(def.defName)) draft.Participation.Items[def.defName] = RuleChoice.Exclude;
             }
         }
     }
@@ -64,7 +78,7 @@ namespace QualityEverything
         internal static readonly List<string> Status = new List<string>();
         internal static void Register()
         {
-            var harmony = new Harmony("rimworld.qualityframework.native-output");
+            var harmony = new Harmony("kylemhb.configurablequality.native-output");
             Register(harmony, "PipeSystem.Process", "ApplyIngredientsAndQuality", new[] { typeof(Thing) });
             Type activeProcess = AccessTools.TypeByName("ProcessorFramework.ActiveProcess");
             Register(harmony, "ProcessorFramework.CompProcessor", "TakeOutProduct", activeProcess == null ? null : new[] { activeProcess });
@@ -77,7 +91,7 @@ namespace QualityEverything
             if (method == null || method.IsStatic || method.ReturnType != (methodName == "TakeOutProduct" ? typeof(Thing) : typeof(void)))
             {
                 Status.Add(typeName + ": " + "QEverything.Options.NativeOutputUnknown".Translate());
-                Log.Warning("Everything Has Quality: native output bounds exemption unavailable for " + typeName + "." + methodName + "; check the installed provider version.");
+                Log.Warning("Configurable Quality: native output bounds exemption unavailable for " + typeName + "." + methodName + "; check the installed provider version.");
                 return;
             }
             try
@@ -88,7 +102,7 @@ namespace QualityEverything
             catch (Exception error)
             {
                 Status.Add(typeName + ": " + "QEverything.Options.NativeOutputUnknown".Translate());
-                Log.Warning("Everything Has Quality: native output bounds exemption failed for " + typeName + ": " + error.GetType().Name);
+                Log.Warning("Configurable Quality: native output bounds exemption failed for " + typeName + ": " + error.GetType().Name);
             }
         }
         private sealed class Scope { internal int Previous; }

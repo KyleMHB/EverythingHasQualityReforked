@@ -16,7 +16,7 @@ if (($sourceInputs | ConvertTo-Json -Depth 4 -Compress) -ne ((Get-SourceInputs) 
     throw 'Source changed during packaging. Rebuild both targets from the same source.'
 }
 $artifactRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'artifacts'))
-$stage = [IO.Path]::GetFullPath((Join-Path $artifactRoot 'package/EverythingHasQualityReforked'))
+$stage = [IO.Path]::GetFullPath((Join-Path $artifactRoot 'package/ConfigurableQuality'))
 if (-not $stage.StartsWith($artifactRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package stage must stay under artifacts.' }
 if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
 New-Item -ItemType Directory -Path $stage -Force | Out-Null
@@ -33,7 +33,7 @@ foreach ($folder in @('Defs', 'Languages', 'Textures', 'Sounds', 'Patches')) {
 foreach ($version in @('1.6', '1.7')) {
     $assemblyDirectory = Join-Path $stage "$version/Assemblies"
     New-Item -ItemType Directory -Path $assemblyDirectory -Force | Out-Null
-    Copy-Item -LiteralPath (Join-Path $PSScriptRoot "artifacts/$version/Release/QualityEverything.dll") -Destination $assemblyDirectory
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot "artifacts/$version/Release/ConfigurableQuality.dll") -Destination $assemblyDirectory
 }
 $commit = & git -C $PSScriptRoot rev-parse HEAD
 if ($LASTEXITCODE -ne 0) { throw 'Cannot identify the source commit.' }
@@ -41,7 +41,7 @@ $status = @(& git -C $PSScriptRoot status --porcelain)
 if ($LASTEXITCODE -ne 0) { throw 'Cannot identify working-tree changes.' }
 $sdk = & $DotNetPath --version
 if ($LASTEXITCODE -ne 0) { throw 'Cannot identify the build SDK.' }
-[xml]$project = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Source/QualityEverything.csproj') -Raw
+[xml]$project = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Source/ConfigurableQuality.csproj') -Raw
 $versionPath = Join-Path $ManagedPath 'Version.txt'
 $manifest = [ordered]@{
     schemaVersion = 1

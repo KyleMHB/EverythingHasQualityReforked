@@ -1,4 +1,4 @@
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Curves describe benefit strength. The direction belongs to the stat, not the sign of its label.
     internal static class QualityGearContribution

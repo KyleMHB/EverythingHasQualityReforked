@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Only MoveNext/Dispose execute inside the operation: a suspended iterator must not
     // leave its recipe inputs installed while another recipe is enumerated.

@@ -1,5 +1,5 @@
 using System;
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     // Shared condition seam: creation/real quality changes preserve ratio; loading preserves absolute HP.
     internal static class QualityCondition

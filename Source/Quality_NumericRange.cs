@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace QualityEverything
+namespace ConfigurableQuality
 {
     internal readonly struct QualityNumericRange
     {
