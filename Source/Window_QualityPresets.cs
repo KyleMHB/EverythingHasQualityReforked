@@ -34,7 +34,8 @@ namespace QualityEverything
         private void DrawPresetHeader(Rect rect)
         {
             string name = PresetMatchesDraft() ? matchedPresetName : P("Modified");
-            if (Widgets.ButtonText(rect, P("Manage") + ": " + name))
+            string label = P("Manage") + ": " + name;
+            if (Widgets.ButtonText(rect, label.Truncate(rect.width - 16)))
             {
                 Editor.EndGesture();
                 Find.WindowStack.Add(new Window_QualityPresets(this));
