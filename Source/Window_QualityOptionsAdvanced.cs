@@ -55,67 +55,7 @@ namespace QualityEverything
             }));
         }
 
-        private void DrawCompatibility(Rect rect)
-        {
-            var rows = new[]
-            {
-                Tuple.Create(A("AvailableEffects"), Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Count(QualityEffects.Available) + "/25", A("CompatibilitySummary")),
-                Tuple.Create(A("Storage"), A("Omitted"), T("StorageOmitted")),
-                Tuple.Create(A("Bionics"), A("Deferred"), T("BionicsDeferred")),
-                Tuple.Create(T("ProgressionPreset"), A("PreviewBeforeApplying"), T("ProgressionStatus") + "\n\n" + QualityProgression.HygieneStatus.Translate().ToString() + "\n\n" + string.Join("\n", QualityNativeOutput.Status)),
-                Tuple.Create("Improve This", A("NativePreserved"), T("ImproveThisUnavailable"))
-            };
-            float contentWidth = rect.width - 18;
-            float baseHeight = 44 + rows.Sum(row => 40 + (expandedCompatibility.Contains(row.Item1) ? Text.CalcHeight(row.Item3, contentWidth - 12) + 16 : 0)) + 130;
-            var view = new Rect(0, 0, contentWidth, Math.Max(rect.height, baseHeight + (showDiagnostics ? 46 + (QualityPatchUtility.Statuses.Count + 25) * 62 : 0) + (showLegacy ? 34 + Math.Min(Draft.InactiveLegacy.Count, 100) * 30 : 0)));
-            Widgets.BeginScrollView(rect, ref compatibilityScroll, view);
-            Widgets.Label(new Rect(0, 0, view.width, 32), A("CompatibilityHelp"));
-            float y = 44;
-            foreach (var row in rows)
-            {
-                bool open = expandedCompatibility.Contains(row.Item1);
-                if (Widgets.ButtonText(new Rect(0, y, view.width * .48f, 30), (open ? "- " : "+ ") + row.Item1))
-                { if (open) expandedCompatibility.Remove(row.Item1); else expandedCompatibility.Add(row.Item1); }
-                Widgets.Label(new Rect(view.width * .5f, y, view.width * .5f, 30), row.Item2); y += 40;
-                if (!open) continue;
-                float h = Text.CalcHeight(row.Item3, view.width - 12) + 16;
-                Widgets.Label(new Rect(12, y, view.width - 12, h), row.Item3); y += h;
-            }
-            y += 10;
-            Widgets.Label(new Rect(0, y, view.width, 28), T("InactiveLegacy") + ": " + Draft.InactiveLegacy.Count); y += 32;
-            if (Draft.InactiveLegacy.Count > 0)
-            {
-                if (Widgets.ButtonText(new Rect(0, y, view.width * .58f, 30), T("RecoverLegacy"))) Confirm(T("RecoverConfirm"), () =>
-                {
-                    RememberDraft();
-                    foreach (var item in Draft.InactiveLegacy)
-                    {
-                        string id = item.Key.Substring(item.Key.IndexOf(':') + 1);
-                        Draft.Assignment.Items[id] = item.Value ? RuleChoice.Include : RuleChoice.Exclude;
-                    }
-                    DraftChanged();
-                });
-                if (Widgets.ButtonText(new Rect(view.width * .6f, y, view.width * .4f, 30), A(showLegacy ? "HideLegacy" : "ShowLegacy"))) showLegacy = !showLegacy;
-                y += 38;
-                if (showLegacy)
-                {
-                    Widgets.Label(new Rect(0, y, view.width, 32), A("LegacyPreview")); y += 34;
-                    foreach (var entry in Draft.InactiveLegacy.OrderBy(p => p.Key).Take(100))
-                    { Widgets.Label(new Rect(0, y, view.width, 28), entry.Key + ": " + T(entry.Value ? "Include" : "Exclude")); y += 30; }
-                }
-            }
-            if (Widgets.ButtonText(new Rect(0, y, view.width, 30), A(showDiagnostics ? "HideDiagnostics" : "ShowDiagnostics"))) showDiagnostics = !showDiagnostics;
-            y += 38;
-            if (showDiagnostics)
-            {
-                Widgets.Label(new Rect(0, y, view.width, 42), T("PatchStatusHelp")); y += 46;
-                foreach (var patch in QualityPatchUtility.Statuses.OrderBy(p => p.Key))
-                { Widgets.Label(new Rect(0, y, view.width, 56), patch.Key + ": " + T(patch.Value ? "PatchVerified" : "NativeFallback")); y += 62; }
-                foreach (EffectId id in Enum.GetValues(typeof(EffectId)))
-                { Widgets.Label(new Rect(0, y, view.width, 56), T("Effect." + id) + ": " + T(QualityEffects.Available(id) ? "Available" : "Unavailable") + " / " + QualityEffects.Reason(id)); y += 62; }
-            }
-            Widgets.EndScrollView();
-        }
+
     }
 
     internal sealed class Window_QualityPresetReview : Window

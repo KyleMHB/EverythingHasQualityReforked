@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Compatibility.NoQuality>No quality in the draft. Effect inactive.</QEverything.Compatibility.NoQuality>
+  <QEverything.Compatibility.ParticipationOff>Item participation disabled in the draft.</QEverything.Compatibility.ParticipationOff>
+  <QEverything.Compatibility.GlobalOff>Global effect disabled in the draft. Open its curve to enable it.</QEverything.Compatibility.GlobalOff>
+  <QEverything.Compatibility.RecordedBlock>Recorded adapter restriction or native ownership:</QEverything.Compatibility.RecordedBlock>
+  <QEverything.Compatibility.AdapterOff>Adapter unavailable in this session:</QEverything.Compatibility.AdapterOff>
+  <QEverything.Compatibility.Candidate>Allowed candidate; adapter available. Actual use depends on the item and runtime context.</QEverything.Compatibility.Candidate>
+  <QEverything.Compatibility.OpenGlobal>Open global effect and curve</QEverything.Compatibility.OpenGlobal>
+  <QEverything.Compatibility.NativeInformation>Native quality information</QEverything.Compatibility.NativeInformation>
+  <QEverything.Compatibility.NativeUncertain>Native and third-party quality remain protected. The following installed stats contain a standard quality part. This metadata does not prove that any listed stat applies to this item or currently supplies a bonus. Other providers may use different mechanisms; this list is not exhaustive. Draft changes take effect after restart.</QEverything.Compatibility.NativeUncertain>
+  <QEverything.Compatibility.NoMetadata>No standard quality-part metadata found.</QEverything.Compatibility.NoMetadata>
+  <QEverything.Compatibility.ProviderPolicy>Progression provider policy for next startup</QEverything.Compatibility.ProviderPolicy>
+  <QEverything.Compatibility.PolicyHelp>When enabled, startup adds missing assignment and participation exclusions detected for supported providers. Existing item exceptions are retained. Disabling this policy does not remove exceptions already saved. Provider detection shown here describes this session.</QEverything.Compatibility.PolicyHelp>
+  <QEverything.Compatibility.PolicyPreview>Change the provider policy in Draft. Detected provider exclusions are listed below; startup adds missing exceptions only while the policy is enabled. Existing exceptions and unavailable identifiers are retained. Save for restart to activate the policy.</QEverything.Compatibility.PolicyPreview>
+  <QEverything.Compatibility.RecoveryPreview>Recover these inactive legacy choices as item assignment exceptions, replacing existing assignment exceptions for the same identifiers. Other rules remain unchanged. Unavailable identifiers and the legacy backup are retained. This is one Undo step and takes effect after Save for restart.</QEverything.Compatibility.RecoveryPreview>
+  <QEverything.Compatibility.LegacyPreview>All stored legacy choices are shown below. Recovery replaces assignment exceptions for these identifiers.</QEverything.Compatibility.LegacyPreview>
+  <QEverything.Compatibility.ProgressionSummary>The Progression preset changes Draft after preview. Supported output adapters preserve native output quality choices. Provider detection and patch diagnostics below describe this installation; unknown providers are not assumed to be supported.</QEverything.Compatibility.ProgressionSummary>
+</LanguageData>

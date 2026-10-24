@@ -157,6 +157,23 @@ namespace QualityEverything
             if (field == null || field.FieldType != typeof(float)) throw new ArgumentException(nameof(name));
             return EditNumber("production:" + name, text, (float)field.GetValue(session.Draft.Production), v => field.SetValue(session.Draft.Production, v));
         }
+        public bool SetProviderPolicy(bool enabled)
+        {
+            EndGesture();
+            return Edit(c => c.ProgressionCompatibility = enabled);
+        }
+        public bool RecoverLegacy()
+        {
+            EndGesture();
+            return Edit(c =>
+            {
+                foreach (var entry in c.InactiveLegacy.OrderBy(p => p.Key, StringComparer.Ordinal))
+                {
+                    string id = entry.Key.Substring(entry.Key.IndexOf(':') + 1);
+                    if (id.Length > 0) c.Assignment.Items[id] = entry.Value ? RuleChoice.Include : RuleChoice.Exclude;
+                }
+            });
+        }
         public bool HasInvalidInput => buffers.Any(p => !QualityNumericRange.ForInput(p.Key).TryParse(p.Value, out _));
         public bool NeedsCloseConfirmation => HasInvalidInput || session.Draft.Serialize() != session.Saved.Serialize();
         public static bool HasQuality(QualityConfiguration configuration, RuleTarget target, bool nativeQuality, bool removableVanillaQuality)

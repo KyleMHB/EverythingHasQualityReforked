@@ -163,11 +163,31 @@ class SettingsChecks
             && !QualityEditorActions.HasQuality(protectedSession.Draft, vanilla.Target, true, true)
             && protectedEditor.SelectedIds.Count == 2, "bulk removal changes only eligible vanilla draft outcome and retains selection");
     }
+    static void CheckCompatibilityCommands()
+    {
+        var configuration = new QualityConfiguration();
+        configuration.InactiveLegacy["weapons:MissingModGun"] = false;
+        configuration.InactiveLegacy["buildings:MissingModBench"] = true;
+        configuration.Assignment.Items["MissingModGun"] = RuleChoice.Include;
+        var session = new QualityConfigurationSession(configuration);
+        var editor = new QualityEditorActions(session);
+        string saved = session.Saved.Serialize(), active = session.Active.Serialize();
+        Check(editor.SetProviderPolicy(true), "provider policy changes draft");
+        Check(session.Draft.ProgressionCompatibility && session.Saved.Serialize() == saved && session.Active.Serialize() == active, "policy stays draft until restart save");
+        Check(editor.Undo() && !session.Draft.ProgressionCompatibility, "provider policy undo");
+        Check(editor.RecoverLegacy(), "legacy recovery command");
+        Check(session.Draft.Assignment.Items["MissingModGun"] == RuleChoice.Exclude && session.Draft.Assignment.Items["MissingModBench"] == RuleChoice.Include, "recover unavailable legacy choices as assignment exceptions");
+        Check(session.Draft.InactiveLegacy.Count == 2, "recovery retains unavailable backup data");
+        Check(editor.Undo() && session.Draft.Assignment.Items["MissingModGun"] == RuleChoice.Include && !session.Draft.Assignment.Items.ContainsKey("MissingModBench"), "legacy recovery is one undo");
+        editor.RecoverLegacy(); editor.SetProviderPolicy(true);
+        Check(editor.Save().Count == 0 && session.Saved.ProgressionCompatibility && session.Active.Serialize() == active, "compatibility saves for restart only");
+    }
     static void Main()
     {
         CheckProductionControls();
         CheckBulkSelection();
         CheckEffectCurves();
+        CheckCompatibilityCommands();
         var itemSession = new QualityConfigurationSession(new QualityConfiguration());
         var itemEditor = new QualityEditorActions(itemSession);
         var editable = new RuleTarget("Workbench", "Building", true, new CategoryPath[0]);
