@@ -11,6 +11,7 @@ namespace QualityEverything
     internal sealed partial class Window_QualityOptions
     {
         private string matchedPresetName;
+        private string presetError;
         private QualityConfiguration matchedPreset;
         private QualityEditorActions comparedPresetEditor;
         private int comparedPresetRevision = -1, comparedPresetEditorRevision = -1;
@@ -50,7 +51,12 @@ namespace QualityEverything
         }
         internal bool CanSaveUserPreset => Editor.CanSavePreset;
         internal QualityConfiguration CapturePreset() => Draft.Clone();
-        internal void ShowPresetError(Exception exception) => error = P("Failure") + " " + exception.Message;
+        internal void ShowPresetError(Exception exception) => error = presetError = P("Failure") + " " + exception.Message;
+        internal void ClearPresetError()
+        {
+            if (error == presetError) error = "";
+            presetError = null;
+        }
         internal void PreviewUserPreset(string name, QualityConfiguration candidate)
         {
             var captured = candidate.Clone();
@@ -133,7 +139,7 @@ namespace QualityEverything
         { this.owner = owner; forcePause = true; absorbInputAroundWindow = true; doCloseX = true; Refresh(); }
         private void Attempt(Action action)
         {
-            try { feedback = ""; action(); }
+            try { feedback = ""; owner.ClearPresetError(); action(); }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is FormatException || e is System.Xml.XmlException || e is System.Security.SecurityException)
             { feedback = P("Failure") + " " + e.Message; owner.ShowPresetError(e); }
         }
