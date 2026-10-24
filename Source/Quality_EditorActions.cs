@@ -125,6 +125,35 @@ namespace QualityEverything
             EndGesture();
             return Edit(c => { var items = RulesFor(c, rule).Items; if (choice == RuleChoice.Inherit) items.Remove(target.Id); else items[target.Id] = choice; });
         }
+        public bool SetScopeRule(EditorRule rule, string group, string category, RuleChoice choice)
+        {
+            if (group.Length > 0 && category.Length > 0) return false;
+            if (group.Length == 0 && category.Length == 0 && choice == RuleChoice.Inherit) return false;
+            EndGesture();
+            return Edit(c =>
+            {
+                var rules = RulesFor(c, rule);
+                if (category.Length > 0)
+                { if (choice == RuleChoice.Inherit) rules.Categories.Remove(category); else rules.Categories[category] = choice; }
+                else if (group.Length > 0)
+                { if (choice == RuleChoice.Inherit) rules.Groups.Remove(group); else rules.Groups[group] = choice == RuleChoice.Include; }
+                else rules.Default = choice == RuleChoice.Include;
+            });
+        }
+        public string[] ScopeItemExceptions(EditorRule rule, string group, string category, IEnumerable<RuleTarget> catalog)
+        {
+            var items = RulesFor(session.Draft, rule).Items;
+            if (group.Length == 0 && category.Length == 0) return items.Keys.OrderBy(id => id, StringComparer.Ordinal).ToArray();
+            return catalog.Where(t => (group.Length == 0 || t.Group == group)
+                && (category.Length == 0 || t.Categories.Any(c => c.Id == category)))
+                .Select(t => t.Id).Distinct().Where(items.ContainsKey).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+        }
+        public bool ClearScopeItemExceptions(EditorRule rule, string group, string category, IEnumerable<RuleTarget> catalog)
+        {
+            var ids = ScopeItemExceptions(rule, group, category, catalog);
+            EndGesture();
+            return Edit(c => { foreach (string id in ids) RulesFor(c, rule).Items.Remove(id); });
+        }
         public bool TryClose(EditorCloseAction action, out List<string> errors, Action persist = null)
         {
             errors = new List<string>();
