@@ -75,6 +75,12 @@ namespace QualityEverything
             var parts = path.Split(new[] { " / " }, StringSplitOptions.None).Skip(1).ToArray();
             return string.Join(" / ", parts.Select((part, index) =>
             {
+                if (index == 2 && parts[1] == "groups")
+                    return Translator.CanTranslate("QEverything.Options.Group." + part) ? GroupLabel(part) : part;
+                if (index == 2 && parts[1] == "categories")
+                    return DefDatabase<ThingCategoryDef>.GetNamedSilentFail(part)?.LabelCap.ToString() ?? part;
+                if ((index == 2 && parts[1] == "items") || (index == 1 && parts[0] == "inactive"))
+                    return DefDatabase<ThingDef>.GetNamedSilentFail(part)?.LabelCap.ToString() ?? part;
                 if (index == 1 && parts[0] == "production") return A("Production." + part);
                 if (index == 1 && parts[0] == "effects" && Enum.TryParse(part, out EffectId known) && Enum.IsDefined(typeof(EffectId), known)) return T("Effect." + known);
                 switch (part)
@@ -84,7 +90,7 @@ namespace QualityEverything
                     case "linkedBonusCap": return T("LinkedBonusCap");
                     case "linkedPenaltyCap": return T("LinkedPenaltyCap");
                     case "inactive": return T("InactiveLegacy");
-                    default: return P("Field." + part).StartsWith("QEverything.", StringComparison.Ordinal) ? part : P("Field." + part);
+                    default: return Translator.CanTranslate("QEverything.Presets.Field." + part) ? P("Field." + part) : part;
                 }
             }));
         }
@@ -98,13 +104,18 @@ namespace QualityEverything
             }
             if (Enum.TryParse(value, out RuleChoice choice) && Enum.IsDefined(typeof(RuleChoice), choice)) return ChoiceLabel(choice);
             return value;
-        }        private static IEnumerable<KeyValuePair<string, string>> PresetValues(XElement node, string path)
+        }
+        private static IEnumerable<KeyValuePair<string, string>> PresetValues(XElement node, string path)
         {
             string id = (string)node.Attribute("id");
             string key = path.Length == 0 ? "" : path + " / ";
             key += id ?? node.Name.LocalName;
             foreach (var attribute in node.Attributes().Where(a => a.Name != "id" && a.Name != "schema")) yield return new KeyValuePair<string, string>(key + " / " + attribute.Name, attribute.Value);
-            if (!node.HasElements) yield return new KeyValuePair<string, string>(key, node.Value);
+            // Empty collections are structure, while empty scalar values (including legacy backups) are data.
+            bool container = id == null && (node.Name == "quality" || node.Name == "production" || node.Name == "effects"
+                || node.Name == "assignment" || node.Name == "participation" || node.Name == "marketValue" || node.Name == "vanillaRemoval"
+                || node.Name == "groups" || node.Name == "categories" || node.Name == "items" || node.Name == "inactive");
+            if (!node.HasElements && !container) yield return new KeyValuePair<string, string>(key, node.Value);
             else foreach (var child in node.Elements()) foreach (var value in PresetValues(child, key)) yield return value;
         }
     }
@@ -121,7 +132,7 @@ namespace QualityEverything
         { this.owner = owner; forcePause = true; absorbInputAroundWindow = true; doCloseX = true; Refresh(); }
         private void Attempt(Action action)
         {
-            try { action(); feedback = ""; }
+            try { feedback = ""; action(); }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is FormatException || e is System.Xml.XmlException || e is System.Security.SecurityException)
             { feedback = P("Failure") + " " + e.Message; owner.ShowPresetError(e); }
         }
@@ -139,7 +150,9 @@ namespace QualityEverything
             float builtInWidth = (rect.width - 16) / 3;
             if (Widgets.ButtonText(new Rect(0, 140, builtInWidth, 30), "QEverything.Advanced.Mild".Translate())) owner.OpenBuiltinPreset(false);
             if (Widgets.ButtonText(new Rect(builtInWidth + 8, 140, builtInWidth, 30), "QEverything.Advanced.Medium".Translate())) owner.OpenBuiltinPreset(false, true);
-            if (Widgets.ButtonText(new Rect((builtInWidth + 8) * 2, 140, builtInWidth, 30), "QEverything.Advanced.Progression".Translate())) owner.OpenBuiltinPreset(true);
+            var progressionRect = new Rect((builtInWidth + 8) * 2, 140, builtInWidth, 30);
+            if (Widgets.ButtonText(progressionRect, P("Progression"))) owner.OpenBuiltinPreset(true);
+            TooltipHandler.TipRegion(progressionRect, "QEverything.Advanced.Progression".Translate());
             float width = rect.width - 18;
             Widgets.BeginScrollView(new Rect(0, 180, rect.width, rect.height - 272), ref scroll, new Rect(0, 0, width, Math.Max(rect.height - 272, names.Length * 78)));
             for (int i = 0; i < names.Length; i++)

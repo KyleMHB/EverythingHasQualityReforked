@@ -2,6 +2,7 @@
 <LanguageData>
   <QEverything.Presets.Manage>Presets</QEverything.Presets.Manage>
   <QEverything.Presets.Title>Reusable quality presets</QEverything.Presets.Title>
+  <QEverything.Presets.Progression>Progression</QEverything.Presets.Progression>
   <QEverything.Presets.Reusable>Presets copy a complete Draft. Saving a preset does not save settings for restart or change the running game.</QEverything.Presets.Reusable>
   <QEverything.Presets.Modified>Modified / Custom</QEverything.Presets.Modified>
   <QEverything.Presets.Save>Save Draft as preset</QEverything.Presets.Save>
