@@ -101,7 +101,7 @@ namespace QualityEverything
             finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; GUI.enabled = enabled; }
         }
         private static void Confirm(string text, Action action) => Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(text, action));
-        private string ScopeName => Browser.Category.Length > 0 ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(Browser.Category)?.LabelCap.ToString() ?? Browser.Category) : Browser.Group.Length > 0 ? GroupLabel(Browser.Group) : U("AllItems");
+        private string ScopeName => Browser.Category.Length > 0 ? (categoryNodes.FirstOrDefault(n => n.Def.defName == Browser.Category)?.Path ?? Browser.Category) : Browser.Group.Length > 0 ? GroupLabel(Browser.Group) : U("AllItems");
         private void DrawRules(Rect rect)
         {
             float left = Math.Min(260, rect.width * .28f); DrawBrowser(new Rect(rect.x, rect.y, left, rect.height));

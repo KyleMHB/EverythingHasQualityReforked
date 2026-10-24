@@ -242,6 +242,63 @@ class SettingsChecks
             && QualityEditorActions.HasQuality(summary, summaryTarget, true, false)
             && QualityEditorActions.HasQuality(summary, summaryTarget, false, false),
             "summary includes native and assigned quality but excludes planned native removal even with assignment enabled");
+        ScopeCommandChecks();
         Console.WriteLine("Resolver, migration, roundtrip, validation and draft isolation checks passed.");
+    }
+    private static void ScopeCommandChecks()
+    {
+        var config = new QualityConfiguration();
+        config.Assignment.Items["Hidden"] = RuleChoice.Exclude;
+        config.Assignment.Categories["Child"] = RuleChoice.Exclude;
+        var session = new QualityConfigurationSession(config);
+        var editor = new QualityEditorActions(session);
+        Check(editor.SetScopeRule(EditorRule.Assignment, "Stuff", "", RuleChoice.Include)
+            && session.Draft.Assignment.Items.Count == 1
+            && session.Draft.Assignment.Items["Hidden"] == RuleChoice.Exclude
+            && session.Draft.Assignment.Categories["Child"] == RuleChoice.Exclude,
+            "scope commands preserve deeper rules and exceptions without stamping items");
+        Check(!session.Saved.Assignment.Groups.ContainsKey("Stuff") && !session.Active.Assignment.Groups.ContainsKey("Stuff")
+            && !editor.SetScopeRule(EditorRule.Assignment, "Stuff", "Child", RuleChoice.Include),
+            "scope commands isolate Draft and reject an ambiguous scope");
+        var plain = new RuleTarget("Plain", "Stuff", true, new CategoryPath[0]);
+        Check(QualityRules.Resolve(plain, session.Draft.Assignment).Enabled,
+            "group command changes governing fallback");
+        editor.SetScopeRule(EditorRule.Assignment, "", "", RuleChoice.Include);
+        editor.SetScopeRule(EditorRule.Assignment, "Stuff", "", RuleChoice.Exclude);
+        editor.SetScopeRule(EditorRule.Assignment, "Stuff", "", RuleChoice.Inherit);
+        Check(!session.Draft.Assignment.Groups.ContainsKey("Stuff")
+            && QualityRules.Resolve(plain, session.Draft.Assignment).Enabled
+            && !editor.SetScopeRule(EditorRule.Assignment, "", "", RuleChoice.Inherit),
+            "use parent removes group rule but global has no invented parent");
+        editor.SetScopeRule(EditorRule.Assignment, "", "Parent", RuleChoice.Include);
+        editor.SetScopeRule(EditorRule.Assignment, "", "Peer", RuleChoice.Exclude);
+        var hidden = new RuleTarget("Hidden", "Stuff", true, new[] { new CategoryPath("Parent", 2), new CategoryPath("Peer", 2) });
+        session.Draft.Participation.Items["Hidden"] = RuleChoice.Include;
+        session.Draft.Assignment.Items["Other"] = RuleChoice.Include;
+        session.Draft.Assignment.Items["MissingMod"] = RuleChoice.Exclude;
+        var catalog = new[] { plain, hidden, new RuleTarget("Other", "Building", true, new CategoryPath[0]) };
+        Check(editor.ScopeItemExceptions(EditorRule.Assignment, "", "Parent", catalog).SequenceEqual(new[] { "Hidden" })
+            && editor.ClearScopeItemExceptions(EditorRule.Assignment, "", "Parent", catalog),
+            "scope exception preview and clear include hidden results in the entire branch");
+        var resolution = QualityRules.Resolve(hidden, session.Draft.Assignment);
+        Check(!resolution.Enabled && resolution.Conflict && resolution.SourceId == "Peer"
+            && session.Draft.Assignment.Items.Count == 2 && session.Draft.Participation.Items.ContainsKey("Hidden")
+            && session.Draft.Assignment.Categories["Parent"] == RuleChoice.Include,
+            "clearing only selected rule item exceptions preserves category conflicts and other rule sets");
+        editor.SetScopeRule(EditorRule.Assignment, "", "Peer", RuleChoice.Inherit);
+        Check(QualityRules.Resolve(hidden, session.Draft.Assignment).Enabled,
+            "category use-parent restores remaining category fallback");
+        Check(editor.ScopeItemExceptions(EditorRule.Assignment, "", "", catalog).Length == 2
+            && editor.ClearScopeItemExceptions(EditorRule.Assignment, "", "", catalog)
+            && session.Draft.Assignment.Items.Count == 0 && editor.Undo()
+            && session.Draft.Assignment.Items.ContainsKey("MissingMod"),
+            "all-items clear deliberately includes unavailable exceptions and Undo restores them");
+        var assignmentBefore = session.Draft.Assignment.Clone();
+        editor.SetScopeRule(EditorRule.Participation, "Stuff", "", RuleChoice.Exclude);
+        editor.SetScopeRule(EditorRule.Price, "", "Parent", RuleChoice.Exclude);
+        Check(!session.Draft.Participation.Groups["Stuff"] && session.Draft.MarketValue.Categories["Parent"] == RuleChoice.Exclude
+            && session.Draft.Assignment.Default == assignmentBefore.Default
+            && session.Draft.Assignment.Items["MissingMod"] == RuleChoice.Exclude,
+            "mod-effects and price scope commands are isolated from assignment and unavailable exceptions");
     }
 }

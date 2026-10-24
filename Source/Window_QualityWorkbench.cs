@@ -39,7 +39,7 @@ namespace QualityEverything
         private void DrawWorkbench(Rect rect)
         {
             var s = assignment;
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y, rect.width * .55f, 30), W("Scope") + ": " + ScopeName)) Find.WindowStack.Add(new Window_WorkbenchScope(this));
+            if (Widgets.ButtonText(new Rect(rect.x, rect.y, rect.width * .55f, 30), S("ChooseScope"))) Find.WindowStack.Add(new Window_WorkbenchScope(this));
             Widgets.Label(new Rect(rect.x + rect.width * .57f, rect.y, rect.width * .43f, 30), W("DraftOutcomes"));
             float y = rect.y + 36;
             s.Search = Widgets.TextField(new Rect(rect.x, y, rect.width * .48f, 30), s.Search);
@@ -50,7 +50,7 @@ namespace QualityEverything
                 Find.WindowStack.Add(new FloatMenu(Enumerable.Range(0, 5).Select(i => new FloatMenuOption(W("Filter" + i), () => s.ResultFilter = i)).ToList()));
             if (Widgets.ButtonText(new Rect(rect.x + rect.width * .90f, y, rect.width * .10f, 30), W("Clear"))) { s.Search = s.Source = ""; s.ResultFilter = 0; }
             RefreshWorkbench(); y += 36;
-            Widgets.Label(new Rect(rect.x, y, rect.width, 26), string.Format(W("Counts"), scopeTotal, s.Filtered.Count)); y += 28;
+            y += DrawWorkbenchScopeControls(new Rect(rect.x, y, rect.width, rect.yMax - y));
             // Measure complete outcome labels before reserving a persistent inspector.
             float outcome = new[] { W("Enabled"), W("Disabled"), W("NoQuality"), W("Native"), W("Protected"), W("Unavailable"), W("RemovalPlanned"), W("Unsupported") }.Max(v => Text.CalcSize(v + " *").x) + 18;
             float itemWidth = Math.Max(170, Text.CalcSize(W("Item")).x + 40);
@@ -171,18 +171,6 @@ namespace QualityEverything
                 if (technicalDetails) label(technical, height(technical, 160));
             }
             finally { Widgets.EndScrollView(); }
-        }
-        private sealed class Window_WorkbenchScope : Window
-        {
-            private readonly Window_QualityOptions owner;
-            public override Vector2 InitialSize => new Vector2(Math.Min(560, Verse.UI.screenWidth - 40), Math.Min(700, Verse.UI.screenHeight - 40));
-            public Window_WorkbenchScope(Window_QualityOptions owner) { this.owner = owner; doCloseX = true; forcePause = true; absorbInputAroundWindow = true; }
-            public override void DoWindowContents(Rect rect)
-            {
-                var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color; var enabled = GUI.enabled;
-                try { Text.Font = GameFont.Small; owner.DrawBrowser(rect); }
-                finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; GUI.enabled = enabled; }
-            }
         }
         private sealed class Window_WorkbenchDetails : Window
         {
