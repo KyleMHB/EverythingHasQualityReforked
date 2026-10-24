@@ -151,6 +151,9 @@ namespace QualityEverything
                 var actual = kind == EditorRule.Assignment && entry.NativeQuality ? EditorRule.Removal : kind;
                 contentHeight += 42 + height(GoverningSource(entry, actual), 38) + 6;
             }
+            var support = entry.Def == null ? new List<EffectId>() : Enum.GetValues(typeof(EffectId)).Cast<EffectId>()
+                .Where(id => Window_QualitySupport.Candidate(id, entry.Def) || QualityEffects.UnsupportedReason(id, entry.Def) != null).ToList();
+            contentHeight += support.Sum(id => 36 + height(Window_QualitySupport.Status(id, entry, Draft), 38) + 6);
             contentHeight += 38 + height(help, 56) + 6 + 36;
             if (technicalDetails) contentHeight += height(technical, 160) + 6;
             var view = new Rect(0, 0, contentWidth, contentHeight);
@@ -170,7 +173,14 @@ namespace QualityEverything
                     string source = GoverningSource(entry, actual);
                     label(source, Math.Max(38, Text.CalcHeight(source, view.width)));
                 }
-                if (Widgets.ButtonText(new Rect(0, y, view.width, 32), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry)); y += 38;
+                foreach (var id in support)
+                {
+                    if (Widgets.ButtonText(new Rect(0, y, view.width, 30), T("Effect." + id))) SelectEffect(id);
+                    y += 36;
+                    string status = Window_QualitySupport.Status(id, entry, Draft);
+                    label(status, height(status, 38));
+                }
+                if (Widgets.ButtonText(new Rect(0, y, view.width, 32), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry, () => Draft, SelectEffect)); y += 38;
                 label(help, Math.Max(56, Text.CalcHeight(help, view.width)));
                 if (Widgets.ButtonText(new Rect(0, y, view.width, 30), W("Technical"))) technicalDetails = !technicalDetails; y += 36;
                 if (technicalDetails) label(technical, height(technical, 160));

@@ -290,7 +290,7 @@ namespace QualityEverything
                 Widgets.Label(new Rect(0, 0, rect.width, 34), entry.Label + " / " + entry.Source); Widgets.Label(new Rect(0, 42, rect.width, 58), owner.ResolutionText(entry)); float w = (rect.width - 16) / 3;
                 foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice))) { var captured = choice; if (Widgets.ButtonText(new Rect((int)choice * (w + 8), 105, w, 32), owner.RuleText(choice, true))) { if (RuleChanges(owner.Rules.Items, entry.Target.Id, captured)) { owner.RememberDraft(); SetRule(owner.Rules.Items, entry.Target.Id, captured); owner.DraftChanged(); } } }
                 Widgets.Label(new Rect(0, 147, rect.width, 80), owner.removing ? U("VanillaRemovalWarning") : owner.pricing ? U("MarketValueItemHelp") : owner.participation ? T("NeedsQuality") : entry.RemovableVanillaQuality ? U("VanillaRemovalAvailable") : T("NativeProtected"));
-                if (owner.participation && Widgets.ButtonText(new Rect(0, 205, rect.width, 30), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry));
+                if (owner.participation && Widgets.ButtonText(new Rect(0, 205, rect.width, 30), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry, () => owner.Draft, owner.SelectEffect));
 
                 if (Widgets.ButtonText(new Rect(rect.width - 120, rect.height - 34, 120, 32), U("Done"))) Close();
             }
@@ -321,3 +321,4 @@ namespace QualityEverything
         }
     }
 }
+
