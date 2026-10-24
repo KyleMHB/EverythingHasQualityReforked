@@ -138,8 +138,9 @@ namespace QualityEverything
             }
             Find.WindowStack.Add(new FloatMenu(options));
         }
-        private void DrawWorkbenchInspector(Rect rect, QualityCatalogEntry entry, ref Vector2 scroll)
+        private void DrawWorkbenchInspector(Rect rect, QualityCatalogEntry entry, ref Vector2 scroll, Action<EffectId> navigate = null)
         {
+            navigate = navigate ?? SelectEffect;
             float contentWidth = rect.width - 18;
             string sourceLabel = entry.Source + (entry.Target.Group.Length > 0 ? " / " + GroupLabel(entry.Target.Group) : "");
             string help = entry.Def == null ? W("UnavailableHelp") : entry.NativeQuality ? entry.RemovableVanillaQuality ? W("VanillaHelp") : T("NativeProtected") : T("NeedsQuality");
@@ -151,8 +152,7 @@ namespace QualityEverything
                 var actual = kind == EditorRule.Assignment && entry.NativeQuality ? EditorRule.Removal : kind;
                 contentHeight += 42 + height(GoverningSource(entry, actual), 38) + 6;
             }
-            var support = entry.Def == null ? new List<EffectId>() : Enum.GetValues(typeof(EffectId)).Cast<EffectId>()
-                .Where(id => Window_QualitySupport.Candidate(id, entry.Def) || QualityEffects.UnsupportedReason(id, entry.Def) != null).ToList();
+            var support = Window_QualitySupport.SupportEntries(entry.Def).ToList();
             contentHeight += support.Sum(id => 36 + height(Window_QualitySupport.Status(id, entry, Draft), 38) + 6);
             contentHeight += 38 + height(help, 56) + 6 + 36;
             if (technicalDetails) contentHeight += height(technical, 160) + 6;
@@ -175,12 +175,12 @@ namespace QualityEverything
                 }
                 foreach (var id in support)
                 {
-                    if (Widgets.ButtonText(new Rect(0, y, view.width, 30), T("Effect." + id))) SelectEffect(id);
+                    if (Widgets.ButtonText(new Rect(0, y, view.width, 30), T("Effect." + id))) navigate(id);
                     y += 36;
                     string status = Window_QualitySupport.Status(id, entry, Draft);
                     label(status, height(status, 38));
                 }
-                if (Widgets.ButtonText(new Rect(0, y, view.width, 32), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry, () => Draft, SelectEffect)); y += 38;
+                if (Widgets.ButtonText(new Rect(0, y, view.width, 32), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry, () => Draft, navigate)); y += 38;
                 label(help, Math.Max(56, Text.CalcHeight(help, view.width)));
                 if (Widgets.ButtonText(new Rect(0, y, view.width, 30), W("Technical"))) technicalDetails = !technicalDetails; y += 36;
                 if (technicalDetails) label(technical, height(technical, 160));
@@ -194,10 +194,11 @@ namespace QualityEverything
             private Vector2 scroll;
             public override Vector2 InitialSize => new Vector2(Math.Min(620, Verse.UI.screenWidth - 40), Math.Min(800, Verse.UI.screenHeight - 40));
             public Window_WorkbenchDetails(Window_QualityOptions owner, QualityCatalogEntry entry) { this.owner = owner; this.entry = entry; doCloseX = true; forcePause = true; absorbInputAroundWindow = true; }
+            private void NavigateEffect(EffectId id) { owner.SelectEffect(id); Close(); }
             public override void DoWindowContents(Rect rect)
             {
                 var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color; var enabled = GUI.enabled;
-                try { Text.Font = GameFont.Small; owner.DrawWorkbenchInspector(rect, entry, ref scroll); }
+                try { Text.Font = GameFont.Small; owner.DrawWorkbenchInspector(rect, entry, ref scroll, NavigateEffect); }
                 finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; GUI.enabled = enabled; }
             }
         }
