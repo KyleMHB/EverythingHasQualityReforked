@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Options.UX.VanillaQuality>Vanilla quality</QEverything.Options.UX.VanillaQuality>
+  <QEverything.Options.UX.RemoveVanillaQuality>Remove vanilla quality</QEverything.Options.UX.RemoveVanillaQuality>
+  <QEverything.Options.UX.KeepVanillaQuality>Keep vanilla quality</QEverything.Options.UX.KeepVanillaQuality>
+  <QEverything.Options.UX.VanillaRemovalHelp>Opt in to removing standard quality from vanilla items, including official expansions. All removal rules start off. Group defaults, category rules and item exceptions apply. Removal overrides quality assignment. Other mods' items and custom quality components remain protected. Back up your save, then save settings and restart.</QEverything.Options.UX.VanillaRemovalHelp>
+  <QEverything.Options.UX.VanillaRemovalWarning>Removing quality also removes its native bonuses, price scaling and tier-based stacking. Existing quality values can be lost when the colony is saved. Back up first. Changes require a restart.</QEverything.Options.UX.VanillaRemovalWarning>
+  <QEverything.Options.UX.VanillaRemovalAvailable>Vanilla quality is kept unless you explicitly select removal in the Vanilla quality tab. Don't add quality only controls this mod's assignment.</QEverything.Options.UX.VanillaRemovalAvailable>
+  <QEverything.Options.UX.VanillaRemovalPlanned>Vanilla quality removal selected</QEverything.Options.UX.VanillaRemovalPlanned>
+  <QEverything.Options.UX.VanillaQualityKept>Vanilla quality kept</QEverything.Options.UX.VanillaQualityKept>
+</LanguageData>

@@ -16,7 +16,7 @@
   <QEverything.Options.RemovalWarning>Removing mod-added quality support can discard those quality values after restart and a later save.</QEverything.Options.RemovalWarning>
   <QEverything.Options.InvalidInput>Enter finite values within the allowed range. Minimum quality cannot exceed maximum quality.</QEverything.Options.InvalidInput>
   <QEverything.Options.ResetAll>Reset everything</QEverything.Options.ResetAll>
-  <QEverything.Options.ResetConfirm>Reset assignment, effects and production to fresh-install defaults in the draft? Saved settings change only when you save.</QEverything.Options.ResetConfirm>
+  <QEverything.Options.ResetConfirm>Reset all rules, effects and production to passive fresh-install defaults in the draft? Saved settings change only when you save.</QEverything.Options.ResetConfirm>
   <QEverything.Options.ResetScope>Reset selected scope</QEverything.Options.ResetScope>
   <QEverything.Options.ResetScopeConfirm>Clear the matching item overrides and the selected branch rule, or restore the selected group default? Other rules remain unchanged.</QEverything.Options.ResetScopeConfirm>
   <QEverything.Options.Assignment>Assign quality</QEverything.Options.Assignment>

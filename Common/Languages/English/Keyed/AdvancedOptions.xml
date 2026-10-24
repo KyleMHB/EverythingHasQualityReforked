@@ -40,8 +40,8 @@
   <QEverything.Advanced.CurvesReplaced>Custom strength curves to replace</QEverything.Advanced.CurvesReplaced>
   <QEverything.Advanced.BenefitSummary>Benefits: Awful 95%, Normal 100%, Legendary 120%. Intermediate tiers: 98%, 102%, 105%, 110%.</QEverything.Advanced.BenefitSummary>
   <QEverything.Advanced.CostSummary>Costs, risks and cooldowns: Awful 105%, Normal 100%, Legendary 80%. Intermediate tiers: 102%, 98%, 95%, 90%.</QEverything.Advanced.CostSummary>
-  <QEverything.Advanced.PresetScope>The following effect families receive these curves. Quality assignment and production settings stay as they are.</QEverything.Advanced.PresetScope>
-  <QEverything.Advanced.ProgressionFamilies>The following effect families receive these curves. Available adapters are enabled; unavailable adapters are disabled. Production settings stay as they are.</QEverything.Advanced.ProgressionFamilies>
+  <QEverything.Advanced.PresetScope>The following effect families receive these curves. Enables the standard quality-assignment groups and production settings. Item and category exceptions stay as they are. Market-value and vanilla-removal rules stay as they are.</QEverything.Advanced.PresetScope>
+  <QEverything.Advanced.ProgressionFamilies>The following effect families receive these curves. Available adapters are enabled; unavailable adapters are disabled. Enables the standard quality-assignment groups and production settings. Market-value and vanilla-removal rules stay as they are.</QEverything.Advanced.ProgressionFamilies>
   <QEverything.Advanced.ProgressionScope>Progression enables available effect adapters and adds the detected exclusions below to both quality assignment and effect targets. These exclusions can replace existing item exceptions. Load order and research stay as they are.</QEverything.Advanced.ProgressionScope>
   <QEverything.Advanced.DetectedExclusions>Detected item exclusions</QEverything.Advanced.DetectedExclusions>
   <QEverything.Advanced.MildAllSwitches>Mild enables all 25 switches; unavailable adapters remain ineffective. Existing item and category exceptions stay as they are.</QEverything.Advanced.MildAllSwitches>
