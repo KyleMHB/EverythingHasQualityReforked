@@ -24,37 +24,11 @@ namespace QualityEverything
 
         private void OpenPreset(bool progression, bool medium = false)
         {
-            var ids = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().ToArray();
-            int enabled = ids.Count(id => !Draft.Effects[id.ToString()].Enabled && (!progression || QualityEffects.Available(id)));
-            int replaced = ids.Count(id => !Draft.Effects[id.ToString()].Factors.SequenceEqual(QualityEffectCatalog.Curve(id, medium)));
-            var sections = new List<KeyValuePair<string, string>>();
-            float[] benefits = QualityEffectCatalog.Curve(EffectId.BuildingDurability, medium), costs = QualityEffectCatalog.Curve(EffectId.ConsumerDemand, medium);
-            sections.Add(new KeyValuePair<string, string>(A("AllQualityLevels"), string.Join("\n", Enumerable.Range(0, 7).Select(tier => ((QualityCategory)tier).GetLabel() + ": " + A("Benefits") + " " + benefits[tier].ToString("0.###", CultureInfo.InvariantCulture) + "x / " + A("Costs") + " " + costs[tier].ToString("0.###", CultureInfo.InvariantCulture) + "x"))));
-            foreach (var family in ids.GroupBy(Family))
-                sections.Add(new KeyValuePair<string, string>(A(family.Key) + " (" + family.Count() + ")", string.Join("\n", family.Select(id => T("Effect." + id)))));
-            var other = new List<string> { A(progression ? "ProgressionFamilies" : "PresetScope") };
-            if (progression)
-            {
-                other.Add(A("ProgressionScope"));
-                other.Add(QualityProgression.HygieneStatus.Translate().ToString());
-                other.Add(A("DetectedExclusions") + ": " + QualityProgression.Exclusions.Count());
-                other.AddRange(QualityProgression.Exclusions.Select(d => d.LabelCap.ToString() + " [" + d.defName + "]"));
-                other.AddRange(QualityNativeOutput.Status);
-            }
-            else other.Add(A("MildAllSwitches"));
-            sections.Add(new KeyValuePair<string, string>(A("OtherChanges") + (progression ? " (" + QualityProgression.Exclusions.Count() + " " + A("Exclusions") + ")" : ""), string.Join("\n\n", other)));
-            Find.WindowStack.Add(new Window_QualityPresetReview(progression ? T("ProgressionPreset") : A(medium ? "Medium" : "Mild"), enabled, replaced, benefits, costs, sections, () =>
-            {
-                RememberDraft();
-                Draft.EnablePresetProduction();
-                if (progression) QualityProgression.Apply(Draft);
-                else foreach (EffectId id in ids) Draft.Effects[id.ToString()] = new EffectSettings { Enabled = true, Factors = QualityEffectCatalog.Curve(id, medium) };
-                Editor.SynchronizeInputs();
-                GUI.FocusControl(null);
-                DraftChanged();
-            }));
+            var candidate = Editor.BuiltinPreset(medium,
+                progression ? QualityProgression.Exclusions.Select(d => d.defName) : null,
+                progression ? (Func<EffectId, bool>)QualityEffects.Available : null);
+            PreviewUserPreset(progression ? T("ProgressionPreset") : A(medium ? "Medium" : "Mild"), candidate);
         }
-
         private static string ProductionSection(string name)
         {
             if (name.StartsWith("inspired", StringComparison.Ordinal) || name.StartsWith("skilled", StringComparison.Ordinal)) return "Skills";

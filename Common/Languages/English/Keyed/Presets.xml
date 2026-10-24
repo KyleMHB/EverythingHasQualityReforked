@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <QEverything.Presets.Manage>Presets</QEverything.Presets.Manage>
+  <QEverything.Presets.Title>Reusable quality presets</QEverything.Presets.Title>
+  <QEverything.Presets.Reusable>Presets copy a complete Draft. Saving a preset does not save settings for restart or change the running game.</QEverything.Presets.Reusable>
+  <QEverything.Presets.Modified>Modified / Custom</QEverything.Presets.Modified>
+  <QEverything.Presets.Save>Save Draft as preset</QEverything.Presets.Save>
+  <QEverything.Presets.SaveHint>Enter a new filename. Correct invalid editor inputs before saving. Use Overwrite to replace an existing preset.</QEverything.Presets.SaveHint>
+  <QEverything.Presets.Load>Preview load</QEverything.Presets.Load>
+  <QEverything.Presets.Overwrite>Overwrite</QEverything.Presets.Overwrite>
+  <QEverything.Presets.Delete>Delete</QEverything.Presets.Delete>
+  <QEverything.Presets.OverwriteConfirm>Replace this preset file with the current valid Draft? Its previous snapshot will be lost. The editor Draft stays unchanged.</QEverything.Presets.OverwriteConfirm>
+  <QEverything.Presets.DeleteConfirm>Delete this reusable preset file? The editor Draft and settings stay unchanged.</QEverything.Presets.DeleteConfirm>
+  <QEverything.Presets.Refresh>Refresh list</QEverything.Presets.Refresh>
+  <QEverything.Presets.Saved>Reusable preset saved. Settings have not been committed for restart.</QEverything.Presets.Saved>
+  <QEverything.Presets.Failure>Preset operation failed. Check the name, file and folder permissions, then refresh or try another name.</QEverything.Presets.Failure>
+  <QEverything.Presets.Preview>Review all changed values below. Applying replaces the whole Draft, including rules removed by this snapshot. Undo restores the previous Draft in one step. Saved and Active settings stay unchanged.</QEverything.Presets.Preview>
+  <QEverything.Presets.Absent>no entry</QEverything.Presets.Absent>
+  <QEverything.Presets.NoChanges>No configuration changes.</QEverything.Presets.NoChanges>
+  <QEverything.Presets.Yes>Yes</QEverything.Presets.Yes>
+  <QEverything.Presets.No>No</QEverything.Presets.No>
+  <QEverything.Presets.Field.production>Production</QEverything.Presets.Field.production>
+  <QEverything.Presets.Field.effects>Quality effects</QEverything.Presets.Field.effects>
+  <QEverything.Presets.Field.marketValue>Price scaling</QEverything.Presets.Field.marketValue>
+  <QEverything.Presets.Field.vanillaRemoval>Vanilla quality removal</QEverything.Presets.Field.vanillaRemoval>
+  <QEverything.Presets.Field.groups>Group rules</QEverything.Presets.Field.groups>
+  <QEverything.Presets.Field.categories>Category rules</QEverything.Presets.Field.categories>
+  <QEverything.Presets.Field.items>Item exceptions</QEverything.Presets.Field.items>
+  <QEverything.Presets.Field.default>Global default</QEverything.Presets.Field.default>
+  <QEverything.Presets.Field.enabled>Enabled</QEverything.Presets.Field.enabled>
+  <QEverything.Presets.Field.progressionCompatibility>Progression compatibility policy</QEverything.Presets.Field.progressionCompatibility>
+  <QEverything.Presets.Field.legacyBackup>Legacy settings backup</QEverything.Presets.Field.legacyBackup>
+</LanguageData>

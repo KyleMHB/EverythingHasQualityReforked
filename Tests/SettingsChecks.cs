@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using QualityEverything;
-class SettingsChecks
+partial class SettingsChecks
 {
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
     static void CheckEffectCurves()
@@ -64,6 +64,7 @@ class SettingsChecks
     }
     static void Main()
     {
+        CheckUserPresets();
         CheckEffectCurves();
         var itemSession = new QualityConfigurationSession(new QualityConfiguration());
         var itemEditor = new QualityEditorActions(itemSession);

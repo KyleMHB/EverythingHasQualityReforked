@@ -75,6 +75,34 @@ namespace QualityEverything
             EndGesture();
             return Edit(c => { foreach (EffectId id in Enum.GetValues(typeof(EffectId))) c.Effects[id.ToString()].Enabled = false; });
         }
+        public bool CanSavePreset => !HasInvalidInput && session.Draft.Validate().Count == 0;
+        public bool MatchesPreset(QualityConfiguration snapshot) => !HasInvalidInput && session.Draft.Serialize() == snapshot.Serialize();
+        public bool ApplyPreset(QualityConfiguration snapshot)
+        {
+            var candidate = QualityConfiguration.ParseSnapshot(snapshot.Serialize());
+            EndGesture();
+            bool changed = Edit(c => session.ReplaceDraft(candidate));
+            SynchronizeInputs();
+            return changed;
+        }
+        public QualityConfiguration BuiltinPreset(bool medium, IEnumerable<string> progressionExclusions = null, Func<EffectId, bool> available = null)
+        {
+            var candidate = session.Draft.Clone();
+            candidate.EnablePresetProduction();
+            foreach (EffectId id in Enum.GetValues(typeof(EffectId)))
+            {
+                candidate.Effects[id.ToString()].Enabled = available == null || available(id);
+                candidate.Effects[id.ToString()].Factors = QualityEffectCatalog.Curve(id, medium);
+            }
+            if (progressionExclusions != null)
+            {
+                candidate.ProgressionCompatibility = true;
+                foreach (string id in progressionExclusions)
+                { candidate.Assignment.Items[id] = RuleChoice.Exclude; candidate.Participation.Items[id] = RuleChoice.Exclude; }
+            }
+            return candidate;
+        }
+        public bool ApplyBuiltinPreset(bool medium) => ApplyPreset(BuiltinPreset(medium));
         public bool HasInvalidInput => buffers.Any(p => !QualityNumericRange.ForInput(p.Key).TryParse(p.Value, out _));
         public bool NeedsCloseConfirmation => HasInvalidInput || session.Draft.Serialize() != session.Saved.Serialize();
         public static bool HasQuality(QualityConfiguration configuration, RuleTarget target, bool nativeQuality, bool removableVanillaQuality)
