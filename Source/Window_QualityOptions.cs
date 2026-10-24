@@ -66,7 +66,9 @@ namespace QualityEverything
         {
             if (!QualitySettingsState.TryClose(save ? EditorCloseAction.Save : EditorCloseAction.Discard, out var errors))
             {
-                error = T(errors.Any(e => e.StartsWith("Persistence:", StringComparison.Ordinal)) ? "SaveFailed" : "InvalidInput") + " " + string.Join(", ", errors);
+                string details = string.Join(", ", errors.Where(e => e != "InvalidInput"));
+                error = T(errors.Any(e => e.StartsWith("Persistence:", StringComparison.Ordinal)) ? "SaveFailed" : "InvalidInput")
+                    + (details.Length == 0 ? "" : " " + details);
                 return;
             }
             closing = true; Close();
