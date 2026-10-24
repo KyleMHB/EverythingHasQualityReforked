@@ -7,6 +7,13 @@ namespace QualityEverything
 {
     internal enum EditorRule { Assignment, Participation, Price, Removal }
     internal enum EditorCloseAction { Save, Discard, KeepEditing }
+    internal enum CurveBase { Custom, Mild, Medium }
+    internal struct CurveSelection
+    {
+        public CurveBase Base;
+        public float Strength;
+        public CurveSelection(CurveBase basis, float strength) { Base = basis; Strength = strength; }
+    }
     // One edit boundary for native controls and standalone behavioral checks.
     internal sealed class QualityEditorActions
     {
@@ -15,6 +22,59 @@ namespace QualityEverything
         private QualityConfiguration before;
         private string beforeIdentity, gesture;
         private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
+        private readonly HashSet<EffectId> manuallyEditedCurves = new HashSet<EffectId>();
+        public static float[] GeneratedCurve(EffectId id, CurveBase basis, float strength)
+        {
+            if (basis == CurveBase.Custom || float.IsNaN(strength) || strength < .25f || strength > 2f) throw new ArgumentOutOfRangeException();
+            var factors = QualityEffectCatalog.Curve(id, basis == CurveBase.Medium);
+            if (strength == 1f) return factors;
+            return factors.Select((v, tier) => tier == 2 ? 1f : (float)Math.Exp(strength * Math.Log(v))).ToArray();
+        }
+        public CurveSelection ClassifyEffectCurve(EffectId id)
+        {
+            var factors = session.Draft.Effects[id.ToString()].Factors;
+            if (manuallyEditedCurves.Contains(id) || factors[2] != 1f) return new CurveSelection(CurveBase.Custom, 1f);
+            foreach (var basis in new[] { CurveBase.Mild, CurveBase.Medium })
+            {
+                var original = QualityEffectCatalog.Curve(id, basis == CurveBase.Medium);
+                float strength = (float)(Math.Log(factors[6]) / Math.Log(original[6]));
+                if (float.IsNaN(strength) || strength < .25f - .000001f || strength > 2.000001f) continue;
+                strength = Math.Max(.25f, Math.Min(2f, strength));
+                var generated = GeneratedCurve(id, basis, strength);
+                if (factors.Select((value, tier) => Math.Abs(value - generated[tier]) <= .000001f * Math.Max(1f, Math.Abs(value))).All(v => v)) return new CurveSelection(basis, strength);
+            }
+            return new CurveSelection(CurveBase.Custom, 1f);
+        }
+        public bool ApplyEffectCurve(EffectId id, CurveBase basis, float strength, bool replaceCustom = false)
+        {
+            var factors = GeneratedCurve(id, basis, strength);
+            if (!replaceCustom && ClassifyEffectCurve(id).Base == CurveBase.Custom) return false;
+            bool changed = Edit(c => c.Effects[id.ToString()].Factors = factors);
+            manuallyEditedCurves.Remove(id);
+            for (int tier = 0; tier < 7; tier++) SynchronizeInput("effect:" + id + ":" + tier);
+            return changed;
+        }
+        public bool EditEffectFactor(EffectId id, int tier, string text)
+        {
+            if (tier < 0 || tier > 6) throw new ArgumentOutOfRangeException(nameof(tier));
+            var effect = session.Draft.Effects[id.ToString()];
+            return EditNumber("effect:" + id + ":" + tier, text, effect.Factors[tier], v => { effect.Factors[tier] = v; manuallyEditedCurves.Add(id); });
+        }
+        public bool ApplyAllEffectCurves(CurveBase basis, bool replaceCustom = false)
+        {
+            var ids = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().ToArray();
+            if (!replaceCustom && ids.Any(id => ClassifyEffectCurve(id).Base == CurveBase.Custom)) return false;
+            var factors = ids.ToDictionary(id => id, id => GeneratedCurve(id, basis, 1));
+            EndGesture();
+            bool changed = Edit(c => { foreach (var id in ids) c.Effects[id.ToString()].Factors = factors[id]; });
+            foreach (var id in ids) { manuallyEditedCurves.Remove(id); for (int tier = 0; tier < 7; tier++) SynchronizeInput("effect:" + id + ":" + tier); }
+            return changed;
+        }
+        public bool DisableAllEffects()
+        {
+            EndGesture();
+            return Edit(c => { foreach (EffectId id in Enum.GetValues(typeof(EffectId))) c.Effects[id.ToString()].Enabled = false; });
+        }
         public bool HasInvalidInput => buffers.Any(p => !QualityNumericRange.ForInput(p.Key).TryParse(p.Value, out _));
         public bool NeedsCloseConfirmation => HasInvalidInput || session.Draft.Serialize() != session.Saved.Serialize();
         public static bool HasQuality(QualityConfiguration configuration, RuleTarget target, bool nativeQuality, bool removableVanillaQuality)
@@ -49,7 +109,7 @@ namespace QualityEverything
             if (!QualityNumericRange.ForInput(key).TryParse(text, out float number) || number == value) return false;
             return Edit(c => set(number));
         }
-        public void SynchronizeInputs() => buffers.Clear();
+        public void SynchronizeInputs() { buffers.Clear(); manuallyEditedCurves.Clear(); }
         public void SynchronizeInput(string key) => buffers.Remove(key);
         public List<string> Save(Action persist = null)
         {
@@ -63,7 +123,7 @@ namespace QualityEverything
         {
             before = null; gesture = null;
             session.Discard();
-            history.Clear(); buffers.Clear(); Revision++;
+            history.Clear(); SynchronizeInputs(); Revision++;
         }
         public void Reset()
         {
