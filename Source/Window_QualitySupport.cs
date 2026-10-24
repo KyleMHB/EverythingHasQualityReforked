@@ -15,7 +15,11 @@ namespace QualityEverything
         private readonly Action<EffectId> navigate;
         private static string nativeEvidence;
         private bool showNative;
-        private readonly List<EffectId> candidates, otherExclusions;
+        private readonly IReadOnlyList<EffectId> candidates;
+        private readonly List<EffectId> otherExclusions;
+        private static readonly EffectId[] effectIds = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().ToArray();
+        private static readonly Dictionary<ThingDef, IReadOnlyList<EffectId>> candidateCache = new Dictionary<ThingDef, IReadOnlyList<EffectId>>();
+        private static int candidateCatalogRevision = -1;
         private EffectId? expanded;
         private bool showOther;
         private Vector2 scroll;
@@ -25,13 +29,30 @@ namespace QualityEverything
         public Window_QualitySupport(QualityCatalogEntry entry, Func<QualityConfiguration> draft, Action<EffectId> navigate)
         {
             this.entry = entry; this.draft = draft; this.navigate = navigate;
-            candidates = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(id => Candidate(id, entry.Def)).ToList();
-            otherExclusions = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(id => !candidates.Contains(id) && QualityEffects.UnsupportedReason(id, entry.Def) != null).ToList();
+            candidates = Candidates(entry.Def);
+            otherExclusions = effectIds.Where(id => !candidates.Contains(id) && QualityEffects.UnsupportedReason(id, entry.Def) != null).ToList();
             doCloseX = true; forcePause = true; absorbInputAroundWindow = true;
         }
         private static bool HasComp<T>(ThingDef def) where T : ThingComp => def.comps?.Any(p => p?.compClass != null && typeof(T).IsAssignableFrom(p.compClass)) == true;
         private static bool Is<T>(ThingDef def) => def.thingClass != null && typeof(T).IsAssignableFrom(def.thingClass);
         private static bool Gear(ThingDef def, params string[] names) => (def.IsWeapon || def.IsApparel) && def.equippedStatOffsets?.Any(s => s.stat != null && names.Contains(s.stat.defName) && (s.stat.defName == "ComfyTemperatureMin" ? s.value < 0 : s.value > 0)) == true;
+        internal static IReadOnlyList<EffectId> Candidates(ThingDef def)
+        {
+            if (candidateCatalogRevision != QualityCatalog.Revision)
+            {
+                candidateCache.Clear();
+                candidateCatalogRevision = QualityCatalog.Revision;
+            }
+            if (def == null) return Array.Empty<EffectId>();
+            if (!candidateCache.TryGetValue(def, out var result))
+                candidateCache[def] = result = effectIds.Where(id => Candidate(id, def)).ToArray();
+            return result;
+        }
+        internal static IEnumerable<EffectId> SupportEntries(ThingDef def)
+        {
+            var membership = Candidates(def);
+            return effectIds.Where(id => membership.Contains(id) || QualityEffects.UnsupportedReason(id, def) != null);
+        }
         internal static bool Candidate(EffectId id, ThingDef def)
         {
             if (def == null || def.IsBlueprint || def.IsFrame) return false;

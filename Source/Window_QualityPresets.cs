@@ -12,18 +12,41 @@ namespace QualityEverything
     {
         private string matchedPresetName;
         private QualityConfiguration matchedPreset;
+        private QualityEditorActions comparedPresetEditor;
+        private int comparedPresetRevision = -1, comparedPresetEditorRevision = -1;
+        private bool comparedPresetInvalidInput, presetMatches;
         internal static string P(string key) => ("QEverything.Presets." + key).Translate().ToString();
+        private bool PresetMatchesDraft()
+        {
+            var editor = Editor;
+            bool invalidInput = editor.HasInvalidInput;
+            if (comparedPresetEditor != editor || comparedPresetRevision != QualitySettingsState.Revision
+                || comparedPresetEditorRevision != editor.Revision || comparedPresetInvalidInput != invalidInput)
+            {
+                comparedPresetEditor = editor;
+                comparedPresetRevision = QualitySettingsState.Revision;
+                comparedPresetEditorRevision = editor.Revision;
+                comparedPresetInvalidInput = invalidInput;
+                presetMatches = matchedPreset != null && !invalidInput && editor.MatchesPreset(matchedPreset);
+            }
+            return presetMatches;
+        }
         private void DrawPresetHeader(Rect rect)
         {
-            if (Widgets.ButtonText(rect, P("Manage") + ": " + (matchedPreset != null && Editor.MatchesPreset(matchedPreset) ? matchedPresetName : P("Modified"))))
+            string name = PresetMatchesDraft() ? matchedPresetName : P("Modified");
+            if (Widgets.ButtonText(rect, P("Manage") + ": " + name))
             {
                 Editor.EndGesture();
                 Find.WindowStack.Add(new Window_QualityPresets(this));
             }
-            TooltipHandler.TipRegion(rect, P("Reusable") + "\n" + (matchedPreset != null && Editor.MatchesPreset(matchedPreset) ? matchedPresetName : P("Modified")));
+            TooltipHandler.TipRegion(rect, P("Reusable") + "\n" + name);
         }
         internal void OpenBuiltinPreset(bool progression, bool medium = false) => OpenPreset(progression, medium);
-        internal void RememberPreset(string name, QualityConfiguration snapshot) { matchedPresetName = name; matchedPreset = snapshot.Clone(); }
+        internal void RememberPreset(string name, QualityConfiguration snapshot)
+        {
+            matchedPresetName = name; matchedPreset = snapshot.Clone();
+            comparedPresetEditor = null;
+        }
         internal bool CanSaveUserPreset => Editor.CanSavePreset;
         internal QualityConfiguration CapturePreset() => Draft.Clone();
         internal void ShowPresetError(Exception exception) => error = P("Failure") + " " + exception.Message;

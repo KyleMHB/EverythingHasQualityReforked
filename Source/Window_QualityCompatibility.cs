@@ -36,7 +36,7 @@ namespace QualityEverything
                 bool requested = policy;
                 Find.WindowStack.Add(new Window_CompatibilityReview(C("ProviderPolicy"), C("PolicyPreview") + "\n\n" +
                     string.Join("\n", QualityProgression.Exclusions.Select(d => d.LabelCap.ToString() + " [" + d.defName + "]")),
-                    () => { Editor.SetProviderPolicy(requested); DraftChanged(); }));
+                    () => { if (Editor.SetProviderPolicy(requested)) QualitySettingsState.Changed(); DraftChanged(); }));
             }
             float policyHeight = Text.CalcHeight(C("PolicyHelp"), view.width);
             Widgets.Label(new Rect(0, y, view.width, policyHeight), C("PolicyHelp")); y += policyHeight + 12;
@@ -56,7 +56,7 @@ namespace QualityEverything
             {
                 if (Widgets.ButtonText(new Rect(0, y, view.width * .58f, 30), T("RecoverLegacy"))) Find.WindowStack.Add(new Window_CompatibilityReview(T("RecoverLegacy"), C("RecoveryPreview") + "\n\n" +
                     string.Join("\n", Draft.InactiveLegacy.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => p.Key + ": " + T(p.Value ? "Include" : "Exclude"))),
-                    () => { Editor.RecoverLegacy(); DraftChanged(); }));
+                    () => { if (Editor.RecoverLegacy()) QualitySettingsState.Changed(); DraftChanged(); }));
                 if (Widgets.ButtonText(new Rect(view.width * .6f, y, view.width * .4f, 30), A(showLegacy ? "HideLegacy" : "ShowLegacy"))) showLegacy = !showLegacy;
                 y += 38;
                 if (showLegacy)
