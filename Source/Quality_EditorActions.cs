@@ -106,6 +106,23 @@ namespace QualityEverything
             EndGesture();
             return Edit(c => { foreach (EffectId id in Enum.GetValues(typeof(EffectId))) c.Effects[id.ToString()].Enabled = false; });
         }
+        public bool SetProviderPolicy(bool enabled)
+        {
+            EndGesture();
+            return Edit(c => c.ProgressionCompatibility = enabled);
+        }
+        public bool RecoverLegacy()
+        {
+            EndGesture();
+            return Edit(c =>
+            {
+                foreach (var entry in c.InactiveLegacy.OrderBy(p => p.Key, StringComparer.Ordinal))
+                {
+                    string id = entry.Key.Substring(entry.Key.IndexOf(':') + 1);
+                    if (id.Length > 0) c.Assignment.Items[id] = entry.Value ? RuleChoice.Include : RuleChoice.Exclude;
+                }
+            });
+        }
         public bool HasInvalidInput => buffers.Any(p => !QualityNumericRange.ForInput(p.Key).TryParse(p.Value, out _));
         public bool NeedsCloseConfirmation => HasInvalidInput || session.Draft.Serialize() != session.Saved.Serialize();
         public static bool HasQuality(QualityConfiguration configuration, RuleTarget target, bool nativeQuality, bool removableVanillaQuality)
