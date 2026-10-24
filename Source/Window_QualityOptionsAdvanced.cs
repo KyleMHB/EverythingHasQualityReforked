@@ -12,7 +12,6 @@ namespace QualityEverything
     internal sealed partial class Window_QualityOptions
     {
         private string effectSearch = "", productionSearch = "";
-        private readonly HashSet<EffectId> expandedEffects = new HashSet<EffectId>();
         private bool showDiagnostics, showLegacy;
         private readonly HashSet<string> expandedCompatibility = new HashSet<string>();
         private static string A(string key) => ("QEverything.Advanced." + key).Translate().ToString();
@@ -21,69 +20,6 @@ namespace QualityEverything
         {
             int n = (int)id;
             return n < 3 ? "Durability" : n < 6 ? "Work" : n < 10 ? "Power" : n < 15 ? "Consumables" : n < 20 ? "Equipment" : n < 24 ? "Combat" : "Furniture";
-        }
-
-        private void DrawEffects(Rect rect)
-        {
-            Widgets.Label(new Rect(rect.x, rect.y, 140, 30), A("Presets"));
-            if (Widgets.ButtonText(new Rect(rect.x + 145, rect.y, rect.width - 145, 30), A("ChoosePreset")))
-                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
-                {
-                    new FloatMenuOption(A("Mild"), () => OpenPreset(false)),
-                    new FloatMenuOption(A("Medium"), () => OpenPreset(false, true)),
-                    new FloatMenuOption(A("Progression"), () => OpenPreset(true))
-                }));
-            Widgets.Label(new Rect(rect.x, rect.y + 38, 140, 28), A("SearchEffects"));
-            string query = Widgets.TextField(new Rect(rect.x + 145, rect.y + 38, rect.width - 145, 28), effectSearch);
-            if (query != effectSearch) { effectSearch = query; effectScroll = Vector2.zero; }
-            rect.y += 74; rect.height -= 74;
-            var ids = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(id => Matches(T("Effect." + id) + " " + A(Family(id)), effectSearch)).ToList();
-            float height = 10;
-            string last = null;
-            foreach (var id in ids)
-            {
-                string family = Family(id);
-                if (last != family) { height += 34; last = family; }
-                height += expandedEffects.Contains(id) ? (id == EffectId.LinkedFurniture ? 324 : 212) : 90;
-            }
-            var view = new Rect(0, 0, rect.width - 18, Math.Max(rect.height, height));
-            Widgets.BeginScrollView(rect, ref effectScroll, view);
-            float y = 0; last = null;
-            if (ids.Count == 0) Widgets.Label(new Rect(0, 0, view.width, 32), A("NoResults"));
-            foreach (var id in ids)
-            {
-                string family = Family(id);
-                if (last != family) { Widgets.Label(new Rect(0, y, view.width, 28), A(family)); y += 34; last = family; }
-                var effect = Draft.Effects[id.ToString()];
-                bool before = effect.Enabled;
-                Widgets.CheckboxLabeled(new Rect(0, y, view.width - 190, 28), T("Effect." + id), ref effect.Enabled);
-                if (before != effect.Enabled) { bool next = effect.Enabled; effect.Enabled = before; RememberDraft(); effect.Enabled = next; DraftChanged(); }
-                bool open = expandedEffects.Contains(id);
-                if (Widgets.ButtonText(new Rect(view.width - 185, y, 180, 28), A(open ? "HideLevels" : "CustomizeLevels")))
-                { if (open) expandedEffects.Remove(id); else expandedEffects.Add(id); }
-                string status = QualityEffects.Available(id) ? A("AdapterAvailable") : A("AdapterUnavailable");
-                Widgets.Label(new Rect(0, y + 30, view.width, 26), status + " · " + A("Normal") + " ×" + effect.Factors[2].ToString("0.##", CultureInfo.InvariantCulture) + " · " + A("Legendary") + " ×" + effect.Factors[6].ToString("0.##", CultureInfo.InvariantCulture));
-                Widgets.Label(new Rect(0, y + 56, view.width, 26), QualityEffectCatalog.IsCost(id) ? T("CostCurve") : T("BenefitCurve"));
-                y += 90;
-                if (!open) continue;
-                Widgets.Label(new Rect(0, y, view.width, 38), QualityEffects.Reason(id)); y += 42;
-                float width = view.width / 7;
-                for (int tier = 0; tier < 7; tier++)
-                {
-                    int index = tier;
-                    Widgets.Label(new Rect(width * tier, y, width, 25), ((QualityCategory)tier).GetLabel());
-                    FloatField(new Rect(width * tier, y + 27, width - 6, 28), "effect:" + id + ":" + tier, effect.Factors[tier], v => effect.Factors[index] = v);
-                }
-                y += 80;
-                if (id == EffectId.LinkedFurniture)
-                {
-                    Widgets.Label(new Rect(0, y, view.width * .7f, 28), T("LinkedBonusCap"));
-                    FloatField(new Rect(view.width * .72f, y, view.width * .25f, 28), "linkedBonus", Draft.LinkedFurnitureBonusCap, v => Draft.LinkedFurnitureBonusCap = v); y += 56;
-                    Widgets.Label(new Rect(0, y, view.width * .7f, 28), T("LinkedPenaltyCap"));
-                    FloatField(new Rect(view.width * .72f, y, view.width * .25f, 28), "linkedPenalty", Draft.LinkedFurniturePenaltyCap, v => Draft.LinkedFurniturePenaltyCap = v); y += 56;
-                }
-            }
-            Widgets.EndScrollView();
         }
 
         private void OpenPreset(bool progression, bool medium = false)
