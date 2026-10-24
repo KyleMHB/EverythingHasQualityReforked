@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Curves.AllActions>All effects…</QEverything.Curves.AllActions>
+  <QEverything.Curves.AllMild>Mild curves for all effects…</QEverything.Curves.AllMild>
+  <QEverything.Curves.AllMedium>Medium curves for all effects…</QEverything.Curves.AllMedium>
+  <QEverything.Curves.DisableAll>Disable all effects…</QEverything.Curves.DisableAll>
+  <QEverything.Curves.DisableConfirm>Disable all 25 mod effect switches? Their curves, item rules and production settings stay as they are.</QEverything.Curves.DisableConfirm>
+  <QEverything.Curves.Curve>Curve</QEverything.Curves.Curve>
+  <QEverything.Curves.Custom>Custom</QEverything.Curves.Custom>
+  <QEverything.Curves.Mild>Mild</QEverything.Curves.Mild>
+  <QEverything.Curves.Medium>Medium</QEverything.Curves.Medium>
+  <QEverything.Curves.Strength>Strength (0.25–2.00)</QEverything.Curves.Strength>
+  <QEverything.Curves.CustomHelp>Choose a base to replace custom values and use strength.</QEverything.Curves.CustomHelp>
+  <QEverything.Curves.ReplaceCustom>Replace this custom curve with the selected base at strength 1.00? Review all seven multipliers below.</QEverything.Curves.ReplaceCustom>
+  <QEverything.Curves.CurvesOnly>Factors only; enable switches and rules are retained</QEverything.Curves.CurvesOnly>
+</LanguageData>

@@ -4,6 +4,64 @@ using QualityEverything;
 class SettingsChecks
 {
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
+    static void CheckEffectCurves()
+    {
+        var session = new QualityConfigurationSession(new QualityConfiguration());
+        var editor = new QualityEditorActions(session);
+        Check(QualityEditorActions.GeneratedCurve(EffectId.ConsumerDemand, CurveBase.Mild, 1).SequenceEqual(new[] {1.05f,1.02f,1f,.98f,.95f,.9f,.8f}), "Mild uses actual nonreciprocal cost catalog");
+        Check(editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Medium, 2, true), "apply generated curve");
+        Check(Math.Abs(session.Draft.Effects["BuildingDurability"].Factors[6] - 6.25f) < .00001f && session.Draft.Effects["BuildingDurability"].Factors[2] == 1, "log strength endpoint and neutral Normal");
+        var match = editor.ClassifyEffectCurve(EffectId.BuildingDurability);
+        Check(match.Base == CurveBase.Medium && Math.Abs(match.Strength - 2) < .0001f, "classify supported strength");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 2, "1.3");
+        string custom = session.Draft.Serialize();
+        Check(editor.ClassifyEffectCurve(EffectId.BuildingDurability).Base == CurveBase.Custom && !editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1), "custom Normal disables strength and requires explicit replacement");
+        Check(session.Draft.Serialize() == custom, "canceled replacement preserves custom curve");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 2, "-");
+        Check(editor.HasInvalidInput && editor.Save().Count > 0 && session.Draft.Serialize() == custom, "partial tier input blocks save without corrupting draft");
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1, true);
+        Check(!editor.HasInvalidInput && editor.Undo() && session.Draft.Effects["BuildingDurability"].Factors[2] == 1.3f, "base replacement synchronizes input and undoes custom Normal");
+        editor.ApplyAllEffectCurves(CurveBase.Mild, true);
+        Check(session.Draft.Effects.Values.All(e => !e.Enabled) && session.Draft.Production.useMaterialQuality == false, "all curves leaves switches and production alone");
+        editor.Save();
+        editor.BeginGesture("strength");
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, .25f);
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 2);
+        editor.EndGesture();
+        Check(editor.Undo() && !editor.CanUndo && session.Draft.Effects["BuildingDurability"].Factors[6] == 1.2f, "completed slider gesture has one undo");
+        editor.BeginGesture("strength"); editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1); editor.EndGesture();
+        Check(!editor.CanUndo, "no op gesture has no history");
+        session.Draft.Effects["BuildingDurability"].Enabled = true;
+        string factorsBefore = string.Join(",", session.Draft.Effects["BuildingDurability"].Factors);
+        editor.DisableAllEffects();
+        Check(!session.Draft.Effects["BuildingDurability"].Enabled && factorsBefore == string.Join(",", session.Draft.Effects["BuildingDurability"].Factors), "disable all changes only switches");
+        foreach (EffectId id in Enum.GetValues(typeof(EffectId)))
+        foreach (var basis in new[] { CurveBase.Mild, CurveBase.Medium })
+        foreach (float strength in new[] { .25f, 1f, 2f })
+        {
+            editor.ApplyEffectCurve(id, basis, strength, true);
+            var loaded = new QualityConfigurationSession(QualityConfiguration.Parse(session.Draft.Serialize()));
+            var classified = new QualityEditorActions(loaded).ClassifyEffectCurve(id);
+            Check(classified.Base == basis && Math.Abs(classified.Strength - strength) < .00001f, "all real effects classify catalog bases at both strength endpoints after reload");
+        }
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1, true);
+        editor.EditEffectFactor(EffectId.BuildingDurability, 0, ".95");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 0, ".96");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 0, ".95");
+        Check(editor.ClassifyEffectCurve(EffectId.BuildingDurability).Base == CurveBase.Custom, "manual edits remain Custom until explicit base selection even when values happen to match");
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1, true);
+        foreach (string invalid in new[] { "NaN", "Infinity", "no", ".009", "10.01" })
+        {
+            editor.EditEffectFactor(EffectId.BuildingDurability, 2, invalid);
+            Check(editor.HasInvalidInput && session.Draft.Effects["BuildingDurability"].Factors[2] == 1, "invalid exact tier buffers retain last valid factor");
+        }
+        editor.EditEffectFactor(EffectId.BuildingDurability, 2, "10");
+        Check(!editor.HasInvalidInput && session.Draft.Effects["BuildingDurability"].Factors[2] == 10, "exact inputs accept current upper limit including Normal");
+        editor.EditNumber("linkedBonus", ".021", session.Draft.LinkedFurnitureBonusCap, v => session.Draft.LinkedFurnitureBonusCap = v);
+        editor.EditNumber("linkedPenalty", ".006", session.Draft.LinkedFurniturePenaltyCap, v => session.Draft.LinkedFurniturePenaltyCap = v);
+        Check(editor.HasInvalidInput, "linked caps retain distinct existing upper bounds");
+        editor.Undo(); Check(!editor.HasInvalidInput, "undo synchronizes all invalid curve and cap buffers");
+    }
     static void CheckBulkSelection()
     {
         var editor = new QualityEditorActions(new QualityConfigurationSession(new QualityConfiguration()));
@@ -60,6 +118,7 @@ class SettingsChecks
     static void Main()
     {
         CheckBulkSelection();
+        CheckEffectCurves();
         var itemSession = new QualityConfigurationSession(new QualityConfiguration());
         var itemEditor = new QualityEditorActions(itemSession);
         var editable = new RuleTarget("Workbench", "Building", true, new CategoryPath[0]);
