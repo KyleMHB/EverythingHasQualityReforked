@@ -7,6 +7,13 @@ namespace QualityEverything
 {
     internal enum EditorRule { Assignment, Participation, Price, Removal }
     internal enum EditorCloseAction { Save, Discard, KeepEditing }
+    internal sealed class EditorItem
+    {
+        public RuleTarget Target { get; }
+        public bool NativeQuality { get; }
+        public bool Removable { get; }
+        public EditorItem(RuleTarget target, bool nativeQuality, bool removable) { Target = target; NativeQuality = nativeQuality; Removable = removable; }
+    }
     internal enum CurveBase { Custom, Mild, Medium }
     internal struct CurveSelection
     {
@@ -22,6 +29,30 @@ namespace QualityEverything
         private QualityConfiguration before;
         private string beforeIdentity, gesture;
         private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
+        private readonly HashSet<string> selected = new HashSet<string>(StringComparer.Ordinal);
+        public IReadOnlyCollection<string> SelectedIds => selected.ToArray();
+        public int SelectedCount => selected.Count;
+        public int SelectionRevision { get; private set; }
+        public bool BulkMode => selected.Count > 0;
+        public bool IsSelected(string id) => selected.Contains(id);
+        public void SetSelected(string id, bool value) { if (value ? selected.Add(id) : selected.Remove(id)) SelectionRevision++; }
+        public void SelectResults(IEnumerable<string> ids) { int count = selected.Count; selected.UnionWith(ids); if (count != selected.Count) SelectionRevision++; }
+        public void ClearSelection() { if (selected.Count == 0) return; selected.Clear(); SelectionRevision++; }
+        public int HiddenSelectedCount(IEnumerable<string> visibleIds) => selected.Count - visibleIds.Distinct().Count(selected.Contains);
+        public List<EditorItem> EligibleSelected(EditorRule rule, IEnumerable<EditorItem> items) => items
+            .Where(i => selected.Contains(i.Target.Id) && TargetFor(rule, i.Target, i.NativeQuality, i.Removable).Supported)
+            .GroupBy(i => i.Target.Id).Select(g => g.First()).ToList();
+        public bool SetSelectedRule(EditorRule rule, IEnumerable<EditorItem> items, RuleChoice choice)
+        {
+            var eligible = EligibleSelected(rule, items);
+            EndGesture();
+            return Edit(c =>
+            {
+                var rules = RulesFor(c, rule).Items;
+                foreach (var item in eligible)
+                    if (choice == RuleChoice.Inherit) rules.Remove(item.Target.Id); else rules[item.Target.Id] = choice;
+            });
+        }
         private readonly HashSet<EffectId> manuallyEditedCurves = new HashSet<EffectId>();
         public static float[] GeneratedCurve(EffectId id, CurveBase basis, float strength)
         {
@@ -121,6 +152,35 @@ namespace QualityEverything
             if (choice != RuleChoice.Inherit && !TargetFor(rule, target, nativeQuality, removable).Supported) return false;
             EndGesture();
             return Edit(c => { var items = RulesFor(c, rule).Items; if (choice == RuleChoice.Inherit) items.Remove(target.Id); else items[target.Id] = choice; });
+        }
+        public bool SetScopeRule(EditorRule rule, string group, string category, RuleChoice choice)
+        {
+            if (group.Length > 0 && category.Length > 0) return false;
+            if (group.Length == 0 && category.Length == 0 && choice == RuleChoice.Inherit) return false;
+            EndGesture();
+            return Edit(c =>
+            {
+                var rules = RulesFor(c, rule);
+                if (category.Length > 0)
+                { if (choice == RuleChoice.Inherit) rules.Categories.Remove(category); else rules.Categories[category] = choice; }
+                else if (group.Length > 0)
+                { if (choice == RuleChoice.Inherit) rules.Groups.Remove(group); else rules.Groups[group] = choice == RuleChoice.Include; }
+                else rules.Default = choice == RuleChoice.Include;
+            });
+        }
+        public string[] ScopeItemExceptions(EditorRule rule, string group, string category, IEnumerable<RuleTarget> catalog)
+        {
+            var items = RulesFor(session.Draft, rule).Items;
+            if (group.Length == 0 && category.Length == 0) return items.Keys.OrderBy(id => id, StringComparer.Ordinal).ToArray();
+            return catalog.Where(t => (group.Length == 0 || t.Group == group)
+                && (category.Length == 0 || t.Categories.Any(c => c.Id == category)))
+                .Select(t => t.Id).Distinct().Where(items.ContainsKey).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+        }
+        public bool ClearScopeItemExceptions(EditorRule rule, string group, string category, IEnumerable<RuleTarget> catalog)
+        {
+            var ids = ScopeItemExceptions(rule, group, category, catalog);
+            EndGesture();
+            return Edit(c => { foreach (string id in ids) RulesFor(c, rule).Items.Remove(id); });
         }
         public bool TryClose(EditorCloseAction action, out List<string> errors, Action persist = null)
         {

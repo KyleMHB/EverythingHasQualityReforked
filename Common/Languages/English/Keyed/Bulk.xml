@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Bulk.Title>Bulk item exceptions</QEverything.Bulk.Title>
+  <QEverything.Bulk.Count>{0} selected · {1} hidden</QEverything.Bulk.Count>
+  <QEverything.Bulk.SelectResults>Select all results ({0})</QEverything.Bulk.SelectResults>
+  <QEverything.Bulk.Review>Review selection</QEverything.Bulk.Review>
+  <QEverything.Bulk.Clear>Clear selection</QEverything.Bulk.Clear>
+  <QEverything.Bulk.Edit>Bulk edit</QEverything.Bulk.Edit>
+  <QEverything.Bulk.Empty>No selected items. Close this window to inspect an item.</QEverything.Bulk.Empty>
+  <QEverything.Bulk.Help>These actions edit checked item types, including hidden selections. Clicking a row changes focus only. Clear selection to return to single-item editing. Unsupported items and protected providers retain their rules.</QEverything.Bulk.Help>
+  <QEverything.Bulk.Eligible>{0} eligible of {1} selected</QEverything.Bulk.Eligible>
+  <QEverything.Bulk.Vanilla>Vanilla quality</QEverything.Bulk.Vanilla>
+  <QEverything.Bulk.ReviewTitle>Complete selection ({0})</QEverything.Bulk.ReviewTitle>
+  <QEverything.Bulk.RemovalPreview>Vanilla quality removal targets ({0})</QEverything.Bulk.RemovalPreview>
+  <QEverything.Bulk.RemovalPreviewHelp>Only these eligible vanilla item types will receive removal exceptions. Protected providers are excluded. Continue to read the removal warning before applying.</QEverything.Bulk.RemovalPreviewHelp>
+  <QEverything.Bulk.ContinueRemoval>Continue to removal warning</QEverything.Bulk.ContinueRemoval>
+</LanguageData>
