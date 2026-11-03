@@ -255,7 +255,11 @@ namespace ConfigurableQuality
             for (int i = first; i < last; i++)
             {
                 var e = s.Filtered[i]; float y = i * row; bool check = s.Selected.Contains(e.Target.Id), before = check;
-                if (check) Widgets.DrawHighlightSelected(new Rect(0, y, view.width, row)); Widgets.CheckboxLabeled(new Rect(0, y + 9, 28, 28), "", ref check);
+                if (check) Widgets.DrawHighlightSelected(new Rect(0, y, view.width, row));
+                var selectionRect = new Rect(0, y + 9, 28, 28);
+                if (!check) Widgets.DrawBox(new Rect(selectionRect.x + 4, selectionRect.y + 2, 22, 22));
+                Widgets.CheckboxLabeled(selectionRect, "", ref check, texUnchecked: BaseContent.ClearTex);
+                TooltipHandler.TipRegion(selectionRect, U("SelectionHelp"));
                 if (check != before) { s.SelectionRevision++; if (check) s.Selected.Add(e.Target.Id); else s.Selected.Remove(e.Target.Id); if (s.Reviewing && s.Selected.Count == 0) ReviewSelected(); }
                 if (Widgets.ButtonText(new Rect(34, y + 2, view.width * .43f - 34, row - 4), e.Label)) Find.WindowStack.Add(new Window_QualityItem(this, e));
                 Widgets.Label(new Rect(view.width * .45f, y + 3, view.width * .55f, row - 4), ResolutionText(e)); TooltipHandler.TipRegion(new Rect(30, y, view.width - 30, row), e.Target.Id + "\n" + e.Source + "\n" + (e.RemovableVanillaQuality ? U("VanillaRemovalAvailable") : e.NativeQuality ? T("NativeProtected") : ""));

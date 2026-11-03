@@ -32,7 +32,7 @@
   <QEverything.Options.UX.BackResults>Back to results</QEverything.Options.UX.BackResults>
   <QEverything.Options.UX.ReviewSelected>Review selected</QEverything.Options.UX.ReviewSelected>
   <QEverything.Options.UX.ClearSelection>Clear selection</QEverything.Options.UX.ClearSelection>
-  <QEverything.Options.UX.SelectionHelp>Tick items to select them. Selection is kept across searches and categories.</QEverything.Options.UX.SelectionHelp>
+  <QEverything.Options.UX.SelectionHelp>Tick items to select them for a batch action. Selecting an item does not change its quality setting. Selection is kept across searches and categories.</QEverything.Options.UX.SelectionHelp>
   <QEverything.Options.UX.Applied>Updated {0} selected item rules in the draft. Selection kept.</QEverything.Options.UX.Applied>
   <QEverything.Options.UX.CategoryTree>Category branches</QEverything.Options.UX.CategoryTree>
   <QEverything.Options.UX.EffectsAllowed>Effects allowed</QEverything.Options.UX.EffectsAllowed>
