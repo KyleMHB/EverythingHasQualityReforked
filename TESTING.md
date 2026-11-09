@@ -60,3 +60,13 @@ The cases are mechanical. They inspect defs, and set quality directly on made or
   - The Progression cases expected Legendary walls and missed the preset's Excellent bound.
   - The launcher now refuses such a `run-all`, and the cases follow the preset's bounds.
 - **Not covered:** production and construction quality, market value, vanilla-quality removal, the other effects, the editor, older-settings migration on a real config, and the full mod list.
+
+### 2026-11-09 merge review
+
+Review of merge `51353b9` against both parents, focused on what the resolution dropped from `codex/quality-repair-expansion`:
+
+- **Rule coverage kept:** the redesigned workbench reads and edits all four rule sets (assignment, effects participation, market value and vanilla removal). The removal confirmation and the vanilla-removal outcome markers survive. `Mod_SettingsUtility.RestoreDefaults` now delegates to `QualityEditorActions.Reset`. That resets the same fields the old method listed and keeps `LegacyBackup` and `InactiveLegacy`, so a reset doesn't lose migration data.
+- **Ported:** the selection-checkbox change from `a8e016f` (an outlined empty box and the `SelectionHelp` tooltip) now applies to the workbench table. The dropped `VanillaRemovalHelp` and `MarketValueHelp` texts are now tooltips on the Quality and Price column headers; Mod effects shows `ExceptionHelp`.
+- **Text fix:** `MarketValueHelp` said presets leave market-value rules unchanged. That is still true for the built-in presets, but `ApplyPreset` replaces the whole draft for a user preset. The English text now says so.
+- **Left as is:** `Window_QualityOptions.DrawRules` and its `participation`/`pricing`/`removing` modes are no longer reachable from the 4-tab window; only `Window_QualityItem` still reads those flags. This is dead code to remove in a later cleanup, not a behaviour problem.
+- **Checks after the port:** `package-local.ps1` built 1.6 and 1.7 with 0 warnings and validated the package. `check-local.ps1` passed (7 programs). `deploy.ps1` installed it, and `cq-fresh` (`20261109-193113-cq-fresh-s1`, 3/3) and `cq-progression` (`20261109-193125-cq-progression-s1`, 6/6) passed. The tooltips and checkbox drawing were not checked visually in game.

@@ -75,7 +75,13 @@ namespace ConfigurableQuality
             float width = rect.width - 18, itemWidth = Math.Max(80, width - outcomeWidth * 3);
             string[] headers = { W("Item"), W("Quality"), W("ModEffects"), W("Price") };
             Widgets.Label(new Rect(rect.x, rect.y, itemWidth, 26), headers[0]);
-            for (int c = 0; c < 3; c++) Widgets.Label(new Rect(rect.x + itemWidth + c * outcomeWidth, rect.y, outcomeWidth, 26), headers[c + 1]);
+            string[] headerHelp = { U("VanillaRemovalHelp"), W("ExceptionHelp"), U("MarketValueHelp") };
+            for (int c = 0; c < 3; c++)
+            {
+                var header = new Rect(rect.x + itemWidth + c * outcomeWidth, rect.y, outcomeWidth, 26);
+                Widgets.Label(header, headers[c + 1]);
+                TooltipHandler.TipRegion(header, headerHelp[c]);
+            }
             var list = new Rect(rect.x, rect.y + 28, rect.width, rect.height - 28);
             if (assignment.Filtered.Count == 0) { Widgets.Label(list, U("NoResults", ScopeName) + " " + W("ClearHelp")); return; }
             const float row = 62;
@@ -89,7 +95,11 @@ namespace ConfigurableQuality
                     var entry = assignment.Filtered[i]; float y = i * row;
                     if (focusedItem == entry.Target.Id) Widgets.DrawHighlightSelected(new Rect(0, y, width, row));
                     bool check = Editor.IsSelected(entry.Target.Id), before = check;
-                    Widgets.CheckboxLabeled(new Rect(0, y + 16, 28, 28), "", ref check);
+                    // Selection only marks items for a batch action, so the unticked box is drawn as an outline, not a cross (a8e016f).
+                    var selectionRect = new Rect(0, y + 16, 28, 28);
+                    if (!check) Widgets.DrawBox(new Rect(selectionRect.x + 4, selectionRect.y + 2, 22, 22));
+                    Widgets.CheckboxLabeled(selectionRect, "", ref check, texUnchecked: BaseContent.ClearTex);
+                    TooltipHandler.TipRegion(selectionRect, U("SelectionHelp"));
                     if (check != before) Editor.SetSelected(entry.Target.Id, check);
                     if (Widgets.ButtonText(new Rect(32, y + 2, itemWidth - 36, row - 4), entry.Label + (inline || Editor.BulkMode ? "" : "\n" + W("Details")), drawBackground: false))
                     { focusedItem = entry.Target.Id; focusedWorkbenchEntry = entry; if (!inline && !Editor.BulkMode) Find.WindowStack.Add(new Window_WorkbenchDetails(this, entry)); }
