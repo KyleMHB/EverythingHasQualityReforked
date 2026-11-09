@@ -28,6 +28,8 @@ Settings only apply after a restart, so each batch has its own mod set and launc
 dotnet build DevTests/ConfigurableQuality.DevTests.csproj -c Release
 python Tools/cq_test.py run cq-fresh --seed 1
 python Tools/cq_test.py run cq-progression --seed 1
+python Tools/cq_test.py run cq-production --seed 1
+python Tools/cq_test.py run cq-market --seed 1
 python Tools/cq_test.py close-session
 python Tools/cq_test.py release-check
 ```
@@ -70,3 +72,25 @@ Review of merge `51353b9` against both parents, focused on what the resolution d
 - **Text fix:** `MarketValueHelp` said presets leave market-value rules unchanged. That is still true for the built-in presets, but `ApplyPreset` replaces the whole draft for a user preset. The English text now says so.
 - **Left as is:** `Window_QualityOptions.DrawRules` and its `participation`/`pricing`/`removing` modes are no longer reachable from the 4-tab window; only `Window_QualityItem` still reads those flags. This is dead code to remove in a later cleanup, not a behaviour problem.
 - **Checks after the port:** `package-local.ps1` built 1.6 and 1.7 with 0 warnings and validated the package. `check-local.ps1` passed (7 programs). `deploy.ps1` installed it, and `cq-fresh` (`20261109-193113-cq-fresh-s1`, 3/3) and `cq-progression` (`20261109-193125-cq-progression-s1`, 6/6) passed. The tooltips and checkbox drawing were not checked visually in game.
+
+### Production and market value batches
+
+Each of these batches needs its own launch, because their settings folders differ: `run-all` refuses to merge them.
+
+**`cq-production`** (mod set `progression`). Production quality stays within the preset's group bounds:
+
+- **`cq.construction-bound`:** a skill-20 colonist completes 30 steel wall frames through `Frame.CompleteConstruction`, the real path the mod redirects. Every wall is at most Excellent (`maxEdificeQuality 4`). A vanilla skill-20 sample of 200 draws must include qualities above Excellent, so the bound is doing something.
+- **`cq.manufactured-bound`:** 200 draws from `Quality_Generator.GenerateQualityForDef` for the first loaded def in the Manufactured group, with a skill-20 colonist, are all at most Excellent.
+- **`cq.ingredient-minimum`:** 200 draws for the first Ingredient def with a skill-0 grower are all within Normal..Excellent (`minIngQuality 2`). The vanilla skill-0 sample must include qualities below Normal.
+
+**`cq-market`** (mod set `market`, settings `DevTests/modsettings/market`: the Progression preset plus market-value item exceptions `Exclude` for `Apparel_Duster` and `Wall`):
+
+- **`cq.market-off-vanilla`/`cq.market-off-added`:** with scaling off, the duster's MarketValue and the wall's MarketValue and MarketValueIgnoreHp are the same at Awful, Normal and Legendary.
+- **`cq.market-default-vanilla`/`-added`/`-building`:** Gun_Revolver (vanilla quality), Steel (added quality) and a steel Door (added quality, building wealth) still rise from Awful to Normal to Legendary.
+
+The cases are mechanical. Construction calls the frame completion directly rather than letting a colonist build. Crafting and harvesting sample the generator that the patched recipe and harvest paths call. Market values are read from stats on made things; nothing is traded.
+
+- **2026-11-09, `20261109-193456-cq-production-s1`:** 3 of 3 passed. Walls: Normal 3, Good 7, Excellent 20 (vanilla skill 20: Normal 5, Good 80, Excellent 95, Masterwork 20). Manufactured def `Wort`: Normal 6, Good 70, Excellent 124. Ingredient def `RawHops`: Normal 200 (vanilla skill 0: Awful 123, Poor 71, Normal 6).
+- **2026-11-09, `20261109-193508-cq-market-s1`:** 5 of 5 passed. Duster 156/156/156 and wall 9.99 for all three qualities with scaling off. With scaling on: revolver 67.7/135.4/675, steel 0.95/1.9/2.85, door 25.28/50.56/75.84.
+- **Setup error found on the way:** the first `cq-market` run (`20261109-193419-cq-market-s1`) wrote the item exceptions as `false`. Category and item rules take `RuleChoice` names (`Include`, `Exclude`, `Inherit`); only groups take booleans. The parser silently ignores other values. The first `cq-production` run picked `ComponentIndustrial`, which is in the Stuff group; the batch now looks the def up by group.
+- **Not covered:** material and table supply factors, skill requirements, inspirations, recipe and harvest jobs run by colonists, trade prices and vanilla-quality removal.

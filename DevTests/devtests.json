@@ -11,7 +11,8 @@
   "runtimeFiles": ["LoadFolders.xml", "LICENSE", "build-manifest.json"],
   "modSets": {
     "default": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
-    "progression": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
+    "progression": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
+    "market": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
   },
-  "batchModSets": { "cq-progression": "progression" }
+  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market" }
 }
