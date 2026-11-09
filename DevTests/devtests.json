@@ -1,0 +1,17 @@
+{
+  "name": "Configurable Quality",
+  "argPrefix": "cq",
+  "modDir": "E:/Steam/steamapps/common/RimWorld/Mods/ConfigurableQuality",
+  "runtimeRoot": "artifacts/package/ConfigurableQuality",
+  "productionDll": "1.7/Assemblies/ConfigurableQuality.dll",
+  "devBuild": "work/devtests/ConfigurableQuality.DevTests.dll",
+  "devProject": "DevTests/ConfigurableQuality.DevTests.csproj",
+  "evidenceFolder": "ConfigurableQualityTests",
+  "runtimeFolders": ["About", "Common", "1.6", "1.7"],
+  "runtimeFiles": ["LoadFolders.xml", "LICENSE", "build-manifest.json"],
+  "modSets": {
+    "default": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
+    "progression": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
+  },
+  "batchModSets": { "cq-progression": "progression" }
+}

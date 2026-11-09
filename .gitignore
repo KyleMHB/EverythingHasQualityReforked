@@ -13,3 +13,6 @@
 *.userosscache
 *.sln.docstates
 /artifacts/
+
+# Developer test output
+work/

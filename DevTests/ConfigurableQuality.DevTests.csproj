@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ConfigurableQuality.DevTests</AssemblyName>
+    <RootNamespace>ConfigurableQuality.DevTests</RootNamespace>
+    <OutputPath>..\work\devtests\</OutputPath>
+    <RimWorldDevTestsProps Condition="'$(RimWorldDevTestsProps)' == ''">..\..\RimWorldDevTests\RimWorldDevTests.props</RimWorldDevTestsProps>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- The packaged 1.7 DLL (package-local.ps1); the installed mod is compared with that package. -->
+    <DevTestsProductionDll>..\artifacts\package\ConfigurableQuality\1.7\Assemblies\ConfigurableQuality.dll</DevTestsProductionDll>
+  </PropertyGroup>
+  <Import Project="$(RimWorldDevTestsProps)" />
+</Project>
