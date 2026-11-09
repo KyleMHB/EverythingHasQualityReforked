@@ -1,11 +1,209 @@
 using System;
 using System.Linq;
 using ConfigurableQuality;
-class SettingsChecks
+partial class SettingsChecks
 {
     static void Check(bool actual, string name) { if (!actual) throw new Exception(name); }
+    static void CheckProductionControls()
+    {
+        var session = new QualityConfigurationSession(new QualityConfiguration());
+        var editor = new QualityEditorActions(session);
+        string startup = session.Active.Serialize();
+        editor.BeginGesture("worktable");
+        editor.SetWorktableShare(.7f); editor.SetWorktableShare(1f); editor.EndGesture();
+        Check(session.Draft.Production.tableFactor == 1f && editor.Undo() && !editor.CanUndo && session.Draft.Production.tableFactor == .4f, "worktable drag has one Undo step");
+        Check(!editor.SetWorktableShare(1.01f) && !editor.SetWorktableShare(float.NaN), "worktable slider rejects invalid share");
+        editor.EditProductionNumber("tableFactor", "0.625");
+        Check(session.Draft.Production.tableFactor == .625f && editor.NumberText("production:tableFactor", 0) == "0.625", "exact worktable share retained");
+        editor.EditProductionNumber("tableFactor", "-");
+        Check(editor.HasInvalidInput && editor.Save().Count > 0 && session.Draft.Production.tableFactor == .625f, "partial weighting blocks save without replacing valid draft");
+        editor.SetWorktableShare(.5f);
+        Check(!editor.HasInvalidInput && editor.NumberText("production:tableFactor", .5f) == "0.5", "slider deliberately synchronizes exact input");
+        foreach (string field in new[] { "awfulSupplyFactor", "poorSupplyFactor", "normalSupplyFactor", "goodSupplyFactor", "excSupplyFactor", "masterSupplyFactor", "legSupplyFactor" })
+        {
+            editor.EditProductionNumber(field, "10");
+            Check(!editor.HasInvalidInput && (float)typeof(ProductionSettings).GetField(field).GetValue(session.Draft.Production) == 10f, "supply accepts actual upper boundary");
+            foreach (string invalid in new[] { "-0.01", "10.01", "NaN", "Infinity", "-" })
+            {
+                editor.EditProductionNumber(field, invalid);
+                Check(editor.HasInvalidInput && editor.Save().Count > 0 && (float)typeof(ProductionSettings).GetField(field).GetValue(session.Draft.Production) == 10f, "invalid supply remains recoverable");
+            }
+            editor.EditProductionNumber(field, "0");
+            Check(!editor.HasInvalidInput && (float)typeof(ProductionSettings).GetField(field).GetValue(session.Draft.Production) == 0f, "supply accepts zero boundary");
+        }
+        Check(session.Saved.Serialize() == startup && session.Active.Serialize() == startup, "production edits preserve saved and running snapshots");
+        editor.Save();
+        session.Draft.Assignment.Items["Steel"] = RuleChoice.Exclude;
+        session.Draft.Production.inspiredCooking = true;
+        session.Draft.Production.edificeQuality = true;
+        string beforeLimits = session.Draft.Serialize();
+        var defaults = editor.QualityLimits(true);
+        Check(defaults.Count == 13 && defaults.Single(r => r.Group == "Ing").Minimum == 2
+            && defaults.Single(r => r.Group == "Weapon").Maximum == 6 && defaults.Single(r => r.Group == "Apparel").Maximum == 6
+            && defaults.Where(r => r.Group != "Weapon" && r.Group != "Apparel").All(r => r.Maximum == 4), "preview uses actual thirteen group defaults");
+        Check(beforeLimits == session.Draft.Serialize() && !editor.CanUndo, "previewing range defaults does not edit draft");
+        Check(!editor.SetQualityLimit("Ing", 5, 4) && !editor.SetQualityLimit("Ing", -1, 4) && !editor.SetQualityLimit("Ing", 0, 7), "range command rejects inverted and invalid tiers");
+        foreach (var range in defaults) Check(editor.SetQualityLimit(range.Group, 3, 3), "each range accepts exact equal tier bounds");
+        string customLimits = session.Draft.Serialize();
+        Check(editor.RestoreQualityLimitDefaults() && editor.QualityLimits().Single(r => r.Group == "Ing").Minimum == 2
+            && editor.QualityLimits().Single(r => r.Group == "Edifice").Maximum == 4, "restore applies actual defaults");
+        Check(session.Draft.Serialize() == beforeLimits, "range restore preserves supply, switches, legacy fields and assignment choices exactly");
+        Check(editor.Undo() && session.Draft.Serialize() == customLimits, "all thirteen default restorations undo together");
+        string activeBeforeSave = session.Active.Serialize();
+        Check(editor.Save().Count == 0 && session.Saved.Serialize() == customLimits && session.Active.Serialize() == activeBeforeSave, "production Save affects next restart only");
+    }
+    static void CheckEffectCurves()
+    {
+        var session = new QualityConfigurationSession(new QualityConfiguration());
+        var editor = new QualityEditorActions(session);
+        Check(QualityEditorActions.GeneratedCurve(EffectId.ConsumerDemand, CurveBase.Mild, 1).SequenceEqual(new[] {1.05f,1.02f,1f,.98f,.95f,.9f,.8f}), "Mild uses actual nonreciprocal cost catalog");
+        Check(editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Medium, 2, true), "apply generated curve");
+        Check(Math.Abs(session.Draft.Effects["BuildingDurability"].Factors[6] - 6.25f) < .00001f && session.Draft.Effects["BuildingDurability"].Factors[2] == 1, "log strength endpoint and neutral Normal");
+        var match = editor.ClassifyEffectCurve(EffectId.BuildingDurability);
+        Check(match.Base == CurveBase.Medium && Math.Abs(match.Strength - 2) < .0001f, "classify supported strength");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 2, "1.3");
+        string custom = session.Draft.Serialize();
+        Check(editor.ClassifyEffectCurve(EffectId.BuildingDurability).Base == CurveBase.Custom && !editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1), "custom Normal disables strength and requires explicit replacement");
+        Check(session.Draft.Serialize() == custom, "canceled replacement preserves custom curve");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 2, "-");
+        Check(editor.HasInvalidInput && editor.Save().Count > 0 && session.Draft.Serialize() == custom, "partial tier input blocks save without corrupting draft");
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1, true);
+        Check(!editor.HasInvalidInput && editor.Undo() && session.Draft.Effects["BuildingDurability"].Factors[2] == 1.3f, "base replacement synchronizes input and undoes custom Normal");
+        editor.ApplyAllEffectCurves(CurveBase.Mild, true);
+        Check(session.Draft.Effects.Values.All(e => !e.Enabled) && session.Draft.Production.useMaterialQuality == false, "all curves leaves switches and production alone");
+        editor.Save();
+        editor.BeginGesture("strength");
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, .25f);
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 2);
+        editor.EndGesture();
+        Check(editor.Undo() && !editor.CanUndo && session.Draft.Effects["BuildingDurability"].Factors[6] == 1.2f, "completed slider gesture has one undo");
+        editor.BeginGesture("strength"); editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1); editor.EndGesture();
+        Check(!editor.CanUndo, "no op gesture has no history");
+        session.Draft.Effects["BuildingDurability"].Enabled = true;
+        string factorsBefore = string.Join(",", session.Draft.Effects["BuildingDurability"].Factors);
+        editor.DisableAllEffects();
+        Check(!session.Draft.Effects["BuildingDurability"].Enabled && factorsBefore == string.Join(",", session.Draft.Effects["BuildingDurability"].Factors), "disable all changes only switches");
+        foreach (EffectId id in Enum.GetValues(typeof(EffectId)))
+        foreach (var basis in new[] { CurveBase.Mild, CurveBase.Medium })
+        foreach (float strength in new[] { .25f, 1f, 2f })
+        {
+            editor.ApplyEffectCurve(id, basis, strength, true);
+            var loaded = new QualityConfigurationSession(QualityConfiguration.Parse(session.Draft.Serialize()));
+            var classified = new QualityEditorActions(loaded).ClassifyEffectCurve(id);
+            Check(classified.Base == basis && Math.Abs(classified.Strength - strength) < .00001f, "all real effects classify catalog bases at both strength endpoints after reload");
+        }
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1, true);
+        editor.EditEffectFactor(EffectId.BuildingDurability, 0, ".95");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 0, ".96");
+        editor.EditEffectFactor(EffectId.BuildingDurability, 0, ".95");
+        Check(editor.ClassifyEffectCurve(EffectId.BuildingDurability).Base == CurveBase.Custom, "manual edits remain Custom until explicit base selection even when values happen to match");
+        editor.ApplyEffectCurve(EffectId.BuildingDurability, CurveBase.Mild, 1, true);
+        foreach (string invalid in new[] { "NaN", "Infinity", "no", ".009", "10.01" })
+        {
+            editor.EditEffectFactor(EffectId.BuildingDurability, 2, invalid);
+            Check(editor.HasInvalidInput && session.Draft.Effects["BuildingDurability"].Factors[2] == 1, "invalid exact tier buffers retain last valid factor");
+        }
+        editor.EditEffectFactor(EffectId.BuildingDurability, 2, "10");
+        Check(!editor.HasInvalidInput && session.Draft.Effects["BuildingDurability"].Factors[2] == 10, "exact inputs accept current upper limit including Normal");
+        editor.EditNumber("linkedBonus", ".021", session.Draft.LinkedFurnitureBonusCap, v => session.Draft.LinkedFurnitureBonusCap = v);
+        editor.EditNumber("linkedPenalty", ".006", session.Draft.LinkedFurniturePenaltyCap, v => session.Draft.LinkedFurniturePenaltyCap = v);
+        Check(editor.HasInvalidInput, "linked caps retain distinct existing upper bounds");
+        editor.Undo(); Check(!editor.HasInvalidInput, "undo synchronizes all invalid curve and cap buffers");
+    }
+    static void CheckBulkSelection()
+    {
+        var editor = new QualityEditorActions(new QualityConfigurationSession(new QualityConfiguration()));
+        editor.SetSelected("Steel", true);
+        Check(editor.BulkMode && editor.SelectedIds.SequenceEqual(new[] { "Steel" }), "one checked item enters explicit bulk mode");
+        editor.SelectResults(new[] { "Cloth", "Wood" });
+        editor.SelectResults(new[] { "Cloth" });
+        Check(editor.SelectedIds.Count == 3 && editor.HiddenSelectedCount(new[] { "Cloth" }) == 2
+            && editor.HiddenSelectedCount(new string[0]) == 3, "select results preserves cross-filter selections and exposes hidden targets");
+        editor.ClearSelection();
+        Check(!editor.BulkMode && editor.SelectedIds.Count == 0 && !editor.CanUndo, "clear selection returns to item mode without a draft edit");
+        foreach (var rule in new[] { EditorRule.Assignment, EditorRule.Participation, EditorRule.Price, EditorRule.Removal })
+        {
+            var baseline = new QualityConfiguration();
+            QualityEditorActions.RulesFor(baseline, rule).Items["Unselected"] = RuleChoice.Exclude;
+            QualityEditorActions.RulesFor(baseline, rule).Items["Unavailable"] = RuleChoice.Include;
+            QualityEditorActions.RulesFor(baseline, rule).Categories["Buildings"] = RuleChoice.Exclude;
+            var session = new QualityConfigurationSession(baseline);
+            var batch = new QualityEditorActions(session);
+            var available = new[] { new EditorItem(new RuleTarget("A", "Building", true, new CategoryPath[0]), rule == EditorRule.Removal, rule == EditorRule.Removal),
+                new EditorItem(new RuleTarget("B", "Building", true, new CategoryPath[0]), rule == EditorRule.Removal, rule == EditorRule.Removal),
+                new EditorItem(new RuleTarget("Unavailable", "", false, new CategoryPath[0]), false, false),
+                new EditorItem(new RuleTarget("Unselected", "Building", true, new CategoryPath[0]), false, false) };
+            batch.SelectResults(new[] { "A", "B", "Unavailable" });
+            Check(batch.EligibleSelected(rule, available).Count == 2, "eligible count excludes unsupported selected targets for " + rule);
+            Check(batch.SetSelectedRule(rule, available, RuleChoice.Include), "batch writes eligible cross-filter targets for " + rule);
+            var rules = QualityEditorActions.RulesFor(session.Draft, rule);
+            Check(rules.Items["A"] == RuleChoice.Include && rules.Items["B"] == RuleChoice.Include
+                && rules.Items["Unselected"] == RuleChoice.Exclude && rules.Items["Unavailable"] == RuleChoice.Include
+                && rules.Categories["Buildings"] == RuleChoice.Exclude && session.Saved.Serialize() == baseline.Serialize()
+                && session.Active.Serialize() == baseline.Serialize(), "bulk preserves other targets, scope and startup snapshots for " + rule);
+            Check(batch.Undo() && session.Draft.Serialize() == baseline.Serialize() && !batch.CanUndo, "entire batch restores with one Undo for " + rule);
+            batch.SetSelectedRule(rule, available, RuleChoice.Exclude);
+            Check(QualityEditorActions.RulesFor(session.Draft, rule).Items["A"] == RuleChoice.Exclude, "bulk disable/keep writes exception for " + rule);
+            batch.SetSelectedRule(rule, available, RuleChoice.Inherit);
+            Check(!QualityEditorActions.RulesFor(session.Draft, rule).Items.ContainsKey("A")
+                && QualityEditorActions.RulesFor(session.Draft, rule).Items["Unavailable"] == RuleChoice.Include, "bulk use rule preserves unsupported data for " + rule);
+            Check(!batch.SetSelectedRule(rule, available, RuleChoice.Inherit), "no-op batch creates no edit for " + rule);
+        }
+        var protectedSession = new QualityConfigurationSession(new QualityConfiguration());
+        var protectedEditor = new QualityEditorActions(protectedSession);
+        var provider = new EditorItem(new RuleTarget("Provider", "Weapon", true, new CategoryPath[0]), true, false);
+        var vanilla = new EditorItem(new RuleTarget("Vanilla", "Weapon", true, new CategoryPath[0]), true, true);
+        protectedEditor.SelectResults(new[] { "Provider", "Vanilla" });
+        Check(!protectedEditor.SetSelectedRule(EditorRule.Assignment, new[] { provider, vanilla }, RuleChoice.Include)
+            && protectedEditor.EligibleSelected(EditorRule.Price, new[] { provider }).Count == 0
+            && protectedEditor.EligibleSelected(EditorRule.Removal, new[] { provider, vanilla }).Single().Target.Id == "Vanilla",
+            "bulk native-quality assignment and provider pricing/removal remain protected");
+        protectedEditor.SetSelectedRule(EditorRule.Removal, new[] { provider, vanilla }, RuleChoice.Include);
+        Check(QualityEditorActions.HasQuality(protectedSession.Draft, provider.Target, true, false)
+            && !QualityEditorActions.HasQuality(protectedSession.Draft, vanilla.Target, true, true)
+            && protectedEditor.SelectedIds.Count == 2, "bulk removal changes only eligible vanilla draft outcome and retains selection");
+    }
+    static void CheckCompatibilityCommands()
+    {
+        var configuration = new QualityConfiguration();
+        configuration.InactiveLegacy["weapons:MissingModGun"] = false;
+        configuration.InactiveLegacy["buildings:MissingModBench"] = true;
+        configuration.Assignment.Items["MissingModGun"] = RuleChoice.Include;
+        var session = new QualityConfigurationSession(configuration);
+        var editor = new QualityEditorActions(session);
+        string saved = session.Saved.Serialize(), active = session.Active.Serialize();
+        Check(editor.SetProviderPolicy(true), "provider policy changes draft");
+        Check(session.Draft.ProgressionCompatibility && session.Saved.Serialize() == saved && session.Active.Serialize() == active, "policy stays draft until restart save");
+        Check(editor.Undo() && !session.Draft.ProgressionCompatibility, "provider policy undo");
+        Check(editor.RecoverLegacy(), "legacy recovery command");
+        Check(session.Draft.Assignment.Items["MissingModGun"] == RuleChoice.Exclude && session.Draft.Assignment.Items["MissingModBench"] == RuleChoice.Include, "recover unavailable legacy choices as assignment exceptions");
+        Check(session.Draft.InactiveLegacy.Count == 2, "recovery retains unavailable backup data");
+        Check(editor.Undo() && session.Draft.Assignment.Items["MissingModGun"] == RuleChoice.Include && !session.Draft.Assignment.Items.ContainsKey("MissingModBench"), "legacy recovery is one undo");
+        editor.RecoverLegacy(); editor.SetProviderPolicy(true);
+        Check(editor.Save().Count == 0 && session.Saved.ProgressionCompatibility && session.Active.Serialize() == active, "compatibility saves for restart only");
+    }
     static void Main()
     {
+        CheckUserPresets();
+        CheckProductionControls();
+        CheckBulkSelection();
+        CheckEffectCurves();
+        CheckCompatibilityCommands();
+        var itemSession = new QualityConfigurationSession(new QualityConfiguration());
+        var itemEditor = new QualityEditorActions(itemSession);
+        var editable = new RuleTarget("Workbench", "Building", true, new CategoryPath[0]);
+        Check(itemEditor.SetItemRule(EditorRule.Assignment, editable, false, false, RuleChoice.Include), "item menu enables eligible assignment");
+        Check(itemSession.Draft.Assignment.Items[editable.Id] == RuleChoice.Include && !itemSession.Saved.Assignment.Items.ContainsKey(editable.Id) && !itemSession.Active.Assignment.Items.ContainsKey(editable.Id), "item command edits draft only");
+        Check(itemEditor.Undo() && !itemSession.Draft.Assignment.Items.ContainsKey(editable.Id) && !itemEditor.CanUndo, "one item choice produces one undo");
+        Check(!itemEditor.SetItemRule(EditorRule.Assignment, editable, true, true, RuleChoice.Include), "assignment cannot replace native quality");
+        Check(!itemEditor.SetItemRule(EditorRule.Price, editable, true, false, RuleChoice.Exclude) && !itemEditor.SetItemRule(EditorRule.Removal, editable, true, false, RuleChoice.Include), "provider quality and pricing protected at command boundary");
+        Check(itemEditor.SetItemRule(EditorRule.Removal, editable, true, true, RuleChoice.Include) && !QualityEditorActions.HasQuality(itemSession.Draft, editable, true, true), "eligible removal changes draft outcome");
+        Check(itemEditor.SetItemRule(EditorRule.Removal, editable, true, true, RuleChoice.Exclude) && QualityEditorActions.HasQuality(itemSession.Draft, editable, true, true), "always keep restores vanilla draft quality");
+        itemEditor.SetItemRule(EditorRule.Participation, editable, true, true, RuleChoice.Exclude);
+        Check(itemEditor.SetItemRule(EditorRule.Removal, editable, true, true, RuleChoice.Inherit) && !itemSession.Draft.VanillaRemoval.Items.ContainsKey(editable.Id) && itemSession.Draft.Participation.Items.ContainsKey(editable.Id), "use removal rule touches only removal exception");
+        var absent = new RuleTarget("MissingMod", "", false, new CategoryPath[0]);
+        itemSession.Draft.MarketValue.Items[absent.Id] = RuleChoice.Include;
+        Check(!itemEditor.SetItemRule(EditorRule.Price, absent, false, false, RuleChoice.Exclude) && itemEditor.SetItemRule(EditorRule.Price, absent, false, false, RuleChoice.Inherit), "missing definitions allow cleanup but no unsupported writes");
         var rules = new RuleSet();
         rules.Groups["Stuff"] = true;
         rules.Categories["Resources"] = RuleChoice.Include;
@@ -141,6 +339,149 @@ class SettingsChecks
         Check(session.Draft.Production.tableFactor == .6f && session.Saved.Production.tableFactor == .2f && session.Active.Production.tableFactor == .7f, "undo replaces only draft and clones its snapshot");
         session.Draft.Production.tableFactor = float.PositiveInfinity;
         Check(session.Save().Count != 0 && session.Saved.Production.tableFactor == .2f, "invalid save leaves saved intact");
+        var editsSession = new QualityConfigurationSession(defaults);
+        var edits = new QualityEditorActions(editsSession);
+        edits.Edit(c => c.Production.tableFactor = .8f);
+        Check(edits.CanUndo && edits.Undo() && editsSession.Draft.Production.tableFactor == .4f,
+            "editor edit captures the previous draft before mutation");
+        edits.Edit(c => c.Production.tableFactor = .4f);
+        Check(!edits.CanUndo, "no-op editor actions create no undo step");
+        edits.BeginGesture("worktable");
+        edits.Edit(c => c.Production.tableFactor = .6f);
+        edits.Edit(c => c.Production.tableFactor = .9f);
+        edits.EndGesture();
+        Check(edits.Undo() && editsSession.Draft.Production.tableFactor == .4f && !edits.CanUndo,
+            "completed slider gesture is one undo step from before the first movement");
+        edits.BeginGesture("strength");
+        edits.Edit(c => c.Effects["BuildingDurability"].Factors[2] = 1.5f);
+        edits.Edit(c => c.Effects["BuildingDurability"].Factors[2] = 1f);
+        edits.EndGesture();
+        Check(!edits.CanUndo, "gesture returning to its initial value creates no history");
+        edits.EditNumber("production:tableFactor", "-", .4f, v => editsSession.Draft.Production.tableFactor = v);
+        Check(edits.HasInvalidInput && edits.NumberText("production:tableFactor", .4f) == "-"
+            && editsSession.Draft.Production.tableFactor == .4f && edits.Save().Count > 0,
+            "partial numeric input stays visible and blocks Save without replacing the last valid draft");
+        edits.EditNumber("production:tableFactor", "0.7", .4f, v => editsSession.Draft.Production.tableFactor = v);
+        Check(!edits.HasInvalidInput && edits.Undo() && edits.NumberText("production:tableFactor", .4f) == "0.4",
+            "undo synchronizes exact numeric fields after a recovered edit");
+        edits.Edit(c => c.Production.tableFactor = .8f);
+        edits.Discard();
+        Check(!edits.CanUndo && editsSession.Draft.Production.tableFactor == .4f && !edits.HasInvalidInput,
+            "discard restores saved state and clears edit history and buffers");
+        edits.Edit(c => c.Production.tableFactor = .7f);
+        edits.Reset();
+        Check(editsSession.Draft.Production.tableFactor == .4f && edits.Undo() && editsSession.Draft.Production.tableFactor == .7f,
+            "restoring defaults is undoable");
+        Check(edits.Save(() => { throw new System.IO.IOException("Disk full"); }).Count > 0
+            && editsSession.Draft.Production.tableFactor == .7f && editsSession.Saved.Production.tableFactor == .4f
+            && editsSession.Active.Production.tableFactor == .4f && edits.CanUndo,
+            "persistence failure keeps draft, saved, active and undo intact");
+        Check(edits.Save(() => { }).Count == 0 && editsSession.Saved.Production.tableFactor == .7f
+            && editsSession.Active.Production.tableFactor == .4f && !edits.CanUndo,
+            "successful persistence updates saved only and clears undo");
+        edits.Edit(c => c.Assignment.Items["MissingModItem"] = RuleChoice.Exclude);
+        edits.Edit(c => c.Effects["BuildingDurability"].Factors[2] = 1.234567f);
+        edits.BeginGesture("worktable");
+        edits.Edit(c => c.Production.tableFactor = .1f);
+        edits.Edit(c => c.Production.tableFactor = .2f);
+        edits.EndGesture();
+        Check(edits.Undo() && editsSession.Draft.Production.tableFactor == .7f
+            && editsSession.Draft.Assignment.Items["MissingModItem"] == RuleChoice.Exclude
+            && editsSession.Draft.Effects["BuildingDurability"].Factors[2] == 1.234567f,
+            "gesture undo preserves exact custom Normal and unavailable item rules");
+        edits.Discard();
+        for (int i = 0; i < 35; i++) edits.Edit(c => c.Production.tableFactor = i / 100f);
+        int undoCount = 0;
+        while (edits.Undo()) undoCount++;
+        Check(undoCount == 30 && editsSession.Draft.Production.tableFactor == .04f,
+            "editor retains the most recent thirty complete snapshots");
+        var closeSession = new QualityConfigurationSession(defaults);
+        var closeEditor = new QualityEditorActions(closeSession);
+        Check(!closeEditor.NeedsCloseConfirmation, "clean editor closes without a prompt");
+        closeEditor.EditNumber("production:tableFactor", "-", .4f, v => closeSession.Draft.Production.tableFactor = v);
+        Check(closeEditor.NeedsCloseConfirmation
+            && !closeEditor.TryClose(EditorCloseAction.Save, out var closeErrors) && closeErrors.Count > 0,
+            "invalid partial input requires a prompt and cannot close through Save");
+        Check(!closeEditor.TryClose(EditorCloseAction.KeepEditing, out closeErrors)
+            && closeEditor.NumberText("production:tableFactor", .4f) == "-",
+            "keep editing retains partial input");
+        Check(closeEditor.TryClose(EditorCloseAction.Discard, out closeErrors)
+            && !closeEditor.NeedsCloseConfirmation && !closeEditor.HasInvalidInput,
+            "discard closes and clears partial input");
+        closeEditor.Edit(c => c.Production.tableFactor = .9f);
+        Check(!closeEditor.TryClose(EditorCloseAction.Save, out closeErrors, () => { throw new System.IO.IOException("Disk full"); })
+            && closeErrors.Any(e => e.Contains("Disk full")) && closeEditor.NeedsCloseConfirmation
+            && closeSession.Draft.Production.tableFactor == .9f && closeSession.Saved.Production.tableFactor == .4f,
+            "failed close-save retains the draft and a useful persistence error");
+        Check(closeEditor.TryClose(EditorCloseAction.Save, out closeErrors, () => { })
+            && !closeEditor.NeedsCloseConfirmation && closeSession.Saved.Production.tableFactor == .9f
+            && closeSession.Active.Production.tableFactor == .4f,
+            "successful close-save persists next-session settings while leaving Active unchanged");
+        var summary = defaults.Clone();
+        summary.Assignment.Default = true;
+        summary.VanillaRemoval.Default = true;
+        var summaryTarget = new RuleTarget("SummaryGun", "Weapon", true, new CategoryPath[0]);
+        Check(!QualityEditorActions.HasQuality(summary, summaryTarget, true, true)
+            && QualityEditorActions.HasQuality(summary, summaryTarget, true, false)
+            && QualityEditorActions.HasQuality(summary, summaryTarget, false, false),
+            "summary includes native and assigned quality but excludes planned native removal even with assignment enabled");
+        ScopeCommandChecks();
         Console.WriteLine("Resolver, migration, roundtrip, validation and draft isolation checks passed.");
+    }
+    private static void ScopeCommandChecks()
+    {
+        var config = new QualityConfiguration();
+        config.Assignment.Items["Hidden"] = RuleChoice.Exclude;
+        config.Assignment.Categories["Child"] = RuleChoice.Exclude;
+        var session = new QualityConfigurationSession(config);
+        var editor = new QualityEditorActions(session);
+        Check(editor.SetScopeRule(EditorRule.Assignment, "Stuff", "", RuleChoice.Include)
+            && session.Draft.Assignment.Items.Count == 1
+            && session.Draft.Assignment.Items["Hidden"] == RuleChoice.Exclude
+            && session.Draft.Assignment.Categories["Child"] == RuleChoice.Exclude,
+            "scope commands preserve deeper rules and exceptions without stamping items");
+        Check(!session.Saved.Assignment.Groups.ContainsKey("Stuff") && !session.Active.Assignment.Groups.ContainsKey("Stuff")
+            && !editor.SetScopeRule(EditorRule.Assignment, "Stuff", "Child", RuleChoice.Include),
+            "scope commands isolate Draft and reject an ambiguous scope");
+        var plain = new RuleTarget("Plain", "Stuff", true, new CategoryPath[0]);
+        Check(QualityRules.Resolve(plain, session.Draft.Assignment).Enabled,
+            "group command changes governing fallback");
+        editor.SetScopeRule(EditorRule.Assignment, "", "", RuleChoice.Include);
+        editor.SetScopeRule(EditorRule.Assignment, "Stuff", "", RuleChoice.Exclude);
+        editor.SetScopeRule(EditorRule.Assignment, "Stuff", "", RuleChoice.Inherit);
+        Check(!session.Draft.Assignment.Groups.ContainsKey("Stuff")
+            && QualityRules.Resolve(plain, session.Draft.Assignment).Enabled
+            && !editor.SetScopeRule(EditorRule.Assignment, "", "", RuleChoice.Inherit),
+            "use parent removes group rule but global has no invented parent");
+        editor.SetScopeRule(EditorRule.Assignment, "", "Parent", RuleChoice.Include);
+        editor.SetScopeRule(EditorRule.Assignment, "", "Peer", RuleChoice.Exclude);
+        var hidden = new RuleTarget("Hidden", "Stuff", true, new[] { new CategoryPath("Parent", 2), new CategoryPath("Peer", 2) });
+        session.Draft.Participation.Items["Hidden"] = RuleChoice.Include;
+        session.Draft.Assignment.Items["Other"] = RuleChoice.Include;
+        session.Draft.Assignment.Items["MissingMod"] = RuleChoice.Exclude;
+        var catalog = new[] { plain, hidden, new RuleTarget("Other", "Building", true, new CategoryPath[0]) };
+        Check(editor.ScopeItemExceptions(EditorRule.Assignment, "", "Parent", catalog).SequenceEqual(new[] { "Hidden" })
+            && editor.ClearScopeItemExceptions(EditorRule.Assignment, "", "Parent", catalog),
+            "scope exception preview and clear include hidden results in the entire branch");
+        var resolution = QualityRules.Resolve(hidden, session.Draft.Assignment);
+        Check(!resolution.Enabled && resolution.Conflict && resolution.SourceId == "Peer"
+            && session.Draft.Assignment.Items.Count == 2 && session.Draft.Participation.Items.ContainsKey("Hidden")
+            && session.Draft.Assignment.Categories["Parent"] == RuleChoice.Include,
+            "clearing only selected rule item exceptions preserves category conflicts and other rule sets");
+        editor.SetScopeRule(EditorRule.Assignment, "", "Peer", RuleChoice.Inherit);
+        Check(QualityRules.Resolve(hidden, session.Draft.Assignment).Enabled,
+            "category use-parent restores remaining category fallback");
+        Check(editor.ScopeItemExceptions(EditorRule.Assignment, "", "", catalog).Length == 2
+            && editor.ClearScopeItemExceptions(EditorRule.Assignment, "", "", catalog)
+            && session.Draft.Assignment.Items.Count == 0 && editor.Undo()
+            && session.Draft.Assignment.Items.ContainsKey("MissingMod"),
+            "all-items clear deliberately includes unavailable exceptions and Undo restores them");
+        var assignmentBefore = session.Draft.Assignment.Clone();
+        editor.SetScopeRule(EditorRule.Participation, "Stuff", "", RuleChoice.Exclude);
+        editor.SetScopeRule(EditorRule.Price, "", "Parent", RuleChoice.Exclude);
+        Check(!session.Draft.Participation.Groups["Stuff"] && session.Draft.MarketValue.Categories["Parent"] == RuleChoice.Exclude
+            && session.Draft.Assignment.Default == assignmentBefore.Default
+            && session.Draft.Assignment.Items["MissingMod"] == RuleChoice.Exclude,
+            "mod-effects and price scope commands are isolated from assignment and unavailable exceptions");
     }
 }

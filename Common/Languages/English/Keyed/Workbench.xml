@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Workbench.ItemsTab>Items &amp; rules</QEverything.Workbench.ItemsTab>
+  <QEverything.Workbench.EffectsTab>Effects &amp; curves</QEverything.Workbench.EffectsTab>
+  <QEverything.Workbench.ProductionTab>Production &amp; limits</QEverything.Workbench.ProductionTab>
+  <QEverything.Workbench.Scope>Scope</QEverything.Workbench.Scope>
+  <QEverything.Workbench.DraftOutcomes>Draft outcomes · apply after restart</QEverything.Workbench.DraftOutcomes>
+  <QEverything.Workbench.SearchHelp>Search item label, definition identifier, or mod source</QEverything.Workbench.SearchHelp>
+  <QEverything.Workbench.Filter0>All results</QEverything.Workbench.Filter0>
+  <QEverything.Workbench.Filter1>Has quality</QEverything.Workbench.Filter1>
+  <QEverything.Workbench.Filter2>No quality</QEverything.Workbench.Filter2>
+  <QEverything.Workbench.Filter3>Item exceptions</QEverything.Workbench.Filter3>
+  <QEverything.Workbench.Filter4>Native quality</QEverything.Workbench.Filter4>
+  <QEverything.Workbench.Clear>Clear</QEverything.Workbench.Clear>
+  <QEverything.Workbench.ClearHelp>Clear search and filters to show more items.</QEverything.Workbench.ClearHelp>
+  <QEverything.Workbench.Counts>{0} item types in scope · {1} shown</QEverything.Workbench.Counts>
+  <QEverything.Workbench.Item>Item</QEverything.Workbench.Item>
+  <QEverything.Workbench.Quality>Quality</QEverything.Workbench.Quality>
+  <QEverything.Workbench.ModEffects>Mod effects</QEverything.Workbench.ModEffects>
+  <QEverything.Workbench.Price>Price</QEverything.Workbench.Price>
+  <QEverything.Workbench.Enabled>Enabled</QEverything.Workbench.Enabled>
+  <QEverything.Workbench.Disabled>Disabled</QEverything.Workbench.Disabled>
+  <QEverything.Workbench.NoQuality>No quality</QEverything.Workbench.NoQuality>
+  <QEverything.Workbench.Native>Native quality</QEverything.Workbench.Native>
+  <QEverything.Workbench.Protected>Protected</QEverything.Workbench.Protected>
+  <QEverything.Workbench.RemovalPlanned>Removal planned</QEverything.Workbench.RemovalPlanned>
+  <QEverything.Workbench.Unavailable>Unavailable</QEverything.Workbench.Unavailable>
+  <QEverything.Workbench.FocusHelp>Choose an item to inspect its quality, mod effects, and price rules.</QEverything.Workbench.FocusHelp>
+  <QEverything.Workbench.Details>Details</QEverything.Workbench.Details>
+  <QEverything.Workbench.Governing>Governing rule</QEverything.Workbench.Governing>
+  <QEverything.Workbench.Conflict>Equally specific category rules disagree. Exclude wins.</QEverything.Workbench.Conflict>
+  <QEverything.Workbench.UseRule>Use rule</QEverything.Workbench.UseRule>
+  <QEverything.Workbench.Enable>Enable</QEverything.Workbench.Enable>
+  <QEverything.Workbench.Disable>Disable</QEverything.Workbench.Disable>
+  <QEverything.Workbench.UseRemovalRule>Use removal rule</QEverything.Workbench.UseRemovalRule>
+  <QEverything.Workbench.RemoveVanilla>Remove vanilla quality…</QEverything.Workbench.RemoveVanilla>
+  <QEverything.Workbench.KeepVanilla>Always keep vanilla quality</QEverything.Workbench.KeepVanilla>
+  <QEverything.Workbench.ExceptionHelp>* marks an item exception. Mod effects shows participation; global switches and effect support still apply.</QEverything.Workbench.ExceptionHelp>
+  <QEverything.Workbench.UnavailableHelp>This definition is unavailable. Its saved exceptions are retained; Use rule removes an exception without enabling unsupported behavior.</QEverything.Workbench.UnavailableHelp>
+  <QEverything.Workbench.Technical>Technical details</QEverything.Workbench.Technical>
+  <QEverything.Workbench.VanillaHelp>Standard vanilla quality can be kept or removed through the Quality menu. Assignment never replaces native quality. Removal requires restart and can lose saved quality values.</QEverything.Workbench.VanillaHelp>
+  <QEverything.Workbench.Unsupported>Unsupported</QEverything.Workbench.Unsupported>
+</LanguageData>

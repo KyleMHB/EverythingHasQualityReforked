@@ -11,24 +11,49 @@ namespace ConfigurableQuality
     internal sealed class Window_QualitySupport : Window
     {
         private readonly QualityCatalogEntry entry;
-        private readonly List<EffectId> candidates, otherExclusions;
+        private readonly Func<QualityConfiguration> draft;
+        private readonly Action<EffectId> navigate;
+        private static string nativeEvidence;
+        private bool showNative;
+        private readonly IReadOnlyList<EffectId> candidates;
+        private readonly List<EffectId> otherExclusions;
+        private static readonly EffectId[] effectIds = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().ToArray();
+        private static readonly Dictionary<ThingDef, IReadOnlyList<EffectId>> candidateCache = new Dictionary<ThingDef, IReadOnlyList<EffectId>>();
+        private static int candidateCatalogRevision = -1;
         private EffectId? expanded;
         private bool showOther;
         private Vector2 scroll;
-        public override Vector2 InitialSize => new Vector2(840, 660);
+        public override Vector2 InitialSize => new Vector2(Math.Min(840, UI.screenWidth - 40), Math.Min(660, UI.screenHeight - 40));
         private static string A(string key) => ("QEverything.Advanced." + key).Translate().ToString();
         private static string EffectName(EffectId id) => ("QEverything.Options.Effect." + id).Translate().ToString();
-        public Window_QualitySupport(QualityCatalogEntry entry)
+        public Window_QualitySupport(QualityCatalogEntry entry, Func<QualityConfiguration> draft, Action<EffectId> navigate)
         {
-            this.entry = entry;
-            candidates = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(id => Candidate(id, entry.Def)).ToList();
-            otherExclusions = Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Where(id => !candidates.Contains(id) && QualityEffects.UnsupportedReason(id, entry.Def) != null).ToList();
+            this.entry = entry; this.draft = draft; this.navigate = navigate;
+            candidates = Candidates(entry.Def);
+            otherExclusions = effectIds.Where(id => !candidates.Contains(id) && QualityEffects.UnsupportedReason(id, entry.Def) != null).ToList();
             doCloseX = true; forcePause = true; absorbInputAroundWindow = true;
         }
         private static bool HasComp<T>(ThingDef def) where T : ThingComp => def.comps?.Any(p => p?.compClass != null && typeof(T).IsAssignableFrom(p.compClass)) == true;
         private static bool Is<T>(ThingDef def) => def.thingClass != null && typeof(T).IsAssignableFrom(def.thingClass);
         private static bool Gear(ThingDef def, params string[] names) => (def.IsWeapon || def.IsApparel) && def.equippedStatOffsets?.Any(s => s.stat != null && names.Contains(s.stat.defName) && (s.stat.defName == "ComfyTemperatureMin" ? s.value < 0 : s.value > 0)) == true;
-        private static bool Candidate(EffectId id, ThingDef def)
+        internal static IReadOnlyList<EffectId> Candidates(ThingDef def)
+        {
+            if (candidateCatalogRevision != QualityCatalog.Revision)
+            {
+                candidateCache.Clear();
+                candidateCatalogRevision = QualityCatalog.Revision;
+            }
+            if (def == null) return Array.Empty<EffectId>();
+            if (!candidateCache.TryGetValue(def, out var result))
+                candidateCache[def] = result = effectIds.Where(id => Candidate(id, def)).ToArray();
+            return result;
+        }
+        internal static IEnumerable<EffectId> SupportEntries(ThingDef def)
+        {
+            var membership = Candidates(def);
+            return effectIds.Where(id => membership.Contains(id) || QualityEffects.UnsupportedReason(id, def) != null);
+        }
+        internal static bool Candidate(EffectId id, ThingDef def)
         {
             if (def == null || def.IsBlueprint || def.IsFrame) return false;
             switch (id)
@@ -62,30 +87,62 @@ namespace ConfigurableQuality
                 default: return false;
             }
         }
+        internal static string Status(EffectId id, QualityCatalogEntry entry, QualityConfiguration configuration)
+        {
+            if (!QualityEditorActions.HasQuality(configuration, entry.Target, entry.NativeQuality, entry.RemovableVanillaQuality)) return C("NoQuality");
+            var target = QualityEditorActions.TargetFor(EditorRule.Participation, entry.Target, entry.NativeQuality, entry.RemovableVanillaQuality);
+            if (!QualityRules.Resolve(target, configuration.Participation).Enabled) return C("ParticipationOff");
+            if (!configuration.Effects[id.ToString()].Enabled) return C("GlobalOff");
+            string unsupported = QualityEffects.UnsupportedReason(id, entry.Def);
+            if (unsupported != null) return C("RecordedBlock") + " " + unsupported;
+            if (!QualityEffects.Available(id)) return C("AdapterOff") + " " + QualityEffects.Reason(id);
+            return C("Candidate");
+        }
+        private static string C(string key) => ("QEverything.Compatibility." + key).Translate().ToString();
+        private string NativeEvidence()
+        {
+            if (nativeEvidence != null) return nativeEvidence;
+            // Inspect metadata only on request: neither stat visibility nor a quality part proves an active bonus.
+            var stats = DefDatabase<StatDef>.AllDefsListForReading.Where(stat => stat.parts?.Any(part => part is StatPart_Quality) == true)
+                .OrderBy(stat => stat.defName, StringComparer.Ordinal).Select(stat => stat.LabelCap.ToString()).ToArray();
+            nativeEvidence = C("NativeUncertain") + "\n\n" + (stats.Length == 0 ? C("NoMetadata") : string.Join("\n", stats));
+            return nativeEvidence;
+        }
         private string Reason(EffectId id) => QualityEffects.UnsupportedReason(id, entry.Def) ?? QualityEffects.Reason(id);
-        private float RowHeight(EffectId id, float width) => 42 + (expanded == id ? Math.Max(36, Text.CalcHeight(Reason(id), width - 16) + 14) : 0);
+        private float RowHeight(EffectId id, float width) => 42 + Math.Max(38, Text.CalcHeight(Status(id, entry, draft()), width - 16)) + 8 + (expanded == id ? 36 + Math.Max(36, Text.CalcHeight(Reason(id), width - 16) + 14) : 0);
         private void DrawRow(EffectId id, ref float y, float width)
         {
-            bool unsupported = QualityEffects.UnsupportedReason(id, entry.Def) != null;
-            string status = A(unsupported ? "SupportRecordedExclusion" : QualityEffects.Available(id) ? "AdapterAvailable" : "AdapterUnavailable");
-            if (Widgets.ButtonText(new Rect(0, y, width * .53f, 34), EffectName(id))) expanded = expanded == id ? (EffectId?)null : id;
-            Widgets.Label(new Rect(width * .55f, y + 3, width * .45f, 32), status);
+            string status = Status(id, entry, draft());
+            if (Widgets.ButtonText(new Rect(0, y, width, 34), EffectName(id))) expanded = expanded == id ? (EffectId?)null : id;
             y += 42;
+            float statusHeight = Math.Max(38, Text.CalcHeight(status, width - 16));
+            Widgets.Label(new Rect(8, y, width - 16, statusHeight), status);
+            y += statusHeight + 8;
             if (expanded == id)
             {
+                if (Widgets.ButtonText(new Rect(8, y, width - 16, 30), C("OpenGlobal"))) { navigate(id); Close(); }
+                y += 36;
                 float h = Math.Max(36, Text.CalcHeight(Reason(id), width - 16) + 14);
                 Widgets.Label(new Rect(8, y, width - 16, h), Reason(id)); y += h;
             }
         }
         public override void DoWindowContents(Rect rect)
         {
+            var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color; var enabled = GUI.enabled;
+            try { Text.Font = GameFont.Small; DrawContents(rect); }
+            finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; GUI.enabled = enabled; }
+        }
+        private void DrawContents(Rect rect)
+        {
             Widgets.Label(new Rect(0, 0, rect.width, 30), entry.Label + " / " + entry.Source);
             Widgets.Label(new Rect(0, 38, rect.width, 70), A("SupportIntro"));
             float width = rect.width - 18;
             var rows = showOther ? candidates.Concat(otherExclusions).ToList() : candidates;
-            float height = 126 + rows.Sum(id => RowHeight(id, width));
+            float height = 200 + (showNative ? Text.CalcHeight(NativeEvidence(), width) + 16 : 0) + rows.Sum(id => RowHeight(id, width));
             var viewport = new Rect(0, 116, rect.width, rect.height - 164);
             Widgets.BeginScrollView(viewport, ref scroll, new Rect(0, 0, width, Math.Max(viewport.height, height)));
+            try
+            {
             float y = 0;
             Widgets.Label(new Rect(0, y, width, 28), A("SupportCandidates") + " (" + candidates.Count + ")"); y += 32;
             if (candidates.Count == 0) { Widgets.Label(new Rect(0, y, width, 38), A("SupportNone")); y += 42; }
@@ -96,7 +153,11 @@ namespace ConfigurableQuality
                 y += 42;
                 if (showOther) foreach (var id in otherExclusions) DrawRow(id, ref y, width);
             }
-            Widgets.EndScrollView();
+            if (Widgets.ButtonText(new Rect(0, y, width, 34), C("NativeInformation"))) showNative = !showNative;
+            y += 42;
+            if (showNative) Widgets.Label(new Rect(0, y, width, Text.CalcHeight(NativeEvidence(), width)), NativeEvidence());
+            }
+            finally { Widgets.EndScrollView(); }
             if (Widgets.ButtonText(new Rect(rect.width - 130, rect.height - 36, 130, 32), "QEverything.Options.UX.Done".Translate())) Close();
         }
     }

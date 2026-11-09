@@ -317,6 +317,21 @@ namespace ConfigurableQuality
             if (float.TryParse(root.Element("linkedPenaltyCap")?.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float penalty)) result.LinkedFurniturePenaltyCap = penalty;
             return result;
         }
+        public static QualityConfiguration ParseSnapshot(string xml)
+        {
+            if (string.IsNullOrWhiteSpace(xml)) throw new FormatException("Empty preset.");
+            var original = XElement.Parse(xml);
+            var parsed = Parse(xml);
+            if (parsed.RecoveredFields.Count != 0 || parsed.Validate().Count != 0 ||
+                !XNode.DeepEquals(SnapshotShape(original), SnapshotShape(XElement.Parse(parsed.Serialize()))))
+                throw new FormatException("Preset is incomplete, invalid or contains unsupported data. Restore a complete preset file.");
+            return parsed;
+        }
+        // Comparing the parser's complete round trip catches every silently skipped, duplicated,
+        // defaulted or unknown schema field without introducing a second value parser.
+        private static XElement SnapshotShape(XElement node) => new XElement(node.Name,
+            node.Attributes().OrderBy(a => a.Name.ToString(), StringComparer.Ordinal).Select(a => new XAttribute(a)),
+            node.HasElements ? (object)node.Elements().Select(SnapshotShape).OrderBy(e => e.Name.ToString(), StringComparer.Ordinal).ThenBy(e => (string)e.Attribute("id"), StringComparer.Ordinal) : node.Value);
         public static readonly Dictionary<string, string> GroupFields = new Dictionary<string, string>
         {
             { "Stuff", "stuffQuality" }, { "WorkBuilding", "workQuality" },
@@ -392,10 +407,19 @@ namespace ConfigurableQuality
             Saved = loaded.Clone();
             Draft = loaded.Clone();
         }
-        public List<string> Save()
+        public List<string> Save(Action persist = null)
         {
             var errors = Draft.Validate();
-            if (errors.Count == 0) Saved = Draft.Clone();
+            if (errors.Count != 0) return errors;
+            var previous = Saved;
+            // Verse serializes Saved, so stage it while writing and roll back on failure.
+            Saved = Draft.Clone();
+            try { persist?.Invoke(); }
+            catch (Exception error)
+            {
+                Saved = previous;
+                errors.Add("Persistence: " + error.Message);
+            }
             return errors;
         }
         public void ReplaceDraft(QualityConfiguration configuration) => Draft = configuration.Clone();

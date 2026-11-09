@@ -11,6 +11,8 @@ namespace ConfigurableQuality
     class Mod_ConfigurableQuality : Mod
     {
         public static ModSettings_ConfigurableQuality settings;
+        private int summaryRevision = -1, summaryCatalogRevision = -1;
+        private string savedSummary;
         public Mod_ConfigurableQuality(ModContentPack content) : base(content)
         {
             // Match Verse.LoadedModManager's verified filename convention before any migration/write.
@@ -52,10 +54,22 @@ namespace ConfigurableQuality
         }
         public override void DoSettingsWindowContents(Rect rect)
         {
-            if (!Find.WindowStack.IsOpen<Window_QualityOptions>())
+            QualityCatalog.Build();
+            string T(string key) => ("QEverything.Options." + key).Translate().ToString();
+            Widgets.Label(new Rect(rect.x, rect.y, rect.width, 60), T("Intro"));
+            if (summaryRevision != QualitySettingsState.Revision || summaryCatalogRevision != QualityCatalog.Revision)
             {
-                var host = Find.WindowStack.Windows.OfType<Dialog_ModSettings>().LastOrDefault();
-                Find.WindowStack.Add(new Window_QualityOptions(() => host?.Close()));
+                var saved = QualitySettingsState.Saved;
+                int quality = QualityCatalog.Entries.Count(e => QualityEditorActions.HasQuality(saved, e.Target, e.NativeQuality, e.RemovableVanillaQuality));
+                savedSummary = string.Format(T("SavedSummary"), quality, QualityCatalog.Entries.Count, saved.Effects.Values.Count(e => e.Enabled));
+                summaryRevision = QualitySettingsState.Revision; summaryCatalogRevision = QualityCatalog.Revision;
+            }
+            Widgets.Label(new Rect(rect.x, rect.y + 68, rect.width, 48), savedSummary);
+            Widgets.Label(new Rect(rect.x, rect.y + 122, rect.width, 32), T(QualitySettingsState.RestartPending ? "RestartPending" : "ActiveSaved"));
+            if (Widgets.ButtonText(new Rect(rect.x, rect.y + 166, Math.Min(320, rect.width), 40), T("Open"))
+                && !Find.WindowStack.IsOpen<Window_QualityOptions>())
+            {
+                Find.WindowStack.Add(new Window_QualityOptions());
             }
         }
     }

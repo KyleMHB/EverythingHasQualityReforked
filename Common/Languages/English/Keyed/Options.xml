@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <QEverything.Options.Intro>Quality rules and production options activate after restarting RimWorld. Open the editor to browse definitions, edit a draft and save changes for the next session.</QEverything.Options.Intro>
-  <QEverything.Options.Open>Open quality options</QEverything.Options.Open>
+  <QEverything.Options.Open>Open quality editor</QEverything.Options.Open>
+  <QEverything.Options.SavedSummary>Saved: {0} of {1} item types have quality; {2} effect switches enabled. Effect availability varies by item and adapter.</QEverything.Options.SavedSummary>
+  <QEverything.Options.RestartAll>All saved changes, including curves and production, take effect after restarting RimWorld.</QEverything.Options.RestartAll>
+  <QEverything.Options.Cancel>Cancel</QEverything.Options.Cancel>
+  <QEverything.Options.EditorTitle>Quality editor</QEverything.Options.EditorTitle>
   <QEverything.Options.RestartPending>Saved changes require a restart.</QEverything.Options.RestartPending>
   <QEverything.Options.ActiveSaved>Active and saved settings match.</QEverything.Options.ActiveSaved>
   <QEverything.Options.DraftPending>Draft has unsaved changes.</QEverything.Options.DraftPending>
@@ -14,6 +18,7 @@
   <QEverything.Options.Continue>Continue editing</QEverything.Options.Continue>
   <QEverything.Options.Close>Close</QEverything.Options.Close>
   <QEverything.Options.RemovalWarning>Removing mod-added quality support can discard those quality values after restart and a later save.</QEverything.Options.RemovalWarning>
+  <QEverything.Options.SaveFailed>Settings could not be saved. Your draft is still available; try saving again.</QEverything.Options.SaveFailed>
   <QEverything.Options.InvalidInput>Enter finite values within the allowed range. Minimum quality cannot exceed maximum quality.</QEverything.Options.InvalidInput>
   <QEverything.Options.ResetAll>Reset everything</QEverything.Options.ResetAll>
   <QEverything.Options.ResetConfirm>Reset all rules, effects and production to passive fresh-install defaults in the draft? Saved settings change only when you save.</QEverything.Options.ResetConfirm>

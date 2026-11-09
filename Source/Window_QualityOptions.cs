@@ -25,11 +25,9 @@ namespace ConfigurableQuality
         private sealed class CategoryNode { public ThingCategoryDef Def; public string Path; public int Depth; public string[] Ancestors; }
         private readonly BrowserState assignment = new BrowserState(), targets = new BrowserState(), marketValue = new BrowserState(), vanillaRemoval = new BrowserState();
         private BrowserState Browser => removing ? vanillaRemoval : pricing ? marketValue : participation ? targets : assignment;
-        private bool participation, pricing, removing, targetView, closing;
+        private bool participation, pricing, removing, closing;
         private int page;
-        private readonly Action afterClose;
-        private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
-        private readonly Stack<QualityConfiguration> undo = new Stack<QualityConfiguration>();
+        private QualityEditorActions Editor => QualitySettingsState.Editor;
         private Vector2 productionScroll, effectScroll, compatibilityScroll;
         private string error = "";
         private readonly HashSet<string> expanded = new HashSet<string>();
@@ -41,14 +39,14 @@ namespace ConfigurableQuality
         private int countPage = -1;
         private QualityConfiguration Draft => QualitySettingsState.Draft;
         private RuleSet Rules => removing ? Draft.VanillaRemoval : pricing ? Draft.MarketValue : participation ? Draft.Participation : Draft.Assignment;
-        public override Vector2 InitialSize => new Vector2(1120, 820);
+        public override Vector2 InitialSize => new Vector2(Math.Min(1480, Verse.UI.screenWidth - 40), Math.Min(900, Verse.UI.screenHeight - 40));
         private static string T(string key) => ("QEverything.Options." + key).Translate().ToString();
         private static string U(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T("UX." + key), args);
         private static string GroupLabel(string id) => T("Group." + id);
         private static string ChoiceLabel(RuleChoice choice) => T(choice.ToString());
-        public Window_QualityOptions(Action afterClose = null)
+        public Window_QualityOptions()
         {
-            this.afterClose = afterClose; doCloseX = true; closeOnClickedOutside = false; absorbInputAroundWindow = true; forcePause = true;
+            doCloseX = true; closeOnCancel = true; closeOnClickedOutside = false; absorbInputAroundWindow = true; forcePause = true;
             QualityCatalog.Build(); categoryNodes = DefDatabase<ThingCategoryDef>.AllDefsListForReading.Select(BuildNode).OrderBy(n => n.Path, StringComparer.CurrentCultureIgnoreCase).ToList();
             foreach (var node in categoryNodes.Where(n => n.Def.parent == null)) expanded.Add(node.Def.defName);
         }
@@ -58,50 +56,54 @@ namespace ConfigurableQuality
             for (var current = def; current != null && seen.Add(current); current = current.parent) chain.Add(current);
             chain.Reverse(); return new CategoryNode { Def = def, Depth = chain.Count, Path = string.Join(" / ", chain.Select(c => c.LabelCap.ToString())), Ancestors = chain.Where(c => c != def).Select(c => c.defName).ToArray() };
         }
-        public override void PostClose() { base.PostClose(); afterClose?.Invoke(); }
         public override bool OnCloseRequest()
         {
-            if (!closing && (QualitySettingsState.Dirty || buffers.Any(p => !BufferIsValid(p.Key, p.Value, out _))))
+            if (!closing && Editor.NeedsCloseConfirmation)
             { if (!Find.WindowStack.IsOpen<Window_QualityClose>()) Find.WindowStack.Add(new Window_QualityClose(this)); return false; }
             return true;
         }
-        internal void Finish(bool save) { if (save && !Save()) return; if (!save) QualitySettingsState.Discard(); closing = true; Close(); }
-        private bool Save()
+        internal void Finish(bool save)
         {
-            if (buffers.Any(p => !BufferIsValid(p.Key, p.Value, out _))) { error = T("InvalidInput"); return false; }
-            var errors = QualitySettingsState.Save(); error = errors.Count == 0 ? T("RestartPending") : T("InvalidInput") + " " + string.Join(", ", errors);
-            if (errors.Count == 0) undo.Clear(); return errors.Count == 0;
+            if (!QualitySettingsState.TryClose(save ? EditorCloseAction.Save : EditorCloseAction.Discard, out var errors))
+            {
+                string details = string.Join(", ", errors.Where(e => e != "InvalidInput"));
+                error = T(errors.Any(e => e.StartsWith("Persistence:", StringComparison.Ordinal)) ? "SaveFailed" : "InvalidInput")
+                    + (details.Length == 0 ? "" : " " + details);
+                return;
+            }
+            closing = true; Close();
         }
-        private void RememberDraft() { if (undo.Count >= 30) { var recent = undo.Take(29).Reverse().ToArray(); undo.Clear(); foreach (var item in recent) undo.Push(item); } undo.Push(Draft.Clone()); }
-        private void DraftChanged() { QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = marketValue.FilterKey = vanillaRemoval.FilterKey = null; error = ""; }
+        private void RememberDraft() { Editor.EndGesture(); Editor.BeginEdit(); }
+        private void DraftChanged() { if (Editor.CompleteEdit()) QualitySettingsState.Changed(); assignment.FilterKey = targets.FilterKey = marketValue.FilterKey = vanillaRemoval.FilterKey = null; error = ""; }
         public override void DoWindowContents(Rect rect)
         {
-            var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color;
+            var font = Text.Font; var anchor = Text.Anchor; var color = GUI.color; var enabled = GUI.enabled;
             try
             {
-                Text.Font = GameFont.Small; var titles = new[] { U("Assignment"), U("Effects"), T("Production"), U("MarketValue"), U("VanillaQuality") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
-                for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
-                participation = page == 1;
-                pricing = page == 3;
-                removing = page == 4;
-                Widgets.Label(new Rect(rect.x, rect.y + 38, rect.width, 28), (QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));
-                var body = new Rect(rect.x, rect.y + 72, rect.width, Math.Max(100, rect.height - 164));
-                if (page == 0) DrawRules(body);
-                else if (page == 1) { float half = (body.width - 8) / 2; if (Widgets.ButtonText(new Rect(body.x, body.y, half, 30), U("ChooseEffects"), drawBackground: targetView)) targetView = false; if (Widgets.ButtonText(new Rect(body.x + half + 8, body.y, half, 30), U("EffectItems"), drawBackground: !targetView)) targetView = true; body.y += 38; body.height -= 38; if (targetView) DrawRules(body); else DrawEffects(body); }
+                if (Event.current.rawType == EventType.MouseUp && Editor.EndGesture()) QualitySettingsState.Changed();
+                Text.Font = GameFont.Medium; Widgets.Label(new Rect(rect.x, rect.y, rect.width, 32), T("EditorTitle"));
+                Text.Font = GameFont.Small; DrawPresetHeader(new Rect(rect.xMax - 230, rect.y, 205, 30)); var titles = new[] { W("ItemsTab"), W("EffectsTab"), W("ProductionTab"), T("Compatibility") }; float tabWidth = (rect.width - 6 * (titles.Length - 1)) / titles.Length;
+                for (int i = 0; i < titles.Length; i++) { var tab = new Rect(rect.x + i * (tabWidth + 6), rect.y + 36, tabWidth, 32); if (page == i) Widgets.DrawHighlightSelected(tab); if (Widgets.ButtonText(tab, titles[i], drawBackground: page != i)) { page = i; GUI.FocusControl(null); } }
+                participation = pricing = removing = false;
+                Widgets.Label(new Rect(rect.x, rect.y + 74, rect.width, 28), (Editor.HasInvalidInput ? T("InvalidInput") : QualitySettingsState.Dirty ? T("DraftPending") : T("DraftSaved")) + "  " + (QualitySettingsState.RestartPending ? T("RestartPending") : T("ActiveSaved")));
+                var body = new Rect(rect.x, rect.y + 108, rect.width, Math.Max(100, rect.height - 200));
+                if (page == 0) DrawWorkbench(body);
+                else if (page == 1) DrawEffects(body);
                 else if (page == 2) DrawProduction(body);
-                else if (page == 3) DrawRules(body);
-                else if (page == 4) DrawRules(body);
-                Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RemovalWarning")); float w = (rect.width - 32) / 5;
-                if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && undo.Count > 0) { QualitySettingsState.ReplaceDraft(undo.Pop()); buffers.Clear(); DraftChanged(); }
-                if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); buffers.Clear(); undo.Clear(); error = ""; }
-                if (Widgets.ButtonText(new Rect(rect.x + 2 * (w + 8), rect.yMax - 34, w, 32), T("ResetAll"))) Confirm(T("ResetConfirm"), () => { RememberDraft(); Mod_SettingsUtility.RestoreDefaults(); buffers.Clear(); DraftChanged(); });
-                if (Widgets.ButtonText(new Rect(rect.x + 3 * (w + 8), rect.yMax - 34, w, 32), T("Save"))) Save();
-                if (Widgets.ButtonText(new Rect(rect.x + 4 * (w + 8), rect.yMax - 34, w, 32), T("Close"))) Close();
+                else DrawCompatibility(body);
+                Widgets.Label(new Rect(rect.x, rect.yMax - 82, rect.width, 43), error.Length > 0 ? error : T("RestartAll")); float w = (rect.width - 32) / 5;
+                bool guiEnabled = GUI.enabled; GUI.enabled = guiEnabled && Editor.CanUndo;
+                if (Widgets.ButtonText(new Rect(rect.x, rect.yMax - 34, w, 32), U("Undo")) && Editor.Undo()) { QualitySettingsState.Changed(); GUI.FocusControl(null); DraftChanged(); }
+                GUI.enabled = guiEnabled;
+                if (Widgets.ButtonText(new Rect(rect.x + w + 8, rect.yMax - 34, w, 32), T("Discard"))) { QualitySettingsState.Discard(); GUI.FocusControl(null); error = ""; }
+                if (Widgets.ButtonText(new Rect(rect.x + 2 * (w + 8), rect.yMax - 34, w, 32), T("ResetAll"))) Confirm(T("ResetConfirm"), () => { Editor.Reset(); QualitySettingsState.Changed(); GUI.FocusControl(null); DraftChanged(); });
+                if (Widgets.ButtonText(new Rect(rect.x + 3 * (w + 8), rect.yMax - 34, w, 32), T("Save"))) Finish(true);
+                if (Widgets.ButtonText(new Rect(rect.x + 4 * (w + 8), rect.yMax - 34, w, 32), T("Cancel"))) Finish(false);
             }
-            finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; }
+            finally { Text.Font = font; Text.Anchor = anchor; GUI.color = color; GUI.enabled = enabled; }
         }
         private static void Confirm(string text, Action action) => Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(text, action));
-        private string ScopeName => Browser.Category.Length > 0 ? (DefDatabase<ThingCategoryDef>.GetNamedSilentFail(Browser.Category)?.LabelCap.ToString() ?? Browser.Category) : Browser.Group.Length > 0 ? GroupLabel(Browser.Group) : U("AllItems");
+        private string ScopeName => Browser.Category.Length > 0 ? (categoryNodes.FirstOrDefault(n => n.Def.defName == Browser.Category)?.Path ?? Browser.Category) : Browser.Group.Length > 0 ? GroupLabel(Browser.Group) : U("AllItems");
         private void DrawRules(Rect rect)
         {
             float left = Math.Min(260, rect.width * .28f); DrawBrowser(new Rect(rect.x, rect.y, left, rect.height));
@@ -269,8 +271,9 @@ namespace ConfigurableQuality
         private static void SetRule(Dictionary<string, RuleChoice> rules, string id, RuleChoice choice) { if (choice == RuleChoice.Inherit) rules.Remove(id); else rules[id] = choice; }
         private void FloatField(Rect rect, string key, float value, Action<float> set)
         {
-            if (!buffers.TryGetValue(key, out string text)) text = value.ToString("R", CultureInfo.InvariantCulture);
-            string edited = Widgets.TextField(rect, text); buffers[key] = edited;
+            string text = Editor.NumberText(key, value);
+            GUI.SetNextControlName("quality-number-" + key);
+            string edited = Widgets.TextField(rect, text);
             bool valid = BufferIsValid(key, edited, out float number);
             if (!valid)
             {
@@ -279,7 +282,7 @@ namespace ConfigurableQuality
                 TooltipHandler.TipRegion(rect, U("FieldRange", RangeHint(key)) + " " + U("LastValid"));
             }
             if (edited == text) return;
-            if (valid && number != value) { RememberDraft(); set(number); DraftChanged(); }
+            if (Editor.EditNumber(key, edited, value, set)) { QualitySettingsState.Changed(); DraftChanged(); }
         }
         private static string RangeHint(string key) => QualityNumericRange.ForInput(key).Hint;
         private static bool BufferIsValid(string key, string text, out float number) => QualityNumericRange.ForInput(key).TryParse(text, out number);
@@ -293,7 +296,7 @@ namespace ConfigurableQuality
                 Widgets.Label(new Rect(0, 0, rect.width, 34), entry.Label + " / " + entry.Source); Widgets.Label(new Rect(0, 42, rect.width, 58), owner.ResolutionText(entry)); float w = (rect.width - 16) / 3;
                 foreach (RuleChoice choice in Enum.GetValues(typeof(RuleChoice))) { var captured = choice; if (Widgets.ButtonText(new Rect((int)choice * (w + 8), 105, w, 32), owner.RuleText(choice, true))) { if (RuleChanges(owner.Rules.Items, entry.Target.Id, captured)) { owner.RememberDraft(); SetRule(owner.Rules.Items, entry.Target.Id, captured); owner.DraftChanged(); } } }
                 Widgets.Label(new Rect(0, 147, rect.width, 80), owner.removing ? U("VanillaRemovalWarning") : owner.pricing ? U("MarketValueItemHelp") : owner.participation ? T("NeedsQuality") : entry.RemovableVanillaQuality ? U("VanillaRemovalAvailable") : T("NativeProtected"));
-                if (owner.participation && Widgets.ButtonText(new Rect(0, 205, rect.width, 30), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry));
+                if (owner.participation && Widgets.ButtonText(new Rect(0, 205, rect.width, 30), U("SupportInfo"))) Find.WindowStack.Add(new Window_QualitySupport(entry, () => owner.Draft, owner.SelectEffect));
 
                 if (Widgets.ButtonText(new Rect(rect.width - 120, rect.height - 34, 120, 32), U("Done"))) Close();
             }
