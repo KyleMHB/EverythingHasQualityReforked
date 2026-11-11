@@ -48,6 +48,7 @@ namespace ConfigurableQuality
         {
             matchedPresetName = name; matchedPreset = snapshot.Clone();
             comparedPresetEditor = null;
+            DraftChanged();
         }
         internal bool CanSaveUserPreset => Editor.CanSavePreset;
         internal QualityConfiguration CapturePreset() => Draft.Clone();
@@ -57,16 +58,36 @@ namespace ConfigurableQuality
             if (error == presetError) error = "";
             presetError = null;
         }
-        internal void PreviewUserPreset(string name, QualityConfiguration candidate)
+        internal void PreviewUserPreset(string name, QualityConfiguration candidate) => PreviewPreset(name, candidate, RememberPreset);
+        // Static so the simple settings page can preview a preset without an editor window.
+        internal static void PreviewPreset(string name, QualityConfiguration candidate, Action<string, QualityConfiguration> applied)
         {
             var captured = candidate.Clone();
-            string changes = PresetChanges(Draft, captured);
-            Find.WindowStack.Add(new Window_QualitySnapshotReview(name, changes, () =>
+            var draft = QualitySettingsState.Draft;
+            Find.WindowStack.Add(new Window_QualitySnapshotReview(name, PresetSummary(draft, captured), PresetChanges(draft, captured), () =>
             {
-                Editor.ApplyPreset(captured); QualitySettingsState.Changed();
-                RememberPreset(name, captured);
-                GUI.FocusControl(null); DraftChanged();
+                QualitySettingsState.Editor.ApplyPreset(captured); QualitySettingsState.Changed();
+                GUI.FocusControl(null);
+                applied?.Invoke(name, captured);
             }));
+        }
+        private static int RuleDifferences(RuleSet before, RuleSet after) =>
+            before.Items.Keys.Union(after.Items.Keys).Count(id => !before.Items.TryGetValue(id, out var a) || !after.Items.TryGetValue(id, out var b) || a != b)
+            + before.Categories.Keys.Union(after.Categories.Keys).Count(id => !before.Categories.TryGetValue(id, out var a) || !after.Categories.TryGetValue(id, out var b) || a != b);
+        // The few facts a player needs before applying; the full list of changed values stays one click away.
+        private static string PresetSummary(QualityConfiguration before, QualityConfiguration after)
+        {
+            var groups = QualityConfiguration.GroupFields.Keys.Where(id => after.Assignment.Groups.TryGetValue(id, out bool on) ? on : after.Assignment.Default).Select(GroupLabel).ToArray();
+            var sample = after.Effects[EffectId.BuildingDurability.ToString()].Factors;
+            int rules = RuleDifferences(before.Assignment, after.Assignment) + RuleDifferences(before.Participation, after.Participation)
+                + RuleDifferences(before.MarketValue, after.MarketValue) + RuleDifferences(before.VanillaRemoval, after.VanillaRemoval);
+            return string.Join("\n", new[]
+            {
+                string.Format(P("SummaryGroups"), groups.Length == 0 ? P("SummaryNone") : string.Join(", ", groups)),
+                string.Format(P("SummaryEffects"), after.Effects.Values.Count(e => e.Enabled), after.Effects.Count, before.Effects.Values.Count(e => e.Enabled)),
+                string.Format(P("SummaryStrength"), Percent(sample[0]), Percent(sample[6])),
+                string.Format(P("SummaryRules"), rules)
+            });
         }
         private static string PresetChanges(QualityConfiguration before, QualityConfiguration after)
         {
@@ -188,20 +209,38 @@ namespace ConfigurableQuality
     }
     internal sealed class Window_QualitySnapshotReview : Window
     {
-        private readonly string title, changes;
+        private readonly string title, summary, changes;
+        private readonly int changeCount;
         private readonly Action apply;
+        private bool showAll;
         private Vector2 scroll;
         public override Vector2 InitialSize => new Vector2(850, 680);
-        public Window_QualitySnapshotReview(string title, string changes, Action apply)
-        { this.title = title; this.changes = changes; this.apply = apply; forcePause = true; absorbInputAroundWindow = true; doCloseX = true; }
+        public Window_QualitySnapshotReview(string title, string summary, string changes, Action apply)
+        {
+            this.title = title; this.summary = summary; this.changes = changes; this.apply = apply;
+            changeCount = changes.Split('\n').Length;
+            forcePause = true; absorbInputAroundWindow = true; doCloseX = true;
+        }
         public override void DoWindowContents(Rect rect)
         {
-            Widgets.Label(new Rect(0, 0, rect.width, 30), title);
-            Widgets.Label(new Rect(0, 34, rect.width, 56), Window_QualityOptions.P("Preview"));
-            float height = Text.CalcHeight(changes, rect.width - 24) + 12;
-            Widgets.BeginScrollView(new Rect(0, 96, rect.width, rect.height - 150), ref scroll, new Rect(0, 0, rect.width - 18, height));
-            Widgets.Label(new Rect(0, 0, rect.width - 24, height), changes);
-            Widgets.EndScrollView();
+            var font = Text.Font;
+            Text.Font = GameFont.Medium; Widgets.Label(new Rect(0, 0, rect.width, 34), title); Text.Font = font;
+            float summaryHeight = Text.CalcHeight(summary, rect.width) + 8;
+            Widgets.Label(new Rect(0, 42, rect.width, summaryHeight), summary);
+            float y = 42 + summaryHeight;
+            float noteHeight = Text.CalcHeight(Window_QualityOptions.P("Preview"), rect.width) + 8;
+            var color = GUI.color; GUI.color = new Color(.78f, .78f, .78f);
+            Widgets.Label(new Rect(0, y, rect.width, noteHeight), Window_QualityOptions.P("Preview")); GUI.color = color;
+            y += noteHeight;
+            if (Widgets.ButtonText(new Rect(0, y, Math.Min(rect.width, 360), 30), string.Format(Window_QualityOptions.P(showAll ? "HideAll" : "ShowAll"), changeCount))) showAll = !showAll;
+            y += 38;
+            if (showAll)
+            {
+                float height = Text.CalcHeight(changes, rect.width - 24) + 12;
+                Widgets.BeginScrollView(new Rect(0, y, rect.width, rect.height - y - 50), ref scroll, new Rect(0, 0, rect.width - 18, height));
+                Widgets.Label(new Rect(0, 0, rect.width - 24, height), changes);
+                Widgets.EndScrollView();
+            }
             if (Widgets.ButtonText(new Rect(0, rect.height - 40, rect.width / 2 - 4, 36), "QEverything.Advanced.GoBack".Translate())) Close();
             if (Widgets.ButtonText(new Rect(rect.width / 2 + 4, rect.height - 40, rect.width / 2 - 4, 36), "QEverything.Advanced.ApplyDraft".Translate())) { apply(); Close(); }
         }

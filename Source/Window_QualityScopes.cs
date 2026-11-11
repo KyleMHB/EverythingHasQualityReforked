@@ -8,54 +8,42 @@ namespace ConfigurableQuality
 {
     internal sealed partial class Window_QualityOptions
     {
-        private EditorRule scopeRule;
-        private string scopePreviewKey, scopePreview;
         private static string S(string key, params object[] args) => string.Format(("QEverything.Scopes." + key).Translate().ToString(), args);
-        private string ScopeRuleLabel(EditorRule rule) => rule == EditorRule.Assignment ? S("Assignment") : W(rule == EditorRule.Participation ? "ModEffects" : "Price");
-        private float DrawWorkbenchScopeControls(Rect rect)
+        private string ScopeRuleLabel(EditorRule rule) => W(rule == EditorRule.Assignment ? "Quality" : rule == EditorRule.Participation ? "ModEffects" : "Price");
+        private RuleChoice ScopeRuleState(EditorRule rule)
         {
-            float y = rect.y;
-            string label = S("ScopePath", ScopeName, scopeTotal, assignment.Filtered.Count);
-            float height = Math.Max(26, Text.CalcHeight(label, rect.width));
-            Widgets.Label(new Rect(rect.x, y, rect.width, height), label); y += height + 4;
-            float ruleWidth = Math.Max(130, rect.width * .27f), setWidth = Math.Max(150, rect.width * .31f);
-            if (Widgets.ButtonText(new Rect(rect.x, y, ruleWidth, 30), ScopeRuleLabel(scopeRule)))
-                Find.WindowStack.Add(new FloatMenu(new[] { EditorRule.Assignment, EditorRule.Participation, EditorRule.Price }.Select(r => new FloatMenuOption(ScopeRuleLabel(r), () => scopeRule = r)).ToList()));
-            var rules = QualityEditorActions.RulesFor(Draft, scopeRule);
-            var state = assignment.Category.Length > 0 ? rules.Categories.TryGetValue(assignment.Category, out var c) ? c : RuleChoice.Inherit
+            var rules = QualityEditorActions.RulesFor(Draft, rule);
+            return assignment.Category.Length > 0 ? rules.Categories.TryGetValue(assignment.Category, out var c) ? c : RuleChoice.Inherit
                 : assignment.Group.Length > 0 ? rules.Groups.TryGetValue(assignment.Group, out bool g) ? g ? RuleChoice.Include : RuleChoice.Exclude : RuleChoice.Inherit
                 : rules.Default ? RuleChoice.Include : RuleChoice.Exclude;
-            if (Widgets.ButtonText(new Rect(rect.x + ruleWidth + 6, y, setWidth, 30), S("SetRule", S(state == RuleChoice.Inherit ? "Parent" : state == RuleChoice.Include ? "Enabled" : "Disabled")))) OpenWorkbenchScopeRule();
-            float clearX = rect.x + ruleWidth + setWidth + 12;
-            if (Widgets.ButtonText(new Rect(clearX, y, rect.xMax - clearX, 30), S("ClearExceptions"))) PreviewClearScopeExceptions();
-            y += 36;
-            label = WorkbenchScopePreview(); height = Math.Max(26, Text.CalcHeight(label, rect.width));
-            Widgets.Label(new Rect(rect.x, y, rect.width, height), label); y += height + 4;
-            return y - rect.y;
         }
-        private string WorkbenchScopePreview()
+        // One dropdown per rule replaces the old rule picker, "Set rule" button and summary sentence.
+        private float DrawWorkbenchScopeRules(Rect rect)
         {
-            string key = QualityCatalog.Revision + "|" + QualitySettingsState.Revision + "|" + assignment.Group + "|" + assignment.Category + "|" + scopeRule;
-            if (scopePreviewKey == key) return scopePreview;
-            scopePreviewKey = key;
-            var entries = new List<QualityCatalogEntry>(QualityCatalog.Entries);
-            if (assignment.Group.Length == 0 && assignment.Category.Length == 0)
+            var anchor = Text.Anchor; var color = GUI.color;
+            string label = S("DefaultFor", ScopeName);
+            float labelWidth = Math.Min(rect.width * .34f, Text.CalcSize(label).x + 12);
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(new Rect(rect.x, rect.y, labelWidth, 30), label.Truncate(labelWidth));
+            Text.Anchor = anchor;
+            TooltipHandler.TipRegion(new Rect(rect.x, rect.y, labelWidth, 30), S("RuleHelp"));
+            var kinds = new[] { EditorRule.Assignment, EditorRule.Participation, EditorRule.Price };
+            float width = (rect.width - labelWidth - 6 * kinds.Length) / kinds.Length;
+            for (int i = 0; i < kinds.Length; i++)
             {
-                var known = new HashSet<string>(entries.Select(e => e.Target.Id));
-                foreach (string id in WorkbenchRules.SelectMany(r => r.Items.Keys).Distinct().Where(id => !known.Contains(id)))
-                    entries.Add(new QualityCatalogEntry { Target = new RuleTarget(id, "", false, new CategoryPath[0]), Label = id, Source = T("Unavailable") });
+                var rule = kinds[i]; var state = ScopeRuleState(rule);
+                var button = new Rect(rect.x + labelWidth + 6 + i * (width + 6), rect.y, width, 30);
+                GUI.color = state == RuleChoice.Include ? OnColor : state == RuleChoice.Exclude ? OffColor : color;
+                if (Widgets.ButtonText(button, (ScopeRuleLabel(rule) + ": " + S(state == RuleChoice.Inherit ? "Parent" : state == RuleChoice.Include ? "Enabled" : "Disabled")).Truncate(width - 16))) OpenWorkbenchScopeRule(rule);
+                GUI.color = color;
+                TooltipHandler.TipRegion(button, S("RuleHelp"));
             }
-            var scoped = entries.Where(e => (assignment.Group.Length == 0 || e.Target.Group == assignment.Group)
-                && (assignment.Category.Length == 0 || e.Target.Categories.Any(c => c.Id == assignment.Category))).ToArray();
-            // Outcome uses Draft and the same native/protected checks as each table cell.
-            string outcomes = string.Join("; ", scoped.GroupBy(e => Outcome(e, scopeRule).TrimEnd(' ', '*')).OrderBy(g => g.Key).Select(g => g.Key + ": " + g.Count()));
-            int exceptions = Editor.ScopeItemExceptions(scopeRule, assignment.Group, assignment.Category, QualityCatalog.Entries.Select(e => e.Target)).Length;
-            return scopePreview = S("Preview", ScopeRuleLabel(scopeRule), outcomes.Length == 0 ? S("None") : outcomes, exceptions);
+            return 36;
         }
-        private void OpenWorkbenchScopeRule()
+        private void OpenWorkbenchScopeRule(EditorRule rule)
         {
-            var rule = scopeRule; string group = assignment.Group, category = assignment.Category;
-            var choices = new List<FloatMenuOption> { new FloatMenuOption(S("RuleHelp"), null) };
+            string group = assignment.Group, category = assignment.Category;
+            var choices = new List<FloatMenuOption>();
             foreach (var choice in new[] { RuleChoice.Include, RuleChoice.Exclude, RuleChoice.Inherit })
             {
                 if (choice == RuleChoice.Inherit && group.Length == 0 && category.Length == 0) continue;
@@ -65,17 +53,14 @@ namespace ConfigurableQuality
                     if (Editor.SetScopeRule(rule, group, category, selected)) { QualitySettingsState.Changed(); assignment.FilterKey = null; }
                 }));
             }
-            Find.WindowStack.Add(new FloatMenu(choices));
-        }
-        private void PreviewClearScopeExceptions()
-        {
-            var rule = scopeRule; string group = assignment.Group, category = assignment.Category;
             var targets = QualityCatalog.Entries.Select(e => e.Target).ToArray();
-            int affected = Editor.ScopeItemExceptions(rule, group, category, targets).Length;
-            Confirm(S("ClearPreview", ScopeRuleLabel(rule), ScopeName, affected), () =>
-            {
-                if (Editor.ClearScopeItemExceptions(rule, group, category, targets)) { QualitySettingsState.Changed(); assignment.FilterKey = null; }
-            });
+            int exceptions = Editor.ScopeItemExceptions(rule, group, category, targets).Length;
+            if (exceptions > 0)
+                choices.Add(new FloatMenuOption(S("ClearExceptions", exceptions), () => Confirm(S("ClearPreview", ScopeRuleLabel(rule), ScopeName, exceptions), () =>
+                {
+                    if (Editor.ClearScopeItemExceptions(rule, group, category, targets)) { QualitySettingsState.Changed(); assignment.FilterKey = null; }
+                })));
+            Find.WindowStack.Add(new FloatMenu(choices));
         }
         private sealed class Window_WorkbenchScope : Window
         {
@@ -121,6 +106,7 @@ namespace ConfigurableQuality
                     }
                     float y = rect.y;
                     string next = Widgets.TextField(new Rect(rect.x, y, rect.width - 84, 30), search);
+                    Placeholder(new Rect(rect.x, y, rect.width - 84, 30), S("SearchPlaceholder"), next);
                     if (next != search) { search = next; scroll = Vector2.zero; }
                     if (Widgets.ButtonText(new Rect(rect.xMax - 78, y, 78, 30), W("Clear"))) { search = ""; scroll = Vector2.zero; }
                     TooltipHandler.TipRegion(new Rect(rect.x, y, rect.width - 84, 30), S("SearchHelp")); y += 36;
@@ -162,7 +148,7 @@ namespace ConfigurableQuality
                                 {
                                     var node = nodes[i]; string id = node.Def.defName;
                                     if (node.Def.childCategories?.Count > 0 && Widgets.ButtonText(new Rect(0, offset, 30, 30), owner.expanded.Contains(id) ? "-" : "+"))
-                                    { if (!owner.expanded.Add(id)) owner.expanded.Remove(id); nodeKey = null; owner.visibleCategoryNodes = null; }
+                                    { if (!owner.expanded.Add(id)) owner.expanded.Remove(id); nodeKey = null; }
                                     if (Widgets.ButtonText(new Rect(36, offset, width - 36, height - 4), node.Path + " (" + Count("c:" + id) + ")")) Choose("", id);
                                 }
                             }

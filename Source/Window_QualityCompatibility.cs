@@ -51,9 +51,9 @@ namespace ConfigurableQuality
                 Widgets.Label(new Rect(12, y, view.width - 12, h), row.Item3); y += h;
             }
             y += 10;
-            Widgets.Label(new Rect(0, y, view.width, 28), T("InactiveLegacy") + ": " + Draft.InactiveLegacy.Count); y += 32;
             if (Draft.InactiveLegacy.Count > 0)
             {
+                Widgets.Label(new Rect(0, y, view.width, 28), T("InactiveLegacy") + ": " + Draft.InactiveLegacy.Count); y += 32;
                 if (Widgets.ButtonText(new Rect(0, y, view.width * .58f, 30), T("RecoverLegacy"))) Find.WindowStack.Add(new Window_CompatibilityReview(T("RecoverLegacy"), C("RecoveryPreview") + "\n\n" +
                     string.Join("\n", Draft.InactiveLegacy.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => p.Key + ": " + T(p.Value ? "Include" : "Exclude"))),
                     () => { if (Editor.RecoverLegacy()) QualitySettingsState.Changed(); DraftChanged(); }));

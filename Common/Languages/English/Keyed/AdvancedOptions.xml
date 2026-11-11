@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <QEverything.Advanced.Presets>Presets</QEverything.Advanced.Presets>
-  <QEverything.Advanced.ChoosePreset>Choose a preset to preview...</QEverything.Advanced.ChoosePreset>
   <QEverything.Advanced.Mild>Mild</QEverything.Advanced.Mild>
   <QEverything.Advanced.Medium>Medium</QEverything.Advanced.Medium>
   <QEverything.Advanced.Progression>Progression (mild, with compatibility exclusions)</QEverything.Advanced.Progression>
-  <QEverything.Advanced.AllQualityLevels>All seven quality levels</QEverything.Advanced.AllQualityLevels>
-  <QEverything.Advanced.SearchEffects>Search effects</QEverything.Advanced.SearchEffects>
-  <QEverything.Advanced.SearchProduction>Search production</QEverything.Advanced.SearchProduction>
+  <QEverything.Advanced.SearchEffects>Search effects…</QEverything.Advanced.SearchEffects>
+  <QEverything.Advanced.SearchProduction>Search</QEverything.Advanced.SearchProduction>
   <QEverything.Advanced.Durability>Durability</QEverything.Advanced.Durability>
   <QEverything.Advanced.Work>Work and buildings</QEverything.Advanced.Work>
   <QEverything.Advanced.Power>Power and batteries</QEverything.Advanced.Power>
@@ -15,49 +12,33 @@
   <QEverything.Advanced.Equipment>Equipment bonuses</QEverything.Advanced.Equipment>
   <QEverything.Advanced.Combat>Combat</QEverything.Advanced.Combat>
   <QEverything.Advanced.Furniture>Linked furniture</QEverything.Advanced.Furniture>
-  <QEverything.Advanced.NoResults>No matching settings. Try another search.</QEverything.Advanced.NoResults>
-  <QEverything.Advanced.HideLevels>Hide quality levels</QEverything.Advanced.HideLevels>
-  <QEverything.Advanced.CustomizeLevels>Customize quality levels</QEverything.Advanced.CustomizeLevels>
-  <QEverything.Advanced.AdapterAvailable>Adapter available</QEverything.Advanced.AdapterAvailable>
-  <QEverything.Advanced.AdapterUnavailable>Adapter unavailable</QEverything.Advanced.AdapterUnavailable>
+  <QEverything.Advanced.NoResults>Nothing matches. Try another search.</QEverything.Advanced.NoResults>
+  <QEverything.Advanced.AdapterUnavailable>Not available in this game</QEverything.Advanced.AdapterUnavailable>
   <QEverything.Advanced.AdapterExternal>Handled by another mod</QEverything.Advanced.AdapterExternal>
-  <QEverything.Advanced.Normal>Normal</QEverything.Advanced.Normal>
-  <QEverything.Advanced.Legendary>Legendary</QEverything.Advanced.Legendary>
-  <QEverything.Advanced.PresetIntro>Review changes to your draft. Nothing is saved until you Save for restart.</QEverything.Advanced.PresetIntro>
-  <QEverything.Advanced.EnableCount>Effects to enable: {0}</QEverything.Advanced.EnableCount>
-  <QEverything.Advanced.ReplaceCount>Custom curves to replace: {0}</QEverything.Advanced.ReplaceCount>
-  <QEverything.Advanced.Benefits>Benefits</QEverything.Advanced.Benefits>
+  <QEverything.Advanced.PresetIntro>Check the changes. Nothing is saved until you save.</QEverything.Advanced.PresetIntro>
+  <QEverything.Advanced.EnableCount>Effects switched on: {0}</QEverything.Advanced.EnableCount>
+  <QEverything.Advanced.ReplaceCount>Strengths replaced: {0}</QEverything.Advanced.ReplaceCount>
+  <QEverything.Advanced.Benefits>Bonuses</QEverything.Advanced.Benefits>
   <QEverything.Advanced.Costs>Costs, risks and cooldowns</QEverything.Advanced.Costs>
-  <QEverything.Advanced.OtherChanges>Other changes and exclusions</QEverything.Advanced.OtherChanges>
-  <QEverything.Advanced.Exclusions>items</QEverything.Advanced.Exclusions>
-  <QEverything.Advanced.CompatibilityHelp>Click a topic for details. Technical diagnostics are below.</QEverything.Advanced.CompatibilityHelp>
+  <QEverything.Advanced.CompatibilityHelp>How this mod works with your other mods. Click a topic for details.</QEverything.Advanced.CompatibilityHelp>
   <QEverything.Advanced.Storage>Storage capacity</QEverything.Advanced.Storage>
   <QEverything.Advanced.Bionics>Installed bionics</QEverything.Advanced.Bionics>
   <QEverything.Advanced.Omitted>Not included</QEverything.Advanced.Omitted>
   <QEverything.Advanced.Deferred>Deferred</QEverything.Advanced.Deferred>
-  <QEverything.Advanced.PreviewBeforeApplying>Preview before applying</QEverything.Advanced.PreviewBeforeApplying>
-  <QEverything.Advanced.NativePreserved>Native components preserved</QEverything.Advanced.NativePreserved>
-  <QEverything.Advanced.SwitchesEnabled>Previously disabled effects to enable</QEverything.Advanced.SwitchesEnabled>
-  <QEverything.Advanced.CurvesReplaced>Custom strength curves to replace</QEverything.Advanced.CurvesReplaced>
-  <QEverything.Advanced.BenefitSummary>Benefits: Awful 95%, Normal 100%, Legendary 120%. Intermediate tiers: 98%, 102%, 105%, 110%.</QEverything.Advanced.BenefitSummary>
-  <QEverything.Advanced.CostSummary>Costs, risks and cooldowns: Awful 105%, Normal 100%, Legendary 80%. Intermediate tiers: 102%, 98%, 95%, 90%.</QEverything.Advanced.CostSummary>
-  <QEverything.Advanced.PresetScope>The following effect families receive these curves. Enables the standard quality-assignment groups and production settings. Item and category exceptions stay as they are. Market-value and vanilla-removal rules stay as they are.</QEverything.Advanced.PresetScope>
-  <QEverything.Advanced.ProgressionFamilies>The following effect families receive these curves. Available adapters are enabled; unavailable adapters are disabled. Enables the standard quality-assignment groups and production settings. Market-value and vanilla-removal rules stay as they are.</QEverything.Advanced.ProgressionFamilies>
-  <QEverything.Advanced.ProgressionScope>Progression enables available effect adapters and adds the detected exclusions below to both quality assignment and effect targets. These exclusions can replace existing item exceptions. Load order and research stay as they are.</QEverything.Advanced.ProgressionScope>
-  <QEverything.Advanced.DetectedExclusions>Detected item exclusions</QEverything.Advanced.DetectedExclusions>
-  <QEverything.Advanced.MildAllSwitches>Mild enables all 25 switches; unavailable adapters remain ineffective. Existing item and category exceptions stay as they are.</QEverything.Advanced.MildAllSwitches>
+  <QEverything.Advanced.PreviewBeforeApplying>Shows changes before applying</QEverything.Advanced.PreviewBeforeApplying>
+  <QEverything.Advanced.NativePreserved>Its own quality is kept</QEverything.Advanced.NativePreserved>
   <QEverything.Advanced.Ingredients>Ingredients and worktables</QEverything.Advanced.Ingredients>
   <QEverything.Advanced.Skills>Skills and inspirations</QEverything.Advanced.Skills>
-  <QEverything.Advanced.Supply>Supply quality and effective skill</QEverything.Advanced.Supply>
-  <QEverything.Advanced.SupplyHelp>When multiplication is enabled, the factors below scale effective skill. Otherwise supply quality adjusts skill relative to the neutral supply tier. These settings influence quality rolls, not item stats.</QEverything.Advanced.SupplyHelp>
-  <QEverything.Advanced.Limits>Quality limits</QEverything.Advanced.Limits>
+  <QEverything.Advanced.Supply>Ingredient and worktable quality</QEverything.Advanced.Supply>
+  <QEverything.Advanced.SupplyHelp>These change the chance of a good result when crafting. They do not change what a finished item does.</QEverything.Advanced.SupplyHelp>
+  <QEverything.Advanced.Limits>Lowest and highest quality per group</QEverything.Advanced.Limits>
   <QEverything.Advanced.Minimum>Minimum</QEverything.Advanced.Minimum>
   <QEverything.Advanced.Maximum>Maximum</QEverything.Advanced.Maximum>
   <QEverything.Advanced.Production.useMaterialQuality>Let ingredient quality influence production</QEverything.Advanced.Production.useMaterialQuality>
   <QEverything.Advanced.Production.useTableQuality>Let worktable quality influence production</QEverything.Advanced.Production.useTableQuality>
   <QEverything.Advanced.Production.useSkillReq>Subtract the recipe's minimum skill requirement</QEverything.Advanced.Production.useSkillReq>
-  <QEverything.Advanced.Production.stdSupplyQuality>Neutral supply quality</QEverything.Advanced.Production.stdSupplyQuality>
-  <QEverything.Advanced.Production.tableFactor>Worktable share of supply quality (0–1)</QEverything.Advanced.Production.tableFactor>
+  <QEverything.Advanced.Production.stdSupplyQuality>Ingredient quality that neither helps nor hurts</QEverything.Advanced.Production.stdSupplyQuality>
+  <QEverything.Advanced.Production.tableFactor>How much the worktable counts compared to ingredients (0 to 1)</QEverything.Advanced.Production.tableFactor>
   <QEverything.Advanced.Production.inspiredButchering>Use inspirations for butchering</QEverything.Advanced.Production.inspiredButchering>
   <QEverything.Advanced.Production.inspiredChemistry>Use inspirations for chemistry</QEverything.Advanced.Production.inspiredChemistry>
   <QEverything.Advanced.Production.inspiredCooking>Use inspirations for cooking</QEverything.Advanced.Production.inspiredCooking>
@@ -71,14 +52,14 @@
   <QEverything.Advanced.Production.skilledHarvesting>Use skill for harvested quality</QEverything.Advanced.Production.skilledHarvesting>
   <QEverything.Advanced.Production.skilledMining>Use skill for mined quality</QEverything.Advanced.Production.skilledMining>
   <QEverything.Advanced.Production.skilledStoneCutting>Use skill for stonecutting quality</QEverything.Advanced.Production.skilledStoneCutting>
-  <QEverything.Advanced.Production.multSupplyFactor>Multiply effective skill by supply quality factor</QEverything.Advanced.Production.multSupplyFactor>
-  <QEverything.Advanced.Production.awfulSupplyFactor>Awful supply: effective skill multiplier</QEverything.Advanced.Production.awfulSupplyFactor>
-  <QEverything.Advanced.Production.poorSupplyFactor>Poor supply: effective skill multiplier</QEverything.Advanced.Production.poorSupplyFactor>
-  <QEverything.Advanced.Production.normalSupplyFactor>Normal supply: effective skill multiplier</QEverything.Advanced.Production.normalSupplyFactor>
-  <QEverything.Advanced.Production.goodSupplyFactor>Good supply: effective skill multiplier</QEverything.Advanced.Production.goodSupplyFactor>
-  <QEverything.Advanced.Production.excSupplyFactor>Excellent supply: effective skill multiplier</QEverything.Advanced.Production.excSupplyFactor>
-  <QEverything.Advanced.Production.masterSupplyFactor>Masterwork supply: effective skill multiplier</QEverything.Advanced.Production.masterSupplyFactor>
-  <QEverything.Advanced.Production.legSupplyFactor>Legendary supply: effective skill multiplier</QEverything.Advanced.Production.legSupplyFactor>
+  <QEverything.Advanced.Production.multSupplyFactor>Scale the crafter's skill by ingredient quality, using the multipliers below</QEverything.Advanced.Production.multSupplyFactor>
+  <QEverything.Advanced.Production.awfulSupplyFactor>Awful ingredients: skill multiplier</QEverything.Advanced.Production.awfulSupplyFactor>
+  <QEverything.Advanced.Production.poorSupplyFactor>Poor ingredients: skill multiplier</QEverything.Advanced.Production.poorSupplyFactor>
+  <QEverything.Advanced.Production.normalSupplyFactor>Normal ingredients: skill multiplier</QEverything.Advanced.Production.normalSupplyFactor>
+  <QEverything.Advanced.Production.goodSupplyFactor>Good ingredients: skill multiplier</QEverything.Advanced.Production.goodSupplyFactor>
+  <QEverything.Advanced.Production.excSupplyFactor>Excellent ingredients: skill multiplier</QEverything.Advanced.Production.excSupplyFactor>
+  <QEverything.Advanced.Production.masterSupplyFactor>Masterwork ingredients: skill multiplier</QEverything.Advanced.Production.masterSupplyFactor>
+  <QEverything.Advanced.Production.legSupplyFactor>Legendary ingredients: skill multiplier</QEverything.Advanced.Production.legSupplyFactor>
   <QEverything.Advanced.Limit.Edifice>Buildings</QEverything.Advanced.Limit.Edifice>
   <QEverything.Advanced.Limit.Work>Worktables</QEverything.Advanced.Limit.Work>
   <QEverything.Advanced.Limit.Security>Security buildings</QEverything.Advanced.Limit.Security>
@@ -92,19 +73,18 @@
   <QEverything.Advanced.Limit.Apparel>Apparel</QEverything.Advanced.Limit.Apparel>
   <QEverything.Advanced.Limit.Weapon>Weapons</QEverything.Advanced.Limit.Weapon>
   <QEverything.Advanced.Limit.Shell>Shells</QEverything.Advanced.Limit.Shell>
-  <QEverything.Advanced.CompatibilitySummary>Integration status for this installation. Available adapters do not guarantee support for every modded item.</QEverything.Advanced.CompatibilitySummary>
-  <QEverything.Advanced.AvailableEffects>Available effect adapters</QEverything.Advanced.AvailableEffects>
-  <QEverything.Advanced.HideLegacy>Hide legacy preview</QEverything.Advanced.HideLegacy>
-  <QEverything.Advanced.ShowLegacy>Preview legacy entries</QEverything.Advanced.ShowLegacy>
+  <QEverything.Advanced.CompatibilitySummary>How many of this mod's effects can work with the mods you have loaded. An effect that works may still not fit every modded item.</QEverything.Advanced.CompatibilitySummary>
+  <QEverything.Advanced.AvailableEffects>Effects that work in this game</QEverything.Advanced.AvailableEffects>
+  <QEverything.Advanced.HideLegacy>Hide old settings</QEverything.Advanced.HideLegacy>
+  <QEverything.Advanced.ShowLegacy>Show old settings</QEverything.Advanced.ShowLegacy>
   <QEverything.Advanced.LegacyPreview>Showing the first 100 stored entries. Recovery applies all stored entries, not just this preview.</QEverything.Advanced.LegacyPreview>
-  <QEverything.Advanced.HideDiagnostics>Hide technical diagnostics</QEverything.Advanced.HideDiagnostics>
-  <QEverything.Advanced.ShowDiagnostics>Show technical diagnostics</QEverything.Advanced.ShowDiagnostics>
-  <QEverything.Advanced.GoBack>Go back</QEverything.Advanced.GoBack>
-  <QEverything.Advanced.ApplyDraft>Apply to draft</QEverything.Advanced.ApplyDraft>
-  <QEverything.Advanced.SupportIntro>These candidates match this item's type or components; they are not a guarantee of eligibility. Effects also need quality, their switch enabled and permission in effect targets. Click an effect to read its reason.</QEverything.Advanced.SupportIntro>
-  <QEverything.Advanced.SupportCandidates>Potentially relevant effects</QEverything.Advanced.SupportCandidates>
-  <QEverything.Advanced.SupportRecordedExclusion>Recorded as unsupported</QEverything.Advanced.SupportRecordedExclusion>
-  <QEverything.Advanced.SupportNone>No candidate effects were identified for this item.</QEverything.Advanced.SupportNone>
-  <QEverything.Advanced.SupportShowOther>Show other recorded exclusions</QEverything.Advanced.SupportShowOther>
-  <QEverything.Advanced.SupportHideOther>Hide other recorded exclusions</QEverything.Advanced.SupportHideOther>
+  <QEverything.Advanced.HideDiagnostics>Hide technical details</QEverything.Advanced.HideDiagnostics>
+  <QEverything.Advanced.ShowDiagnostics>Show technical details</QEverything.Advanced.ShowDiagnostics>
+  <QEverything.Advanced.GoBack>Cancel</QEverything.Advanced.GoBack>
+  <QEverything.Advanced.ApplyDraft>Apply</QEverything.Advanced.ApplyDraft>
+  <QEverything.Advanced.SupportIntro>Effects that fit this kind of item, and whether each one applies right now. Click an effect for the reason.</QEverything.Advanced.SupportIntro>
+  <QEverything.Advanced.SupportCandidates>Effects that fit this item</QEverything.Advanced.SupportCandidates>
+  <QEverything.Advanced.SupportNone>No quality effect fits this kind of item.</QEverything.Advanced.SupportNone>
+  <QEverything.Advanced.SupportShowOther>Show effects blocked for this item</QEverything.Advanced.SupportShowOther>
+  <QEverything.Advanced.SupportHideOther>Hide effects blocked for this item</QEverything.Advanced.SupportHideOther>
 </LanguageData>

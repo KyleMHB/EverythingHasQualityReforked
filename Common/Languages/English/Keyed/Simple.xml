@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Simple.PresetHeading>Start from a preset</QEverything.Simple.PresetHeading>
+  <QEverything.Simple.Preset.Off>Off</QEverything.Simple.Preset.Off>
+  <QEverything.Simple.Preset.Mild>Mild</QEverything.Simple.Preset.Mild>
+  <QEverything.Simple.Preset.Medium>Medium</QEverything.Simple.Preset.Medium>
+  <QEverything.Simple.Preset.Progression>Progression</QEverything.Simple.Preset.Progression>
+  <QEverything.Simple.Preset.OffHelp>The mod changes nothing. This is how a fresh install starts.</QEverything.Simple.Preset.OffHelp>
+  <QEverything.Simple.Preset.MildHelp>Buildings, resources, ingredients and manufactured goods get quality. Every quality effect is on with small bonuses: Legendary is about +20%.</QEverything.Simple.Preset.MildHelp>
+  <QEverything.Simple.Preset.MediumHelp>The same items as Mild, with large bonuses: Legendary is about +150%.</QEverything.Simple.Preset.MediumHelp>
+  <QEverything.Simple.Preset.ProgressionHelp>Mild, but it skips items that other installed mods already handle and effects that cannot work in this game.</QEverything.Simple.Preset.ProgressionHelp>
+  <QEverything.Simple.PresetCustom>Custom: your settings don't match a preset. Choosing a preset shows what it would change before anything is applied.</QEverything.Simple.PresetCustom>
+  <QEverything.Simple.GroupsHeading>What gets quality</QEverything.Simple.GroupsHeading>
+  <QEverything.Simple.GroupsHint>Quality from the base game and other mods is always kept.</QEverything.Simple.GroupsHint>
+  <QEverything.Simple.Count>{0} of {1}</QEverything.Simple.Count>
+  <QEverything.Simple.GroupTip>The number shows how many kinds of item in this group will have quality, including ones that already have it from the base game or another mod. Use the advanced editor to change single items.</QEverything.Simple.GroupTip>
+  <QEverything.Simple.EffectsHeading>What quality changes</QEverything.Simple.EffectsHeading>
+  <QEverything.Simple.EffectsHint>Better quality gives a bigger bonus. Strength follows the preset.</QEverything.Simple.EffectsHint>
+  <QEverything.Simple.EffectCount>{0} of {1} on</QEverything.Simple.EffectCount>
+  <QEverything.Simple.EffectUnavailable>{0} of these cannot work in this game or are handled by another mod. Switching them on has no effect.</QEverything.Simple.EffectUnavailable>
+  <QEverything.Simple.MarketValue>Quality changes market value</QEverything.Simple.MarketValue>
+  <QEverything.Simple.MarketValueTip>When off, quality no longer raises or lowers an item's price or your colony wealth. Other mods' own quality pricing is left alone.</QEverything.Simple.MarketValueTip>
+  <QEverything.Simple.OpenEditor>Advanced editor…</QEverything.Simple.OpenEditor>
+  <QEverything.Simple.EditorHint>Single items, exact numbers, crafting rules, your own presets and troubleshooting.</QEverything.Simple.EditorHint>
+  <QEverything.Simple.Discard>Discard changes</QEverything.Simple.Discard>
+  <QEverything.Simple.StatusDirty>Changes are saved when you close this window. Restart RimWorld to apply them.</QEverything.Simple.StatusDirty>
+  <QEverything.Simple.StatusRestart>Saved. Restart RimWorld to apply your changes.</QEverything.Simple.StatusRestart>
+  <QEverything.Simple.StatusClean>These settings are in use. Changes need a restart.</QEverything.Simple.StatusClean>
+  <QEverything.Simple.SaveFailed>Configurable Quality could not save its settings. Open the advanced editor to see what needs fixing.</QEverything.Simple.SaveFailed>
+  <QEverything.Simple.OffConfirm>Reset every setting of this mod to a fresh install? This also removes your item exceptions, effect strengths and crafting options.</QEverything.Simple.OffConfirm>
+</LanguageData>

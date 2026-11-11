@@ -16,22 +16,21 @@ namespace ConfigurableQuality
         private readonly HashSet<string> expandedCompatibility = new HashSet<string>();
         private static string A(string key) => ("QEverything.Advanced." + key).Translate().ToString();
         private static bool Matches(string text, string query) => string.IsNullOrWhiteSpace(query) || text.IndexOf(query.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0;
-        private static string Family(EffectId id)
+        internal static string Family(EffectId id)
         {
             int n = (int)id;
             return n < 3 ? "Durability" : n < 6 ? "Work" : n < 10 ? "Power" : n < 15 ? "Consumables" : n < 20 ? "Equipment" : n < 24 ? "Combat" : "Furniture";
         }
 
-        private void OpenPreset(bool progression, bool medium = false)
+        private void OpenPreset(bool progression, bool medium = false) => OpenBuiltinPreset(progression, medium, RememberPreset);
+        // Shared by the editor and the simple settings page, which has no editor window to remember the preset.
+        internal static void OpenBuiltinPreset(bool progression, bool medium, Action<string, QualityConfiguration> applied)
         {
-            var candidate = Editor.BuiltinPreset(medium,
+            var candidate = QualitySettingsState.Editor.BuiltinPreset(medium,
                 progression ? QualityProgression.Exclusions.Select(d => d.defName) : null,
                 progression ? (Func<EffectId, bool>)QualityEffects.Available : null);
-            PreviewUserPreset(progression ? T("ProgressionPreset") : A(medium ? "Medium" : "Mild"), candidate);
+            PreviewPreset(progression ? T("ProgressionPreset") : A(medium ? "Medium" : "Mild"), candidate, applied);
         }
-
-
-
     }
 
     internal sealed class Window_QualityPresetReview : Window
@@ -62,8 +61,8 @@ namespace ConfigurableQuality
             for (int i = 0; i < 3; i++)
             {
                 int tier = i == 0 ? 0 : i == 1 ? 2 : 6;
-                Widgets.Label(new Rect(first + column * i, 164, column, 26), benefits[tier].ToString("0.###", CultureInfo.InvariantCulture) + "x");
-                Widgets.Label(new Rect(first + column * i, 192, column, 26), costs[tier].ToString("0.###", CultureInfo.InvariantCulture) + "x");
+                Widgets.Label(new Rect(first + column * i, 164, column, 26), Window_QualityOptions.Percent(benefits[tier]));
+                Widgets.Label(new Rect(first + column * i, 192, column, 26), Window_QualityOptions.Percent(costs[tier]));
             }
             float width = rect.width - 18;
             float height = sections.Sum(section => 36 + (expanded.Contains(section.Key) ? Text.CalcHeight(section.Value, width - 12) + 16 : 0));

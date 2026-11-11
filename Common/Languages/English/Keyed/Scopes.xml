@@ -1,23 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <QEverything.Scopes.Assignment>Quality assignment</QEverything.Scopes.Assignment>
-  <QEverything.Scopes.ScopePath>{0} · {1} in scope · {2} shown</QEverything.Scopes.ScopePath>
-  <QEverything.Scopes.ChooseScope>Choose scope</QEverything.Scopes.ChooseScope>
-  <QEverything.Scopes.SetRule>Set rule: {0}</QEverything.Scopes.SetRule>
-  <QEverything.Scopes.Parent>Use parent rule</QEverything.Scopes.Parent>
-  <QEverything.Scopes.Enabled>Enabled</QEverything.Scopes.Enabled>
-  <QEverything.Scopes.Disabled>Disabled</QEverything.Scopes.Disabled>
-  <QEverything.Scopes.ClearExceptions>Clear item exceptions…</QEverything.Scopes.ClearExceptions>
+  <QEverything.Scopes.ChooseScope>Choose which group or category to show.</QEverything.Scopes.ChooseScope>
+  <QEverything.Scopes.Parent>Follow parent</QEverything.Scopes.Parent>
+  <QEverything.Scopes.Enabled>On</QEverything.Scopes.Enabled>
+  <QEverything.Scopes.Disabled>Off</QEverything.Scopes.Disabled>
+  <QEverything.Scopes.ClearExceptions>Remove {0} item exceptions here…</QEverything.Scopes.ClearExceptions>
   <QEverything.Scopes.Preview>{0} across entire scope: {1}. Item exceptions: {2}. Scope actions include results hidden by filters.</QEverything.Scopes.Preview>
-  <QEverything.Scopes.None>No items</QEverything.Scopes.None>
-  <QEverything.Scopes.RuleHelp>Changes this fallback only. More specific rules and item exceptions stay. Conflicting categories at the same depth resolve to Disabled.</QEverything.Scopes.RuleHelp>
-  <QEverything.Scopes.ClearPreview>Clear {0} item exceptions in: {1}
-
-Affected item types: {2}, including results hidden by filters.
-
-Only this rule's item exceptions are removed. Group and category rules, other rules, and individual effect choices stay. Items will follow their governing rules.</QEverything.Scopes.ClearPreview>
-  <QEverything.Scopes.SearchHelp>Search groups or full category paths and definition identifiers. Matching descendants appear even inside collapsed branches.</QEverything.Scopes.SearchHelp>
+  <QEverything.Scopes.RuleHelp>The default for everything in the group or category being shown, including items hidden by the search. A more specific category or an item exception still wins. If two categories at the same level disagree, Off wins.</QEverything.Scopes.RuleHelp>
+  <QEverything.Scopes.ClearPreview>Remove the "{0}" exceptions in: {1}\n\n{2} items go back to following their group or category. Other settings stay as they are.</QEverything.Scopes.ClearPreview>
+  <QEverything.Scopes.SearchHelp>Search by group or category name.</QEverything.Scopes.SearchHelp>
   <QEverything.Scopes.Groups>Groups</QEverything.Scopes.Groups>
   <QEverything.Scopes.Categories>Categories</QEverything.Scopes.Categories>
-  <QEverything.Scopes.NoMatches>No matching scopes. Clear the search or choose All items.</QEverything.Scopes.NoMatches>
+  <QEverything.Scopes.NoMatches>Nothing matches. Clear the search or choose All items.</QEverything.Scopes.NoMatches>
+  <QEverything.Scopes.Showing>Showing: {0}</QEverything.Scopes.Showing>
+  <QEverything.Scopes.DefaultFor>Default for {0}:</QEverything.Scopes.DefaultFor>
+  <QEverything.Scopes.Counts>{0} of {1} items shown</QEverything.Scopes.Counts>
+  <QEverything.Scopes.SearchPlaceholder>Search groups and categories…</QEverything.Scopes.SearchPlaceholder>
 </LanguageData>

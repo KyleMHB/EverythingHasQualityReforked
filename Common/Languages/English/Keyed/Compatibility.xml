@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <QEverything.Compatibility.NoQuality>No quality in the draft. Effect inactive.</QEverything.Compatibility.NoQuality>
-  <QEverything.Compatibility.ParticipationOff>Item participation disabled in the draft.</QEverything.Compatibility.ParticipationOff>
-  <QEverything.Compatibility.GlobalOff>Global effect disabled in the draft. Open its curve to enable it.</QEverything.Compatibility.GlobalOff>
-  <QEverything.Compatibility.RecordedBlock>Recorded adapter restriction or native ownership:</QEverything.Compatibility.RecordedBlock>
-  <QEverything.Compatibility.AdapterOff>Adapter unavailable in this session:</QEverything.Compatibility.AdapterOff>
-  <QEverything.Compatibility.Candidate>Allowed candidate; adapter available. Actual use depends on the item and runtime context.</QEverything.Compatibility.Candidate>
-  <QEverything.Compatibility.OpenGlobal>Open global effect and curve</QEverything.Compatibility.OpenGlobal>
-  <QEverything.Compatibility.NativeInformation>Native quality information</QEverything.Compatibility.NativeInformation>
-  <QEverything.Compatibility.NativeUncertain>Native and third-party quality remain protected. The following installed stats contain a standard quality part. This metadata does not prove that any listed stat applies to this item or currently supplies a bonus. Other providers may use different mechanisms; this list is not exhaustive. Draft changes take effect after restart.</QEverything.Compatibility.NativeUncertain>
-  <QEverything.Compatibility.NoMetadata>No standard quality-part metadata found.</QEverything.Compatibility.NoMetadata>
-  <QEverything.Compatibility.ProviderPolicy>Progression provider policy for next startup</QEverything.Compatibility.ProviderPolicy>
-  <QEverything.Compatibility.PolicyHelp>When enabled, startup adds missing assignment and participation exclusions detected for supported providers. Existing item exceptions are retained. Disabling this policy does not remove exceptions already saved. Provider detection shown here describes this session.</QEverything.Compatibility.PolicyHelp>
-  <QEverything.Compatibility.PolicyPreview>Change the provider policy in Draft. Detected provider exclusions are listed below; startup adds missing exceptions only while the policy is enabled. Existing exceptions and unavailable identifiers are retained. Save for restart to activate the policy.</QEverything.Compatibility.PolicyPreview>
-  <QEverything.Compatibility.RecoveryPreview>Recover these inactive legacy choices as item assignment exceptions, replacing existing assignment exceptions for the same identifiers. Other rules remain unchanged. Unavailable identifiers and the legacy backup are retained. This is one Undo step and takes effect after Save for restart.</QEverything.Compatibility.RecoveryPreview>
-  <QEverything.Compatibility.LegacyPreview>All stored legacy choices are shown below. Recovery replaces assignment exceptions for these identifiers.</QEverything.Compatibility.LegacyPreview>
-  <QEverything.Compatibility.ProgressionSummary>The Progression preset changes Draft after preview. Supported output adapters preserve native output quality choices. Provider detection and patch diagnostics below describe this installation; unknown providers are not assumed to be supported.</QEverything.Compatibility.ProgressionSummary>
+  <QEverything.Compatibility.NoQuality>Off: this item has no quality.</QEverything.Compatibility.NoQuality>
+  <QEverything.Compatibility.ParticipationOff>Off: quality effects are switched off for this item.</QEverything.Compatibility.ParticipationOff>
+  <QEverything.Compatibility.GlobalOff>Off: this effect is switched off in the Effects tab.</QEverything.Compatibility.GlobalOff>
+  <QEverything.Compatibility.RecordedBlock>Off: this effect is blocked for this item.</QEverything.Compatibility.RecordedBlock>
+  <QEverything.Compatibility.AdapterOff>Off: this effect cannot work in this game.</QEverything.Compatibility.AdapterOff>
+  <QEverything.Compatibility.Candidate>On. Applies whenever the item uses this stat.</QEverything.Compatibility.Candidate>
+  <QEverything.Compatibility.OpenGlobal>Open this effect's settings</QEverything.Compatibility.OpenGlobal>
+  <QEverything.Compatibility.NativeInformation>Stats the game already scales with quality</QEverything.Compatibility.NativeInformation>
+  <QEverything.Compatibility.NativeUncertain>These stats already change with quality in the base game or another mod, and this mod leaves that alone. The list covers every loaded stat, not only the ones this item uses, and may miss mods that work differently.</QEverything.Compatibility.NativeUncertain>
+  <QEverything.Compatibility.NoMetadata>None found.</QEverything.Compatibility.NoMetadata>
+  <QEverything.Compatibility.ProviderPolicy>Keep skipping items that supported mods already handle</QEverything.Compatibility.ProviderPolicy>
+  <QEverything.Compatibility.PolicyHelp>When on, every game start adds an Off exception for items that supported mods handle themselves. Exceptions you already have are kept. Turning this off does not remove exceptions that were already added.</QEverything.Compatibility.PolicyHelp>
+  <QEverything.Compatibility.PolicyPreview>These items are handled by other mods you have loaded. While this is on, each game start gives them an Off exception if they don't have one. Save and restart to apply.</QEverything.Compatibility.PolicyPreview>
+  <QEverything.Compatibility.RecoveryPreview>Bring back these per-item choices from an older version of the mod as item exceptions. Existing exceptions for the same items are replaced. You can undo this, and nothing is saved until you save.</QEverything.Compatibility.RecoveryPreview>
+  <QEverything.Compatibility.LegacyPreview>Per-item choices kept from an older version of the mod.</QEverything.Compatibility.LegacyPreview>
+  <QEverything.Compatibility.ProgressionSummary>The Progression preset shows its changes before applying. Details for this game are below; mods that are not listed are not handled specially.</QEverything.Compatibility.ProgressionSummary>
 </LanguageData>

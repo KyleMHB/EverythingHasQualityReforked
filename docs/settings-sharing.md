@@ -27,7 +27,7 @@ Regenerate the files from the configuration source with `dotnet run --project To
 
 ## Distributing a preset
 
-1. Configure the mod, including Market value category rules, then Save for restart.
+1. Configure the mod, including Market value category rules, then choose Save and close in the advanced editor, or close the mod settings page.
 2. Export its settings file using the chosen tool. For Export and Import Mod Settings, its bulk controls are available from that tool's own settings page.
 3. For an Auto Mod Config preset, include the exported file in the preset mod's `Settings` directory. Preserve the standard settings XML envelope and class name. The escaped `qualityConfiguration` value is one complete configuration snapshot, not separate mergeable XML settings.
 4. Match the destination settings filename to the mod's installed folder identity. A Workshop install uses the Workshop folder ID, while the local package uses `ConfigurableQuality`. Follow the exporter-generated filename for the intended installation rather than the display name.

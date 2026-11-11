@@ -174,9 +174,9 @@ namespace ConfigurableQuality
         }
         private void ProductionTierMenu(Rect rect, int tier, int minimum, int maximum, Action<int> apply, string prefix = "")
         {
-            if (!Widgets.ButtonText(rect, prefix + ((QualityCategory)tier).GetLabel())) return;
+            if (!Widgets.ButtonText(rect, prefix + ((QualityCategory)tier).GetLabel().CapitalizeFirst())) return;
             Editor.EndGesture(); GUI.FocusControl(null);
-            Find.WindowStack.Add(new FloatMenu(Enumerable.Range(0, 7).Select(q => new FloatMenuOption(((QualityCategory)q).GetLabel(),
+            Find.WindowStack.Add(new FloatMenu(Enumerable.Range(0, 7).Select(q => new FloatMenuOption(((QualityCategory)q).GetLabel().CapitalizeFirst(),
                 q < minimum || q > maximum ? (Action)null : () => apply(q))).ToList()));
         }
         private static string ProductionText(string key) => ("QEverything.ProductionUI." + key).Translate().ToString();

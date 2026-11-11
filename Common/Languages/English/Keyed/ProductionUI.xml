@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <QEverything.ProductionUI.RestoreDefaults>Preview quality limit defaults</QEverything.ProductionUI.RestoreDefaults>
-  <QEverything.ProductionUI.DefaultsHelp>Restore all thirteen quality limits to their group defaults. Each row shows the current range followed by the default range. Ingredient minimum is Normal; weapon and apparel maxima are Legendary. Other production settings and item rules stay as they are. Apply changes the draft for the next restart.</QEverything.ProductionUI.DefaultsHelp>
+  <QEverything.ProductionUI.RestoreDefaults>Reset quality limits to defaults…</QEverything.ProductionUI.RestoreDefaults>
+  <QEverything.ProductionUI.DefaultsHelp>Each line shows the current range, then the default range. Other crafting options and item settings stay as they are.</QEverything.ProductionUI.DefaultsHelp>
 </LanguageData>

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-  <QEverything.Presets.Manage>Presets</QEverything.Presets.Manage>
-  <QEverything.Presets.Title>Reusable quality presets</QEverything.Presets.Title>
+  <QEverything.Presets.Manage>Preset</QEverything.Presets.Manage>
+  <QEverything.Presets.Title>Presets</QEverything.Presets.Title>
   <QEverything.Presets.Progression>Progression</QEverything.Presets.Progression>
-  <QEverything.Presets.Reusable>Presets copy a complete Draft. Saving a preset does not save settings for restart or change the running game.</QEverything.Presets.Reusable>
-  <QEverything.Presets.Modified>Modified / Custom</QEverything.Presets.Modified>
-  <QEverything.Presets.Save>Save Draft as preset</QEverything.Presets.Save>
-  <QEverything.Presets.SaveHint>Enter a new filename. Correct invalid editor inputs before saving. Use Overwrite to replace an existing preset.</QEverything.Presets.SaveHint>
-  <QEverything.Presets.Load>Preview load</QEverything.Presets.Load>
+  <QEverything.Presets.Reusable>A preset stores every setting of this mod. Saving a preset does not save or apply your current changes.</QEverything.Presets.Reusable>
+  <QEverything.Presets.Modified>Custom</QEverything.Presets.Modified>
+  <QEverything.Presets.Save>Save current settings as preset</QEverything.Presets.Save>
+  <QEverything.Presets.SaveHint>Type a new name. Use Overwrite to replace an existing preset. Fix any highlighted number first.</QEverything.Presets.SaveHint>
+  <QEverything.Presets.Load>Load…</QEverything.Presets.Load>
   <QEverything.Presets.Overwrite>Overwrite</QEverything.Presets.Overwrite>
   <QEverything.Presets.Delete>Delete</QEverything.Presets.Delete>
-  <QEverything.Presets.OverwriteConfirm>Replace this preset file with the current valid Draft? Its previous snapshot will be lost. The editor Draft stays unchanged.</QEverything.Presets.OverwriteConfirm>
-  <QEverything.Presets.DeleteConfirm>Delete this reusable preset file? The editor Draft and settings stay unchanged.</QEverything.Presets.DeleteConfirm>
+  <QEverything.Presets.OverwriteConfirm>Replace this preset with your current settings? Its old contents are lost.</QEverything.Presets.OverwriteConfirm>
+  <QEverything.Presets.DeleteConfirm>Delete this preset? Your current settings stay as they are.</QEverything.Presets.DeleteConfirm>
   <QEverything.Presets.Refresh>Refresh list</QEverything.Presets.Refresh>
-  <QEverything.Presets.Saved>Reusable preset saved. Settings have not been committed for restart.</QEverything.Presets.Saved>
-  <QEverything.Presets.Failure>Preset operation failed. Check the name, file and folder permissions, then refresh or try another name.</QEverything.Presets.Failure>
-  <QEverything.Presets.Preview>Review all changed values below. Applying replaces the whole Draft, including rules removed by this snapshot. Undo restores the previous Draft in one step. Saved and Active settings stay unchanged.</QEverything.Presets.Preview>
-  <QEverything.Presets.Absent>no entry</QEverything.Presets.Absent>
-  <QEverything.Presets.NoChanges>No configuration changes.</QEverything.Presets.NoChanges>
+  <QEverything.Presets.Saved>Preset saved. Your settings still need saving.</QEverything.Presets.Saved>
+  <QEverything.Presets.Failure>That didn't work. Check the name and that the config folder can be written to, then try again.</QEverything.Presets.Failure>
+  <QEverything.Presets.Preview>Applying replaces all current settings of this mod. You can undo it, and nothing is saved until you save.</QEverything.Presets.Preview>
+  <QEverything.Presets.Absent>not set</QEverything.Presets.Absent>
+  <QEverything.Presets.NoChanges>Nothing would change.</QEverything.Presets.NoChanges>
   <QEverything.Presets.Yes>Yes</QEverything.Presets.Yes>
   <QEverything.Presets.No>No</QEverything.Presets.No>
   <QEverything.Presets.Field.production>Production</QEverything.Presets.Field.production>
@@ -31,4 +31,11 @@
   <QEverything.Presets.Field.enabled>Enabled</QEverything.Presets.Field.enabled>
   <QEverything.Presets.Field.progressionCompatibility>Progression compatibility policy</QEverything.Presets.Field.progressionCompatibility>
   <QEverything.Presets.Field.legacyBackup>Legacy settings backup</QEverything.Presets.Field.legacyBackup>
+  <QEverything.Presets.SummaryGroups>Gets quality: {0}</QEverything.Presets.SummaryGroups>
+  <QEverything.Presets.SummaryNone>nothing</QEverything.Presets.SummaryNone>
+  <QEverything.Presets.SummaryEffects>Quality effects on: {0} of {1} (currently {2})</QEverything.Presets.SummaryEffects>
+  <QEverything.Presets.SummaryStrength>Strength, using building hit points as the example: Awful {0}, Legendary {1}</QEverything.Presets.SummaryStrength>
+  <QEverything.Presets.SummaryRules>Item and category exceptions changed: {0}</QEverything.Presets.SummaryRules>
+  <QEverything.Presets.ShowAll>Show every changed value ({0})</QEverything.Presets.ShowAll>
+  <QEverything.Presets.HideAll>Hide changed values ({0})</QEverything.Presets.HideAll>
 </LanguageData>

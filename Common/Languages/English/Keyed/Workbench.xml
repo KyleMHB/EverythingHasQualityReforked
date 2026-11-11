@@ -1,43 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <QEverything.Workbench.ItemsTab>Items &amp; rules</QEverything.Workbench.ItemsTab>
-  <QEverything.Workbench.EffectsTab>Effects &amp; curves</QEverything.Workbench.EffectsTab>
-  <QEverything.Workbench.ProductionTab>Production &amp; limits</QEverything.Workbench.ProductionTab>
-  <QEverything.Workbench.Scope>Scope</QEverything.Workbench.Scope>
-  <QEverything.Workbench.DraftOutcomes>Draft outcomes · apply after restart</QEverything.Workbench.DraftOutcomes>
-  <QEverything.Workbench.SearchHelp>Search item label, definition identifier, or mod source</QEverything.Workbench.SearchHelp>
-  <QEverything.Workbench.Filter0>All results</QEverything.Workbench.Filter0>
-  <QEverything.Workbench.Filter1>Has quality</QEverything.Workbench.Filter1>
-  <QEverything.Workbench.Filter2>No quality</QEverything.Workbench.Filter2>
-  <QEverything.Workbench.Filter3>Item exceptions</QEverything.Workbench.Filter3>
-  <QEverything.Workbench.Filter4>Native quality</QEverything.Workbench.Filter4>
+  <QEverything.Workbench.ItemsTab>Items</QEverything.Workbench.ItemsTab>
+  <QEverything.Workbench.EffectsTab>Effects</QEverything.Workbench.EffectsTab>
+  <QEverything.Workbench.ProductionTab>Crafting and limits</QEverything.Workbench.ProductionTab>
+  <QEverything.Workbench.SearchHelp>Search by item name, internal name or mod.</QEverything.Workbench.SearchHelp>
+  <QEverything.Workbench.Filter0>Show: everything</QEverything.Workbench.Filter0>
+  <QEverything.Workbench.Filter1>Show: has quality</QEverything.Workbench.Filter1>
+  <QEverything.Workbench.Filter2>Show: no quality</QEverything.Workbench.Filter2>
+  <QEverything.Workbench.Filter3>Show: item exceptions</QEverything.Workbench.Filter3>
+  <QEverything.Workbench.Filter4>Show: built-in quality</QEverything.Workbench.Filter4>
   <QEverything.Workbench.Clear>Clear</QEverything.Workbench.Clear>
-  <QEverything.Workbench.ClearHelp>Clear search and filters to show more items.</QEverything.Workbench.ClearHelp>
+  <QEverything.Workbench.ClearHelp>Clear the search and filters to see more.</QEverything.Workbench.ClearHelp>
   <QEverything.Workbench.Counts>{0} item types in scope · {1} shown</QEverything.Workbench.Counts>
   <QEverything.Workbench.Item>Item</QEverything.Workbench.Item>
-  <QEverything.Workbench.Quality>Quality</QEverything.Workbench.Quality>
-  <QEverything.Workbench.ModEffects>Mod effects</QEverything.Workbench.ModEffects>
-  <QEverything.Workbench.Price>Price</QEverything.Workbench.Price>
-  <QEverything.Workbench.Enabled>Enabled</QEverything.Workbench.Enabled>
-  <QEverything.Workbench.Disabled>Disabled</QEverything.Workbench.Disabled>
+  <QEverything.Workbench.Quality>Has quality</QEverything.Workbench.Quality>
+  <QEverything.Workbench.ModEffects>Quality effects</QEverything.Workbench.ModEffects>
+  <QEverything.Workbench.Price>Affects price</QEverything.Workbench.Price>
+  <QEverything.Workbench.Enabled>On</QEverything.Workbench.Enabled>
+  <QEverything.Workbench.Disabled>Off</QEverything.Workbench.Disabled>
   <QEverything.Workbench.NoQuality>No quality</QEverything.Workbench.NoQuality>
-  <QEverything.Workbench.Native>Native quality</QEverything.Workbench.Native>
-  <QEverything.Workbench.Protected>Protected</QEverything.Workbench.Protected>
-  <QEverything.Workbench.RemovalPlanned>Removal planned</QEverything.Workbench.RemovalPlanned>
-  <QEverything.Workbench.Unavailable>Unavailable</QEverything.Workbench.Unavailable>
-  <QEverything.Workbench.FocusHelp>Choose an item to inspect its quality, mod effects, and price rules.</QEverything.Workbench.FocusHelp>
-  <QEverything.Workbench.Details>Details</QEverything.Workbench.Details>
-  <QEverything.Workbench.Governing>Governing rule</QEverything.Workbench.Governing>
-  <QEverything.Workbench.Conflict>Equally specific category rules disagree. Exclude wins.</QEverything.Workbench.Conflict>
-  <QEverything.Workbench.UseRule>Use rule</QEverything.Workbench.UseRule>
-  <QEverything.Workbench.Enable>Enable</QEverything.Workbench.Enable>
-  <QEverything.Workbench.Disable>Disable</QEverything.Workbench.Disable>
-  <QEverything.Workbench.UseRemovalRule>Use removal rule</QEverything.Workbench.UseRemovalRule>
+  <QEverything.Workbench.Native>Built in</QEverything.Workbench.Native>
+  <QEverything.Workbench.Protected>Locked</QEverything.Workbench.Protected>
+  <QEverything.Workbench.RemovalPlanned>Will be removed</QEverything.Workbench.RemovalPlanned>
+  <QEverything.Workbench.Unavailable>Mod missing</QEverything.Workbench.Unavailable>
+  <QEverything.Workbench.FocusHelp>Click an item to see what quality does for it.\n\nClick a value in the table to change it for that item. A * marks an item exception: a setting made for that one item.</QEverything.Workbench.FocusHelp>
+  <QEverything.Workbench.Governing>Decided by</QEverything.Workbench.Governing>
+  <QEverything.Workbench.Conflict>Two categories at the same level disagree, so Off wins.</QEverything.Workbench.Conflict>
+  <QEverything.Workbench.UseRule>Follow its group or category (no exception)</QEverything.Workbench.UseRule>
+  <QEverything.Workbench.Enable>On for this item</QEverything.Workbench.Enable>
+  <QEverything.Workbench.Disable>Off for this item</QEverything.Workbench.Disable>
+  <QEverything.Workbench.UseRemovalRule>Follow its group or category (no exception)</QEverything.Workbench.UseRemovalRule>
   <QEverything.Workbench.RemoveVanilla>Remove vanilla quality…</QEverything.Workbench.RemoveVanilla>
   <QEverything.Workbench.KeepVanilla>Always keep vanilla quality</QEverything.Workbench.KeepVanilla>
-  <QEverything.Workbench.ExceptionHelp>* marks an item exception. Mod effects shows participation; global switches and effect support still apply.</QEverything.Workbench.ExceptionHelp>
-  <QEverything.Workbench.UnavailableHelp>This definition is unavailable. Its saved exceptions are retained; Use rule removes an exception without enabling unsupported behavior.</QEverything.Workbench.UnavailableHelp>
+  <QEverything.Workbench.UnavailableHelp>The mod that adds this item is not loaded. Its exceptions are kept in case the mod comes back.</QEverything.Workbench.UnavailableHelp>
   <QEverything.Workbench.Technical>Technical details</QEverything.Workbench.Technical>
-  <QEverything.Workbench.VanillaHelp>Standard vanilla quality can be kept or removed through the Quality menu. Assignment never replaces native quality. Removal requires restart and can lose saved quality values.</QEverything.Workbench.VanillaHelp>
-  <QEverything.Workbench.Unsupported>Unsupported</QEverything.Workbench.Unsupported>
+  <QEverything.Workbench.VanillaHelp>This item has quality in the base game. You can keep it or remove it. Removing needs a restart and existing quality levels can be lost.</QEverything.Workbench.VanillaHelp>
+  <QEverything.Workbench.Unsupported>Not possible</QEverything.Workbench.Unsupported>
+  <QEverything.Workbench.SearchPlaceholder>Search items…</QEverything.Workbench.SearchPlaceholder>
+  <QEverything.Workbench.QualityHelp>Whether this kind of item has a quality level. "Built in" means the base game or another mod already gives it quality.</QEverything.Workbench.QualityHelp>
+  <QEverything.Workbench.EffectsHelp>Whether this mod's quality effects may apply to the item. An effect also has to be switched on in the Effects tab and has to fit the item. Click an item to see which ones apply.</QEverything.Workbench.EffectsHelp>
+  <QEverything.Workbench.PriceHelp>Whether quality raises or lowers the item's market value.</QEverything.Workbench.PriceHelp>
+  <QEverything.Workbench.SummaryNoQuality>This item has no quality, so quality effects and pricing don't apply to it.</QEverything.Workbench.SummaryNoQuality>
+  <QEverything.Workbench.SummaryEffectsOff>This item has quality, but quality effects are switched off for it.</QEverything.Workbench.SummaryEffectsOff>
+  <QEverything.Workbench.SummaryNoEffects>This item has quality, but no quality effect that fits it is switched on.</QEverything.Workbench.SummaryNoEffects>
+  <QEverything.Workbench.SummaryEffects>This item has quality. Effects that apply ({0}): {1}.</QEverything.Workbench.SummaryEffects>
+  <QEverything.Workbench.EffectList>Effects that fit this item</QEverything.Workbench.EffectList>
 </LanguageData>

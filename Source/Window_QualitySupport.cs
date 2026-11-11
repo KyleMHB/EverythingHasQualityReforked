@@ -87,16 +87,21 @@ namespace ConfigurableQuality
                 default: return false;
             }
         }
+        private static string StatusKey(EffectId id, QualityCatalogEntry entry, QualityConfiguration configuration)
+        {
+            if (!QualityEditorActions.HasQuality(configuration, entry.Target, entry.NativeQuality, entry.RemovableVanillaQuality)) return "NoQuality";
+            var target = QualityEditorActions.TargetFor(EditorRule.Participation, entry.Target, entry.NativeQuality, entry.RemovableVanillaQuality);
+            if (!QualityRules.Resolve(target, configuration.Participation).Enabled) return "ParticipationOff";
+            if (!configuration.Effects[id.ToString()].Enabled) return "GlobalOff";
+            if (QualityEffects.UnsupportedReason(id, entry.Def) != null) return "RecordedBlock";
+            return QualityEffects.Available(id) ? "Candidate" : "AdapterOff";
+        }
+        // True when nothing this mod knows about stops the effect from applying to the item.
+        internal static bool Active(EffectId id, QualityCatalogEntry entry, QualityConfiguration configuration) => StatusKey(id, entry, configuration) == "Candidate";
         internal static string Status(EffectId id, QualityCatalogEntry entry, QualityConfiguration configuration)
         {
-            if (!QualityEditorActions.HasQuality(configuration, entry.Target, entry.NativeQuality, entry.RemovableVanillaQuality)) return C("NoQuality");
-            var target = QualityEditorActions.TargetFor(EditorRule.Participation, entry.Target, entry.NativeQuality, entry.RemovableVanillaQuality);
-            if (!QualityRules.Resolve(target, configuration.Participation).Enabled) return C("ParticipationOff");
-            if (!configuration.Effects[id.ToString()].Enabled) return C("GlobalOff");
-            string unsupported = QualityEffects.UnsupportedReason(id, entry.Def);
-            if (unsupported != null) return C("RecordedBlock") + " " + unsupported;
-            if (!QualityEffects.Available(id)) return C("AdapterOff") + " " + QualityEffects.Reason(id);
-            return C("Candidate");
+            string key = StatusKey(id, entry, configuration);
+            return key == "RecordedBlock" ? C(key) + " " + QualityEffects.UnsupportedReason(id, entry.Def) : key == "AdapterOff" ? C(key) + " " + QualityEffects.Reason(id) : C(key);
         }
         private static string C(string key) => ("QEverything.Compatibility." + key).Translate().ToString();
         private string NativeEvidence()

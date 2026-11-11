@@ -94,3 +94,16 @@ The cases are mechanical. Construction calls the frame completion directly rathe
 - **2026-11-09, `20261109-193508-cq-market-s1`:** 5 of 5 passed. Duster 156/156/156 and wall 9.99 for all three qualities with scaling off. With scaling on: revolver 67.7/135.4/675, steel 0.95/1.9/2.85, door 25.28/50.56/75.84.
 - **Setup error found on the way:** the first `cq-market` run (`20261109-193419-cq-market-s1`) wrote the item exceptions as `false`. Category and item rules take `RuleChoice` names (`Include`, `Exclude`, `Inherit`); only groups take booleans. The parser silently ignores other values. The first `cq-production` run picked `ComponentIndustrial`, which is in the Stuff group; the batch now looks the def up by group.
 - **Not covered:** material and table supply factors, skill requirements, inspirations, recipe and harvest jobs run by colonists, trade prices and vanilla-quality removal.
+
+### Settings screens tour
+
+**`cq-ui`** (mod set `default`) is a diagnostic batch for looking at the settings screens, not a gameplay check. It opens the mod settings page, applies Mild to the draft, opens the advanced editor, visits its four tabs and the preset preview, then discards the draft and closes the windows, so nothing is saved. Its one case passes when all ten screens opened. Layout is judged from the recording:
+
+```powershell
+python Tools/cq_test.py run cq-ui --seed 1 --record --show-ui --ffmpeg "<path to ffmpeg.exe>"
+```
+
+Each screen is held for four seconds, so frames at 2.5 s, 6.5 s and so on show one screen each. The tour drives the windows through reflection; it does not click, type, save or use a narrow window.
+
+- **2026-11-11, `20261111-162513-cq-ui-s1`:** passed on RimWorld 1.7 with Core, Harmony and this mod. Frames are in `artifacts/ui-check-20261111`. The first run (`20261111-162216-cq-ui-s1`) showed left-aligned selected tabs, an empty Tasty ingredients group, blocked effects listed for every item and lower-case quality names; all four were fixed before this run.
+- **Not covered:** clicking and typing, the dropdown menus, the scope picker, the bulk and details pop-ups, saving from either screen, narrow windows, a large mod list, and RimWorld 1.6.

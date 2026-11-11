@@ -45,15 +45,25 @@ namespace ConfigurableQuality
         }
         private float DrawBulkSelectionBar(Rect rect)
         {
-            float half = (rect.width - 8) / 2;
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y, half, 28), B("SelectResults", assignment.Filtered.Count))) Editor.SelectResults(assignment.Filtered.Select(e => e.Target.Id));
-            Widgets.Label(new Rect(rect.x + half + 8, rect.y, half, 28), SelectionCount);
+            var anchor = Text.Anchor; var color = GUI.color;
+            float select = Math.Min(rect.width * .3f, 260);
+            if (Widgets.ButtonText(new Rect(rect.x, rect.y, select, 28), B("SelectResults", assignment.Filtered.Count))) Editor.SelectResults(assignment.Filtered.Select(e => e.Target.Id));
+            Text.Anchor = TextAnchor.MiddleLeft; GUI.color = OffColor;
+            Widgets.Label(new Rect(rect.x + select + 10, rect.y, rect.width - select - 10, 28), S("Counts", assignment.Filtered.Count, scopeTotal));
+            Text.Anchor = anchor; GUI.color = color;
             if (!Editor.BulkMode) return 34;
-            float width = (rect.width - 16) / 3;
-            if (Widgets.ButtonText(new Rect(rect.x, rect.y + 34, width, 28), B("Review"))) Find.WindowStack.Add(new Window_WorkbenchSelection(this));
-            if (Widgets.ButtonText(new Rect(rect.x + width + 8, rect.y + 34, width, 28), B("Clear"))) Editor.ClearSelection();
-            if (Widgets.ButtonText(new Rect(rect.x + (width + 8) * 2, rect.y + 34, width, 28), B("Edit"))) Find.WindowStack.Add(new Window_WorkbenchBulk(this));
-            return 68;
+            // A highlighted strip makes it obvious that ticking a box switched the table to batch editing.
+            var strip = new Rect(rect.x, rect.y + 32, rect.width, 32);
+            Widgets.DrawHighlightSelected(strip);
+            float button = Math.Min(190, rect.width * .2f);
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(new Rect(strip.x + 8, strip.y, strip.width - 3 * (button + 6) - 8, 32), SelectionCount);
+            Text.Anchor = anchor;
+            float x = strip.xMax - 3 * button - 12;
+            if (Widgets.ButtonText(new Rect(x, strip.y + 2, button, 28), B("Edit"))) Find.WindowStack.Add(new Window_WorkbenchBulk(this));
+            if (Widgets.ButtonText(new Rect(x + button + 6, strip.y + 2, button, 28), B("Review"))) Find.WindowStack.Add(new Window_WorkbenchSelection(this));
+            if (Widgets.ButtonText(new Rect(x + 2 * (button + 6), strip.y + 2, button, 28), B("Clear"))) Editor.ClearSelection();
+            return 70;
         }
         private void DrawBulkInspector(Rect rect, ref Vector2 scroll)
         {
@@ -61,7 +71,7 @@ namespace ConfigurableQuality
             float width = rect.width - 18;
             string help = B("Help");
             float helpHeight = Math.Max(72, Text.CalcHeight(help, width));
-            var view = new Rect(0, 0, width, 114 + helpHeight + 4 * 176);
+            var view = new Rect(0, 0, width, 114 + helpHeight + 3 * 104 + 186);
             Widgets.BeginScrollView(rect, ref scroll, view);
             try
             {
@@ -82,15 +92,18 @@ namespace ConfigurableQuality
                     bool enabled = GUI.enabled; GUI.enabled = enabled && count > 0 && Editor.BulkMode;
                     try
                     {
-                        int index = 0;
+                        int index = 0; bool stacked = kind == EditorRule.Removal; float third = (width - 12) / 3;
                         foreach (var choice in new[] { RuleChoice.Include, RuleChoice.Exclude, RuleChoice.Inherit })
                         {
                             string key = kind == EditorRule.Removal ? choice == RuleChoice.Include ? "RemoveVanilla" : choice == RuleChoice.Exclude ? "KeepVanilla" : "UseRemovalRule" : choice == RuleChoice.Include ? "Enable" : choice == RuleChoice.Exclude ? "Disable" : "UseRule";
-                            if (Widgets.ButtonText(new Rect(0, y + index++ * 38, width, 32), W(key))) ApplyBulk(kind, choice, items);
+                            // Short choices sit side by side; the longer vanilla-removal labels stay stacked.
+                            var button = stacked ? new Rect(0, y + index * 38, width, 32) : new Rect(index * (third + 6), y, third, 32);
+                            index++;
+                            if (Widgets.ButtonText(button, stacked ? W(key) : B(key))) ApplyBulk(kind, choice, items);
                         }
                     }
                     finally { GUI.enabled = enabled; }
-                    y += 120;
+                    y += kind == EditorRule.Removal ? 120 : 48;
                 }
             }
             finally { Widgets.EndScrollView(); }

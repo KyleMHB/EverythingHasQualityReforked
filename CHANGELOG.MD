@@ -2,6 +2,18 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
+## Unreleased
+
+### Changed
+
+- The mod settings page is now a simple first screen: presets, on/off switches for the item groups that get quality and for each kind of quality effect, and a market value switch. Changes made there are saved when the window closes. The full editor opens from Advanced editor.
+- Rewrote the editor's text in plain language with one word per idea, and removed 241 strings that nothing used.
+- Items tab: item icons, shorter rows, coloured values that look like the dropdowns they are, one default dropdown per column for the group or category being shown, a highlighted bar while several items are ticked, and one sentence per item saying which effects apply to it.
+- Effects tab: each multiplier shows its meaning as a percentage, the on/off switch also sits with the effect's settings, and only effects that cannot work in this game carry a note.
+- Preset preview leads with a short summary; the full list of changed values is one click away.
+- Editor footer is Undo, More, Cancel and Save and close. Cancel and Discard changes now ask before discarding.
+- Removed the unreachable old item browser.
+
 ## 2026-10-25
 
 ### Changed
