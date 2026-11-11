@@ -60,7 +60,8 @@ namespace ConfigurableQuality
                 if (old != enabled) { var selected = id; EffectCommand(() => Editor.Edit(c => c.Effects[selected.ToString()].Enabled = enabled)); }
                 if (Widgets.ButtonText(new Rect(30, y, view.width - 30, 32), T("Effect." + id), drawBackground: false))
                 { if (Editor.EndGesture()) QualitySettingsState.Changed(); selectedEffect = id; effectDetailScroll = Vector2.zero; GUI.FocusControl(null); }
-                Widgets.Label(new Rect(30, y + 34, view.width - 30, 28), A(QualityEffects.Available(id) ? "AdapterAvailable" : "AdapterUnavailable"));
+                Widgets.Label(new Rect(30, y + 34, view.width - 30, 28), A(QualityEffects.Available(id) ? "AdapterAvailable" : QualityEffects.HandledElsewhere(id) ? "AdapterExternal" : "AdapterUnavailable"));
+                TooltipHandler.TipRegion(new Rect(30, y, view.width - 30, 64), QualityEffects.Reason(id));
                 y += 66;
             }
             Widgets.EndScrollView();

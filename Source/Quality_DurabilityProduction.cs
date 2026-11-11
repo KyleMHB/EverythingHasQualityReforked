@@ -20,9 +20,11 @@ namespace ConfigurableQuality
         {
             if (registered) return;
             registered = true;
-            Add(EffectId.BuildingDurability, StatDefOf.MaxHitPoints);
-            Add(EffectId.WeaponDurability, StatDefOf.MaxHitPoints);
-            Add(EffectId.ApparelDurability, StatDefOf.MaxHitPoints);
+            // Quality Expanded scales Thing.MaxHitPoints with a Harmony postfix instead of a stat part; stacking would double the bonus.
+            bool hitPointsOwned = QualityPatchOwnership.HasExternalQualityPatches(AccessTools.PropertyGetter(typeof(Thing), nameof(Thing.MaxHitPoints)));
+            Add(EffectId.BuildingDurability, StatDefOf.MaxHitPoints, hitPointsOwned);
+            Add(EffectId.WeaponDurability, StatDefOf.MaxHitPoints, hitPointsOwned);
+            Add(EffectId.ApparelDurability, StatDefOf.MaxHitPoints, hitPointsOwned);
             Add(EffectId.WorktableSpeed, StatDefOf.WorkTableWorkSpeedFactor);
             Add(EffectId.ResearchSpeed, StatDefOf.ResearchSpeedFactor);
             Add(EffectId.DoorSpeed, StatDefOf.DoorOpenSpeed);
@@ -43,11 +45,12 @@ namespace ConfigurableQuality
             }
         }
 
-        private static void Add(EffectId id, StatDef stat)
+        private static void Add(EffectId id, StatDef stat, bool ownedElsewhere = false)
         {
             var eligible = targets[id] = new HashSet<ThingDef>();
             // A native/custom quality part owns its curve. Unknown quality-named parts are conservatively protected too.
-            bool existingQuality = stat.parts?.Any(p => !(p is StatPart_OptionalQuality) && (p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0)) == true;
+            bool existingQuality = ownedElsewhere || stat.parts?.Any(p => !(p is StatPart_OptionalQuality) && (p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0)) == true;
+            string blockedKey = ownedElsewhere ? "QEverything.Durability.OtherHitPoints" : "QEverything.Durability.NativeCurve";
             foreach (var entry in QualityCatalog.Entries)
             {
                 if (!Matches(id, entry.Def))
@@ -57,7 +60,7 @@ namespace ConfigurableQuality
                 }
                 if (existingQuality)
                 {
-                    QualityEffects.SetUnsupported(id, entry.Def, "QEverything.Durability.NativeCurve".Translate());
+                    QualityEffects.SetUnsupported(id, entry.Def, blockedKey.Translate());
                     continue;
                 }
                 eligible.Add(entry.Def);
@@ -69,7 +72,8 @@ namespace ConfigurableQuality
                     if (durabilityIds.Contains(id)) activeDurability.Add(entry.Def);
                 }
             }
-            QualityEffects.SetCapability(id, !existingQuality, (existingQuality ? "QEverything.Durability.NativeCurve" : "QEverything.Durability.Available").Translate());
+            // None of these vanilla stats ships a quality part (checked on 1.7), so an existing one comes from another mod.
+            QualityEffects.SetCapability(id, !existingQuality, (existingQuality ? blockedKey : "QEverything.Durability.Available").Translate(), existingQuality);
             if (existingQuality) return;
             if (stat.parts == null) stat.parts = new List<StatPart>();
             stat.parts.Add(new StatPart_OptionalQuality(id) { parentStat = stat });

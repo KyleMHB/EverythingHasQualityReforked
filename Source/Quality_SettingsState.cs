@@ -197,12 +197,17 @@ namespace ConfigurableQuality
         private static readonly string[] effectKeys = Enum.GetNames(typeof(EffectId));
         private static readonly Dictionary<EffectId, string> reasons = new Dictionary<EffectId, string>();
         private static readonly HashSet<EffectId> available = new HashSet<EffectId>();
-        public static void SetCapability(EffectId id, bool supported, string reason)
+        private static readonly HashSet<EffectId> external = new HashSet<EffectId>();
+        // External marks an effect that another mod already supplies, so the UI can say why it is unavailable.
+        public static void SetCapability(EffectId id, bool supported, string reason, bool handledElsewhere = false)
         {
             if (supported) available.Add(id);
             else available.Remove(id);
+            if (!supported && handledElsewhere) external.Add(id);
+            else external.Remove(id);
             reasons[id] = reason;
         }
+        public static bool HandledElsewhere(EffectId id) => external.Contains(id);
         private static readonly Dictionary<EffectId, Dictionary<ThingDef, string>> unsupported = new Dictionary<EffectId, Dictionary<ThingDef, string>>();
         public static void SetUnsupported(EffectId id, ThingDef def, string reason)
         {

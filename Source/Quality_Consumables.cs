@@ -65,7 +65,8 @@ namespace ConfigurableQuality
                     }
             }
             QualityEffects.SetCapability(effect, stat != null && !conflict,
-                (conflict ? "QEverything.Consumables.StatConflict" : "QEverything.Consumables.StatSupported").Translate().ToString());
+                (conflict ? "QEverything.Consumables.StatConflict" : "QEverything.Consumables.StatSupported").Translate().ToString(),
+                stat?.parts?.Any(p => p is StatPart_Quality) == true);
         }
     }
 

@@ -30,7 +30,14 @@ namespace ConfigurableQuality
             bool power = false, battery = false;
             string powerReason = "QEverything.Energy.PowerAvailable".Translate().ToString();
             string batteryReason = "QEverything.Energy.BatteryAvailable".Translate().ToString();
-            try
+            // Quality Expanded scales the PowerOutput setter and transpiles three battery methods; stacking would double or corrupt them.
+            bool powerOwned = QualityPatchOwnership.HasExternalQualityPatches(AccessTools.PropertySetter(typeof(CompPowerTrader), "PowerOutput"))
+                || QualityPatchOwnership.HasExternalQualityPatches(AccessTools.PropertyGetter(typeof(CompPowerTrader), "PowerOutput"));
+            bool batteryOwned = new[] { "get_AmountCanAccept", "AddEnergy", "CompInspectStringExtra" }
+                .Any(name => QualityPatchOwnership.HasExternalQualityPatches(AccessTools.Method(typeof(CompPowerBattery), name)));
+            if (powerOwned) powerReason = "QEverything.Energy.OtherPower".Translate().ToString();
+            if (batteryOwned) batteryReason = "QEverything.Energy.OtherBattery".Translate().ToString();
+            if (!powerOwned) try
             {
                 var inspect = AccessTools.Method(typeof(CompPowerTrader), "CompInspectStringExtra");
                 if (PatchProcessor.GetOriginalInstructions(inspect).Count(i => i.Calls(consumption)) != 1)
@@ -40,7 +47,7 @@ namespace ConfigurableQuality
                 power = true;
             }
             catch (Exception error) { powerReason = error.Message; Log.Warning("QEverything power effects unavailable: " + error.Message); }
-            try
+            if (!batteryOwned) try
             {
                 // Preflight the whole set before patching: partial capacity accounting is unsafe.
                 int[] maxCounts = { 1, 1, 1, 0, 2, 1 };
@@ -60,10 +67,11 @@ namespace ConfigurableQuality
             catch (Exception error) { batteryReason = error.Message; Log.Warning("QEverything battery effects unavailable: " + error.Message); }
             bool otherGeneration = AccessTools.TypeByName("QualityPower.Patches.Patch_CompPowerTrader_PowerOutput") != null;
             bool otherBattery = AccessTools.TypeByName("QualityPower.Patches.Patch_CompPowerBattery") != null;
-            QualityEffects.SetCapability(EffectId.GeneratorOutput, power && !otherGeneration, otherGeneration ? "QEverything.Energy.OtherGeneration".Translate().ToString() : powerReason);
-            QualityEffects.SetCapability(EffectId.ConsumerDemand, power, powerReason);
-            QualityEffects.SetCapability(EffectId.BatteryCapacity, battery && !otherBattery, otherBattery ? "QEverything.Energy.OtherCapacity".Translate().ToString() : batteryReason);
-            QualityEffects.SetCapability(EffectId.BatteryEfficiency, battery && !otherBattery, otherBattery ? "QEverything.Energy.OtherEfficiency".Translate().ToString() : batteryReason);
+            QualityEffects.SetCapability(EffectId.GeneratorOutput, power && !otherGeneration, otherGeneration ? "QEverything.Energy.OtherGeneration".Translate().ToString() : powerReason, otherGeneration || powerOwned);
+            QualityEffects.SetCapability(EffectId.ConsumerDemand, power, powerReason, powerOwned);
+            // Quality Expanded does not change capacity, but its battery transpilers share the methods this capacity adapter rewrites.
+            QualityEffects.SetCapability(EffectId.BatteryCapacity, battery && !otherBattery, otherBattery ? "QEverything.Energy.OtherCapacity".Translate().ToString() : batteryOwned ? "QEverything.Energy.BatteryShared".Translate().ToString() : batteryReason, otherBattery);
+            QualityEffects.SetCapability(EffectId.BatteryEfficiency, battery && !otherBattery, otherBattery ? "QEverything.Energy.OtherEfficiency".Translate().ToString() : batteryReason, otherBattery || batteryOwned);
             ScopeDefinitions();
             var stat = DefDatabase<StatDef>.GetNamedSilentFail("BatteryCapacity");
             if (stat != null && stat.Worker.GetType().FullName == "BatteryCapacity.StatWorker_BatteryCapacity")

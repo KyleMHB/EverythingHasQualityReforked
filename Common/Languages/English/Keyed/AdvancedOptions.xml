@@ -20,6 +20,7 @@
   <QEverything.Advanced.CustomizeLevels>Customize quality levels</QEverything.Advanced.CustomizeLevels>
   <QEverything.Advanced.AdapterAvailable>Adapter available</QEverything.Advanced.AdapterAvailable>
   <QEverything.Advanced.AdapterUnavailable>Adapter unavailable</QEverything.Advanced.AdapterUnavailable>
+  <QEverything.Advanced.AdapterExternal>Handled by another mod</QEverything.Advanced.AdapterExternal>
   <QEverything.Advanced.Normal>Normal</QEverything.Advanced.Normal>
   <QEverything.Advanced.Legendary>Legendary</QEverything.Advanced.Legendary>
   <QEverything.Advanced.PresetIntro>Review changes to your draft. Nothing is saved until you Save for restart.</QEverything.Advanced.PresetIntro>

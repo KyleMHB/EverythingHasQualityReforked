@@ -40,9 +40,34 @@ class EquipmentChecks
         Console.WriteLine("Adapter composition check passed: internal patches accepted; foreign providers rejected.");
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static int HitPointsFixture(int value) => value;
+
+    static void CheckQualityProviderDetection()
+    {
+        var target = typeof(EquipmentChecks).GetMethod(nameof(HitPointsFixture));
+        void Expect(string owner, bool expected)
+        {
+            var harmony = new Harmony(owner);
+            try
+            {
+                harmony.Patch(target, postfix: new HarmonyMethod(typeof(EquipmentChecks), nameof(Observer)));
+                if (QualityPatchOwnership.HasExternalQualityPatches(target) != expected)
+                    throw new Exception("Quality provider detection for " + owner + ": expected " + expected);
+            }
+            finally { harmony.Unpatch(target, HarmonyPatchType.All, owner); }
+        }
+        Expect("kylemhb.configurablequality.energy", false);  // this mod's own patches never block it
+        Expect("rimworld.qualityexpanded", true);             // Quality Expanded's Harmony ID
+        Expect("some.unrelated.hitpoints", false);            // unrelated patches on a busy method are ignored
+        if (QualityPatchOwnership.HasExternalQualityPatches(target)) throw new Exception("Unpatched method reported a provider.");
+        Console.WriteLine("Quality provider detection passed: Quality Expanded detected; own and unrelated patches ignored.");
+    }
+
     static void Main()
     {
         CheckAdapterComposition();
+        CheckQualityProviderDetection();
         Check(QualityGearContribution.Scale(0f, 1.2f, false), 0f, "zero gear grants no bonus");
         Check(QualityGearContribution.Scale(.2f, 1.2f, false), .24f, "legendary scales only the existing contribution");
         Check(QualityGearContribution.Scale(.2f, .95f, false), .19f, "awful reduces an existing benefit");

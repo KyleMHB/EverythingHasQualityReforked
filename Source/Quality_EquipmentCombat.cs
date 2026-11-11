@@ -34,6 +34,8 @@ namespace ConfigurableQuality
             cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Equipped)), nameof(GearChanged));
             cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Unequipped)), nameof(GearChanged));
             bool gearReady = cacheReady && Patch(harmony, gearMethod, nameof(GearOffset));
+            // Only a foreign patch on the effect's own consumer counts as another mod owning it; shared cache hooks are patched for unrelated reasons.
+            bool gearExternal = !gearReady && gearMethod != null && QualityPatchOwnership.HasExternalPatches(gearMethod);
             if (gearReady)
             {
                 AddGearStats(EffectId.EquipmentWork, false, "WorkSpeedGlobal", "MiningSpeed", "DeepDrillingSpeed", "MiningYield", "SmoothingSpeed", "ResearchSpeed", "AnimalGatherSpeed", "AnimalGatherYield", "PlantWorkSpeed", "PlantHarvestYield", "DrugHarvestYield", "ConstructionSpeed", "ConstructSuccessChance", "FixBrokenDownBuildingSuccessChance", "GeneralLaborSpeed", "GlobalLearningFactor");
@@ -43,7 +45,7 @@ namespace ConfigurableQuality
                 AddGearStats(EffectId.EquipmentSocial, false, "NegotiationAbility", "PawnBeauty", "ArrestSuccessChance", "TradePriceImprovement", "SocialImpact", "TameAnimalChance", "TrainAnimalChance");
                 AddGearStats(EffectId.EquipmentAbilities, false, "PsychicEntropyMax", "PsychicEntropyMaxOffset", "PsychicEntropyRecoveryRate", "PsychicEntropyRecoveryRateOffset", "MeditationFocusGain");
             }
-            foreach (var id in gearIds) RegisterGear(id, gearReady);
+            foreach (var id in gearIds) RegisterGear(id, gearReady, gearExternal);
 
             foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
                 if (def.building?.turretGunDef != null) turretWeapons.Add(def.building.turretGunDef);
@@ -51,12 +53,13 @@ namespace ConfigurableQuality
                 d => d.IsWeapon && !turretWeapons.Contains(d) && d.tools?.Count > 0);
             AddCombatStat(EffectId.RangedCooldown, cacheReady, StatDefOf.RangedWeapon_Cooldown,
                 d => d.IsRangedWeapon && !turretWeapons.Contains(d));
-            bool turretReady = Patch(harmony, AccessTools.Method(typeof(Building_TurretGun), "BurstCooldownTime"), nameof(TurretCooldown));
-            RegisterCombat(EffectId.TurretCooldown, turretReady, null,
+            var turretMethod = AccessTools.Method(typeof(Building_TurretGun), "BurstCooldownTime");
+            bool turretReady = Patch(harmony, turretMethod, nameof(TurretCooldown));
+            RegisterCombat(EffectId.TurretCooldown, turretReady, null, !turretReady && turretMethod != null && QualityPatchOwnership.HasExternalPatches(turretMethod),
                 d => d.thingClass != null && typeof(Building_TurretGun).IsAssignableFrom(d.thingClass) && d.thingClass.Assembly == typeof(Building_TurretGun).Assembly);
             StatDef trap = StatDefOf.TrapMeleeDamage;
             bool trapReady = cacheReady;
-            RegisterCombat(EffectId.TrapDamage, trapReady, trap,
+            RegisterCombat(EffectId.TrapDamage, trapReady, trap, false,
                 d => d.thingClass != null && typeof(Building_TrapDamager).IsAssignableFrom(d.thingClass) && d.thingClass.Assembly == typeof(Building_TrapDamager).Assembly);
             if (trapReady && !Protected(trap))
             {
@@ -97,7 +100,7 @@ namespace ConfigurableQuality
                 if (stat != null && !Protected(stat)) gearStats[stat] = new GearStat { Stat = stat, Effect = effect, LowerIsBetter = lower };
             }
         }
-        private static void RegisterGear(EffectId id, bool ready)
+        private static void RegisterGear(EffectId id, bool ready, bool external)
         {
             int supported = 0;
             foreach (var entry in QualityCatalog.Entries)
@@ -120,16 +123,16 @@ namespace ConfigurableQuality
                     list.AddRange(stats);
                 }
             }
-            QualityEffects.SetCapability(id, ready && supported > 0, Text(!ready ? "Conflict" : supported > 0 ? "GearAvailable" : "NoContribution"));
+            QualityEffects.SetCapability(id, ready && supported > 0, Text(!ready ? "Conflict" : supported > 0 ? "GearAvailable" : "NoContribution"), external);
         }
         private static void AddCombatStat(EffectId id, bool ready, StatDef stat, Func<ThingDef, bool> matches)
         {
-            RegisterCombat(id, ready, stat, matches);
+            RegisterCombat(id, ready, stat, false, matches);
             if (!ready || Protected(stat)) return;
             if (stat.parts == null) stat.parts = new List<StatPart>();
             stat.parts.Add(new StatPart_QualityWeaponCooldown(id) { parentStat = stat });
         }
-        private static void RegisterCombat(EffectId id, bool ready, StatDef stat, Func<ThingDef, bool> matches)
+        private static void RegisterCombat(EffectId id, bool ready, StatDef stat, bool external, Func<ThingDef, bool> matches)
         {
             var active = activeTargets[id] = new HashSet<ThingDef>();
             bool protectedCurve = Protected(stat);
@@ -142,7 +145,9 @@ namespace ConfigurableQuality
                 if (Enabled(id) && HasQuality(entry.Def) && QualityCatalog.Participates(entry.Def)) active.Add(entry.Def);
             }
             QualityEffects.SetCapability(id, ready && !protectedCurve && supported > 0,
-                Text(!ready ? "Conflict" : protectedCurve ? "NativeCurve" : "CombatAvailable"));
+                Text(protectedCurve ? "NativeCurve" : !ready ? "Conflict" : "CombatAvailable"),
+                // Vanilla cooldown and trap stats have no quality part (checked on 1.7), so a protected curve is another mod's.
+                protectedCurve || external);
         }
         internal static float Factor(EffectId id, Thing thing) => thing != null && activeTargets.TryGetValue(id, out var defs) && defs.Contains(thing.def) ? QualityEffects.Factor(id, thing) : 1f;
 

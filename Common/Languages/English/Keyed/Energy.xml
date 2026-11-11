@@ -3,6 +3,9 @@
   <QEverything.Energy.OtherGeneration>QualityPower already supplies generator quality scaling.</QEverything.Energy.OtherGeneration>
   <QEverything.Energy.OtherCapacity>QualityPower already owns battery capacity accounting.</QEverything.Energy.OtherCapacity>
   <QEverything.Energy.OtherEfficiency>QualityPower replaces battery acceptance using its own efficiency calculation.</QEverything.Energy.OtherEfficiency>
+  <QEverything.Energy.OtherPower>Another quality mod (such as Quality Expanded) already scales power output and demand. It keeps control so the bonus is not applied twice.</QEverything.Energy.OtherPower>
+  <QEverything.Energy.OtherBattery>Another quality mod (such as Quality Expanded) already scales battery efficiency. It keeps control so the bonus is not applied twice.</QEverything.Energy.OtherBattery>
+  <QEverything.Energy.BatteryShared>Another quality mod (such as Quality Expanded) already rewrites the native battery methods this effect needs. Capacity stays native to avoid conflicting changes.</QEverything.Energy.BatteryShared>
   <QEverything.Energy.CustomComponent>Custom battery component has unverified energy consumers.</QEverything.Energy.CustomComponent>
   <QEverything.Energy.InvalidCapacity>Battery maximum is not a finite positive value.</QEverything.Energy.InvalidCapacity>
   <QEverything.Energy.CustomRenderer>Custom battery renderer has an unverified capacity display.</QEverything.Energy.CustomRenderer>
