@@ -107,3 +107,22 @@ Each screen is held for four seconds, so frames at 2.5 s, 6.5 s and so on show o
 
 - **2026-11-11, `20261111-162513-cq-ui-s1`:** passed on RimWorld 1.7 with Core, Harmony and this mod. Frames are in `artifacts/ui-check-20261111`. The first run (`20261111-162216-cq-ui-s1`) showed left-aligned selected tabs, an empty Tasty ingredients group, blocked effects listed for every item and lower-case quality names; all four were fixed before this run.
 - **Not covered:** clicking and typing, the dropdown menus, the scope picker, the bulk and details pop-ups, saving from either screen, narrow windows, a large mod list, and RimWorld 1.6.
+
+### Saving from the settings screens
+
+**`cq-settings`** (mod set `default`) checks the save lifecycle of both screens. It opens the real windows and calls the same edit and close methods the buttons call; nothing is clicked or typed, and the game is not restarted. "On disk" means the settings file's stored configuration, parsed and written back out, equals the expected one.
+
+- **`cq.save-simple-page`:** after an edit, closing the mod settings page saves it. Saved and the file equal the edited draft, the running configuration is unchanged and a restart is pending.
+- **`cq.save-editor-guard`:** while the advanced editor is open with unsaved changes, the host dialog's save leaves Saved and the file unchanged.
+- **`cq.save-editor-prompt`:** asking the editor to close with unsaved changes is refused and opens the save, discard or keep editing prompt.
+- **`cq.save-editor-cancel`:** Cancel closes the editor, restores the draft to Saved and writes nothing.
+- **`cq.save-editor-save`:** Save and close closes the editor; Saved and the file equal the edited draft and the running configuration is unchanged.
+
+### 2026-11-11 runs
+
+- **Environment:** RimWorld 1.7, seed 1, branch `codex/quality-merged` at `48856f1` plus the `cq-settings` batch. The installed package was built from the same source before the commit.
+- **Checks:** `check-local.ps1` passed (7 programs) and `check-game-adapters.ps1` passed (19 IL transformations). 1.6 and 1.7 Release builds had 0 warnings.
+- **`20261111-163204-cq-settings-s1-c78d5608`:** 5 of 5 passed.
+- **`20261111-163216-cq-fresh-s1-f34a6908`:** 3 of 3 passed. It reused the `cq-settings` process, whose saved settings differed from defaults by then; the running configuration is fixed at startup, which `cq-settings` itself asserts.
+- **`20261111-163220-cq-progression-s1-0c0b184b`:** 6 of 6 passed. **`20261111-163233-cq-production-s1-f43a1f88`:** 3 of 3 passed. **`20261111-163237-cq-market-s1-559515c8`:** 5 of 5 passed. `release-check` passed.
+- **Not covered:** clicking and typing in either screen, a real restart after saving from the new screens (`cq-progression` shows that a settings file drives behaviour after launch), RimWorld 1.6 in game, narrow windows and a large mod list.

@@ -1,10 +1,10 @@
 [h1]Choose what gets quality and what quality changes[/h1]
 Configurable Quality lets you choose which eligible items have quality, what it does, and whether it changes their price and colony wealth. For RimWorld 1.6 and 1.7.
 
-A fresh installation leaves gameplay unchanged. Configure settings or choose a preset, then save and restart.
+A fresh installation leaves gameplay unchanged. Choose a preset or tick what you want on the settings page, then restart.
 
 [h2]Choose what has quality[/h2]
-Add quality to selected items or leave it off. You can also remove standard quality from eligible vanilla weapons, beds and other items through the Vanilla quality tab. Official expansions are included; other mods' items and custom quality components stay protected.
+Add quality to selected items or leave it off. You can also remove standard quality from eligible vanilla weapons, beds and other items in the advanced editor. Official expansions are included; other mods' items and custom quality components stay protected.
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/quality-choices.png[/img]
 
@@ -27,7 +27,7 @@ Item exceptions override categories, categories override groups, and groups over
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/codex/quality-repair-expansion/docs/images/workshop/quality-rules.png[/img]
 
-Search by name, filter by source mod, select items across searches, review selections, apply rules and undo draft changes.
+In the advanced editor, search by name, filter by source mod, change one item or tick several and change them together, and undo any change.
 
 [h2]Set the strength for every tier[/h2]
 Preview Mild, Medium or Progression, then edit each tier's factor. A durability factor of 2.5 means 2.5 times base HP; a cooldown factor of 0.4 means 40% of base cooldown. Each factor is the multiplier itself.
@@ -72,11 +72,12 @@ Choose the built-in preset, or install the optional [url=https://github.com/Kyle
 [h1]How to use[/h1]
 [list]
 [*]Open Mod settings and choose Configurable Quality.
-[*]Choose Quality assignment, Quality effects, Production, Market value or Vanilla quality.
-[*]Configure rules or preview a preset, then Save and restart RimWorld.
+[*]Choose a preset, or tick the item groups that should get quality and the kinds of effect quality should have.
+[*]Close the window to save, then restart RimWorld.
+[*]For single items, exact numbers, crafting rules and your own presets, open Advanced editor and finish with Save and close.
 [/list]
 
-Save before exporting through a config-sharing mod. Imported settings apply after restart. Batch actions include selected items hidden by filters; Review selected shows the full selection.
+Save before exporting through a config-sharing mod. Imported settings apply after restart. Changes to ticked items include ticked items hidden by the search; Show selection lists them all.
 
 [h1]Requirements and save safety[/h1]
 Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]Harmony[/url], loaded first.

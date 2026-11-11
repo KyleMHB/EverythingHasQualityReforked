@@ -2,7 +2,7 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
-## Unreleased
+## 2026-11-11
 
 ### Changed
 

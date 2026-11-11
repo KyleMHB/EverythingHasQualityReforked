@@ -24,18 +24,17 @@ Subscribe to [Configurable Quality](https://steamcommunity.com/sharedfiles/filed
 ## Usage
 
 1. Open RimWorld's mod settings and select **Configurable Quality**.
-2. Use **Quality assignment** to choose which items receive quality.
-3. Use **Quality effects** to enable effects and choose their targets. Effects start disabled on new installations and upgrades; preview **Mild**, **Medium** or **Progression** for a starting point.
-4. Use **Production** to adjust generated quality and its bounds.
-5. Use **Market value** to disable quality price premiums and discounts globally or for selected groups, categories or items, including eligible vanilla items.
-6. Use **Vanilla quality** only if you want to remove standard quality from selected vanilla item types. Back up your save first.
-7. Save your settings and restart RimWorld to activate them.
+2. Choose a preset (**Mild**, **Medium** or **Progression**) for a starting point, or tick the item groups that should get quality and the kinds of effect quality should have. Effects start off on new installations and upgrades.
+3. Untick **Quality changes market value** to remove quality price premiums and discounts.
+4. Close the window to save, then restart RimWorld to activate the changes.
+5. Open **Advanced editor** for single items, exact effect strengths, crafting rules and quality limits, your own presets, and price rules per group, category or item. Finish with **Save and close**.
+6. Remove standard quality from vanilla item types only if you want to: in the editor's **Items** tab, click the **Has quality** value of a vanilla item. Back up your save first.
 
 ## Configuration
 
 Individual item rules override categories, categories override groups, and groups override the global default. Quality assignment, vanilla removal, effect participation and market value have separate rules. Excluding an item from assignment preserves native quality. Explicit vanilla-removal rules override assignment and remove standard quality only from eligible vanilla items.
 
-Batch actions apply to **selected items**, including selections hidden by current filters. **Select all results** adds the current results to your selection. Use **Review selected** before applying a change and **Undo** to reverse draft edits. **Discard** restores saved settings.
+Changes to ticked items apply to every ticked item, including ones hidden by the current search. **Select all shown** ticks everything listed. Use **Show selection** before applying a change and **Undo** to reverse it. **Discard changes**, under **More…**, restores the saved settings.
 
 Support details for individual items show potentially relevant effects and recorded exclusions. Supported factory and Processor Framework outputs retain their own quality policies. Storage capacity and installed-bionic effects are omitted. See [the settings and removal guide](docs/quality-guide.md) for effect limits, preset details and production rules.
 
