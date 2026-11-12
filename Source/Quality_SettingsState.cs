@@ -208,6 +208,20 @@ namespace ConfigurableQuality
             reasons[id] = reason;
         }
         public static bool HandledElsewhere(EffectId id) => external.Contains(id);
+        private static readonly HashSet<EffectId> takenOver = new HashSet<EffectId>();
+        // The player asked this effect to replace another mod's version. Only an effect that is switched on takes over,
+        // so switching it off hands the other mod's scaling back after a restart.
+        public static bool TakesOver(EffectId id) => QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(id.ToString(), out var effect) && effect.Enabled && effect.TakeOver;
+        public static bool TakenOver(EffectId id) => takenOver.Contains(id);
+        public static void MarkTakenOver(string from, params EffectId[] ids)
+        {
+            var taking = ids.Where(TakesOver).ToArray();
+            foreach (var id in taking) takenOver.Add(id);
+            Log.Message("Configurable Quality: " + string.Join(", ", taking) + " took over from " + from + ".");
+        }
+        internal static bool IsForeignQualityPart(StatPart part) => part != null && part.GetType().Assembly != typeof(QualityEffects).Assembly
+            && (part is StatPart_Quality || part.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0);
+        internal static bool RemoveForeignQualityParts(StatDef stat) => stat?.parts != null && stat.parts.RemoveAll(IsForeignQualityPart) > 0;
         private static readonly Dictionary<EffectId, Dictionary<ThingDef, string>> unsupported = new Dictionary<EffectId, Dictionary<ThingDef, string>>();
         public static void SetUnsupported(EffectId id, ThingDef def, string reason)
         {

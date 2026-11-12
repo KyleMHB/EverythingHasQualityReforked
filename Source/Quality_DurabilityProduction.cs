@@ -21,10 +21,18 @@ namespace ConfigurableQuality
             if (registered) return;
             registered = true;
             // Quality Expanded scales Thing.MaxHitPoints with a Harmony postfix instead of a stat part; stacking would double the bonus.
-            bool hitPointsOwned = QualityPatchOwnership.HasExternalQualityPatches(AccessTools.PropertyGetter(typeof(Thing), nameof(Thing.MaxHitPoints)));
-            Add(EffectId.BuildingDurability, StatDefOf.MaxHitPoints, hitPointsOwned);
-            Add(EffectId.WeaponDurability, StatDefOf.MaxHitPoints, hitPointsOwned);
-            Add(EffectId.ApparelDurability, StatDefOf.MaxHitPoints, hitPointsOwned);
+            var maxHitPoints = AccessTools.PropertyGetter(typeof(Thing), nameof(Thing.MaxHitPoints));
+            bool hitPointsOwned = QualityPatchOwnership.HasExternalQualityPatches(maxHitPoints);
+            // The three durability effects share one stat and one getter, so taking over any of them removes the other mod's scaling for all.
+            bool takeHitPoints = durabilityIds.Any(QualityEffects.TakesOver);
+            if (hitPointsOwned && takeHitPoints)
+            {
+                QualityEffects.MarkTakenOver(string.Join(", ", QualityPatchOwnership.RemoveExternalQualityPatches(maxHitPoints)), durabilityIds);
+                hitPointsOwned = false;
+            }
+            Add(EffectId.BuildingDurability, StatDefOf.MaxHitPoints, hitPointsOwned, takeHitPoints);
+            Add(EffectId.WeaponDurability, StatDefOf.MaxHitPoints, hitPointsOwned, takeHitPoints);
+            Add(EffectId.ApparelDurability, StatDefOf.MaxHitPoints, hitPointsOwned, takeHitPoints);
             Add(EffectId.WorktableSpeed, StatDefOf.WorkTableWorkSpeedFactor);
             Add(EffectId.ResearchSpeed, StatDefOf.ResearchSpeedFactor);
             Add(EffectId.DoorSpeed, StatDefOf.DoorOpenSpeed);
@@ -45,11 +53,13 @@ namespace ConfigurableQuality
             }
         }
 
-        private static void Add(EffectId id, StatDef stat, bool ownedElsewhere = false)
+        private static void Add(EffectId id, StatDef stat, bool ownedElsewhere = false, bool? takeOver = null)
         {
             var eligible = targets[id] = new HashSet<ThingDef>();
+            if ((takeOver ?? QualityEffects.TakesOver(id)) && QualityEffects.RemoveForeignQualityParts(stat))
+                QualityEffects.MarkTakenOver("the quality curve on " + stat.defName, id);
             // A native/custom quality part owns its curve. Unknown quality-named parts are conservatively protected too.
-            bool existingQuality = ownedElsewhere || stat.parts?.Any(p => !(p is StatPart_OptionalQuality) && (p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0)) == true;
+            bool existingQuality = ownedElsewhere || stat.parts?.Any(QualityEffects.IsForeignQualityPart) == true;
             string blockedKey = ownedElsewhere ? "QEverything.Durability.OtherHitPoints" : "QEverything.Durability.NativeCurve";
             foreach (var entry in QualityCatalog.Entries)
             {

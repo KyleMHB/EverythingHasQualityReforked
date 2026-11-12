@@ -4,6 +4,10 @@ Agent read route: read only the newest relevant release; locate older versions b
 
 ## 2026-11-12
 
+### Added
+
+- An effect that another mod already handles can now replace that mod's version. Open the effect in the Advanced editor, switch it on and tick "Use this effect instead of the other mod's", then restart. At startup the mod removes the other mod's quality scaling for that effect, so the bonus applies once. Effects that share game code switch together: the three durability effects, the five equipment effects, generator output with power demand, and the two battery effects. The option starts off. Untick it and restart to hand the effect back.
+
 ### Fixed
 
 - Equipment effects (work, movement, medical, social and psyfocus bonuses on apparel and weapons) were switched off whenever any other mod patched the methods they use, even mods that only cache or tweak performance. They now step aside only for a mod that already scales the same bonus by quality, and the note on the effect names that mod's Harmony ID. Weapon cooldown and trap damage effects are no longer blocked this way either.

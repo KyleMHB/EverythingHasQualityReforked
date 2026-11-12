@@ -36,6 +36,12 @@ namespace ConfigurableQuality
             cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Unequipped)), nameof(GearChanged), shared: true);
             // Only a quality provider on the effect's own consumer counts as another mod owning it.
             string[] gearOwners = QualityPatchOwnership.ExternalQualityOwners(gearMethod);
+            // All gear effects share one method, so taking over any of them removes the other mod's patch for all.
+            if (gearOwners.Length > 0 && gearIds.Any(QualityEffects.TakesOver))
+            {
+                QualityEffects.MarkTakenOver(string.Join(", ", QualityPatchOwnership.RemoveExternalQualityPatches(gearMethod)), gearIds);
+                gearOwners = new string[0];
+            }
             bool gearReady = cacheReady && Patch(harmony, gearMethod, nameof(GearOffset));
             bool gearExternal = !gearReady && gearOwners.Length > 0;
             if (gearReady)
@@ -57,11 +63,14 @@ namespace ConfigurableQuality
             AddCombatStat(EffectId.RangedCooldown, cacheReady, StatDefOf.RangedWeapon_Cooldown,
                 d => d.IsRangedWeapon && !turretWeapons.Contains(d));
             var turretMethod = AccessTools.Method(typeof(Building_TurretGun), "BurstCooldownTime");
+            if (QualityEffects.TakesOver(EffectId.TurretCooldown) && QualityPatchOwnership.HasExternalQualityPatches(turretMethod))
+                QualityEffects.MarkTakenOver(string.Join(", ", QualityPatchOwnership.RemoveExternalQualityPatches(turretMethod)), EffectId.TurretCooldown);
             bool turretReady = Patch(harmony, turretMethod, nameof(TurretCooldown));
             RegisterCombat(EffectId.TurretCooldown, turretReady, null, !turretReady && QualityPatchOwnership.HasExternalQualityPatches(turretMethod),
                 d => d.thingClass != null && typeof(Building_TurretGun).IsAssignableFrom(d.thingClass) && d.thingClass.Assembly == typeof(Building_TurretGun).Assembly);
             StatDef trap = StatDefOf.TrapMeleeDamage;
             bool trapReady = cacheReady;
+            if (trapReady) TakeOverStat(EffectId.TrapDamage, trap);
             RegisterCombat(EffectId.TrapDamage, trapReady, trap, false,
                 d => d.thingClass != null && typeof(Building_TrapDamager).IsAssignableFrom(d.thingClass) && d.thingClass.Assembly == typeof(Building_TrapDamager).Assembly);
             if (trapReady && !Protected(trap))
@@ -75,7 +84,16 @@ namespace ConfigurableQuality
         private static bool Enabled(EffectId id) => QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(id.ToString(), out var effect) && effect.Enabled;
         private static bool HasQuality(ThingDef def) => def.comps?.Any(c => c?.compClass != null && typeof(CompQuality).IsAssignableFrom(c.compClass)) == true;
         private static string ConflictBy(string[] owners) => "QEverything.EquipmentCombat.ConflictBy".Translate(string.Join(", ", owners));
-        private static bool Protected(StatDef stat) => stat != null && (stat.Worker.GetType().Assembly != typeof(StatWorker).Assembly || HasQualityPart(stat) ||
+        // Stats the player forced: their foreign quality parts are gone, and a custom worker or part no longer blocks the effect.
+        private static readonly HashSet<StatDef> forcedStats = new HashSet<StatDef>();
+        private static void TakeOverStat(EffectId id, StatDef stat)
+        {
+            if (!QualityEffects.TakesOver(id) || !Protected(stat)) return;
+            QualityEffects.RemoveForeignQualityParts(stat);
+            forcedStats.Add(stat);
+            QualityEffects.MarkTakenOver("the existing provider of " + stat.defName, id);
+        }
+        private static bool Protected(StatDef stat) => stat != null && !forcedStats.Contains(stat) && (stat.Worker.GetType().Assembly != typeof(StatWorker).Assembly || HasQualityPart(stat) ||
             stat.parts?.Any(p => p.GetType().Assembly != typeof(StatPart).Assembly) == true);
         // Gear offsets reach a pawn stat through base StatWorker.StatOffsetFromGear, which custom workers such as Combat Extended's
         // MoveSpeed and WorkSpeedGlobal still call. Only an existing quality part on the pawn stat would scale them twice.
@@ -134,6 +152,7 @@ namespace ConfigurableQuality
         }
         private static void AddCombatStat(EffectId id, bool ready, StatDef stat, Func<ThingDef, bool> matches)
         {
+            if (ready) TakeOverStat(id, stat);
             RegisterCombat(id, ready, stat, false, matches);
             if (!ready || Protected(stat)) return;
             if (stat.parts == null) stat.parts = new List<StatPart>();

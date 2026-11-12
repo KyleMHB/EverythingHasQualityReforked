@@ -82,7 +82,10 @@ namespace ConfigurableQuality
             float helpHeight = Text.CalcHeight(help, width) + 12;
             string strengthText = choice.Base == CurveBase.Custom ? E("CustomHelp") : E("Strength") + ": " + choice.Strength.ToString("0.00", CultureInfo.InvariantCulture) + "x";
             float strengthHeight = Math.Max(28, Text.CalcHeight(strengthText, width));
-            float height = 38 + helpHeight + 36 + strengthHeight + 4 + 34 + 28 + 7 * 34 + (id == EffectId.LinkedFurniture ? 150 : 0) + 8;
+            // Offered where another mod blocks this effect, and kept visible once taken over so it can be switched back.
+            bool offerTakeOver = QualityEffects.HandledElsewhere(id) || QualityEffects.TakenOver(id) || effect.TakeOver;
+            float takeOverHeight = offerTakeOver ? 34 : 0;
+            float height = 38 + helpHeight + takeOverHeight + 36 + strengthHeight + 4 + 34 + 28 + 7 * 34 + (id == EffectId.LinkedFurniture ? 150 : 0) + 8;
             var color = GUI.color; var anchor = Text.Anchor;
             Widgets.BeginScrollView(rect, ref effectDetailScroll, new Rect(0, 0, rect.width - 18, Math.Max(rect.height, height)));
             // The on/off switch sits with the settings it controls, as well as in the list.
@@ -91,6 +94,15 @@ namespace ConfigurableQuality
             if (old != enabled) EffectCommand(() => Editor.Edit(c => c.Effects[id.ToString()].Enabled = enabled));
             GUI.color = available ? OffColor : WarnColor; Widgets.Label(new Rect(0, 38, width, helpHeight), help); GUI.color = color;
             float y = 38 + helpHeight;
+            if (offerTakeOver)
+            {
+                bool takeOver = effect.TakeOver, wasTaking = takeOver;
+                var takeOverRect = new Rect(0, y, width, 30);
+                Widgets.CheckboxLabeled(takeOverRect, E("TakeOver"), ref takeOver);
+                TooltipHandler.TipRegion(takeOverRect, E("TakeOverTip"));
+                if (wasTaking != takeOver) EffectCommand(() => Editor.Edit(c => c.Effects[id.ToString()].TakeOver = takeOver));
+                y += takeOverHeight;
+            }
             float third = (width - 16) / 3;
             Text.Anchor = TextAnchor.MiddleLeft; Widgets.Label(new Rect(0, y, third, 30), E("Curve") + ": " + E(choice.Base.ToString())); Text.Anchor = anchor;
             if (Widgets.ButtonText(new Rect(third + 8, y, third, 30), E("UseMild"))) PreviewEffectCurve(id, CurveBase.Mild);

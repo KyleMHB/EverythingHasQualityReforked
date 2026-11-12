@@ -31,10 +31,27 @@ namespace ConfigurableQuality
             string powerReason = "QEverything.Energy.PowerAvailable".Translate().ToString();
             string batteryReason = "QEverything.Energy.BatteryAvailable".Translate().ToString();
             // Quality Expanded scales the PowerOutput setter and transpiles three battery methods; stacking would double or corrupt them.
-            bool powerOwned = QualityPatchOwnership.HasExternalQualityPatches(AccessTools.PropertySetter(typeof(CompPowerTrader), "PowerOutput"))
-                || QualityPatchOwnership.HasExternalQualityPatches(AccessTools.PropertyGetter(typeof(CompPowerTrader), "PowerOutput"));
+            var powerTargets = new[] { AccessTools.PropertySetter(typeof(CompPowerTrader), "PowerOutput"), AccessTools.PropertyGetter(typeof(CompPowerTrader), "PowerOutput") };
+            bool powerOwned = powerTargets.Any(QualityPatchOwnership.HasExternalQualityPatches);
             bool batteryOwned = new[] { "get_AmountCanAccept", "AddEnergy", "CompInspectStringExtra" }
                 .Any(name => QualityPatchOwnership.HasExternalQualityPatches(AccessTools.Method(typeof(CompPowerBattery), name)));
+            // Generation and demand share the power methods, and capacity and efficiency share the battery methods, so each pair is taken over together.
+            bool tookPower = false, tookBattery = false;
+            if (QualityEffects.TakesOver(EffectId.GeneratorOutput) || QualityEffects.TakesOver(EffectId.ConsumerDemand))
+            {
+                var owners = powerTargets.SelectMany(QualityPatchOwnership.RemoveExternalQualityPatches).Distinct().ToArray();
+                tookPower = owners.Length > 0;
+                if (tookPower) QualityEffects.MarkTakenOver(string.Join(", ", owners), EffectId.GeneratorOutput, EffectId.ConsumerDemand);
+                powerOwned = false;
+            }
+            if (QualityEffects.TakesOver(EffectId.BatteryCapacity) || QualityEffects.TakesOver(EffectId.BatteryEfficiency))
+            {
+                var owners = batteryMethods.Concat(new[] { "get_StoredEnergy" }).Select(name => (MethodBase)AccessTools.Method(typeof(CompPowerBattery), name))
+                    .SelectMany(QualityPatchOwnership.RemoveExternalQualityPatches).Distinct().ToArray();
+                tookBattery = owners.Length > 0;
+                if (tookBattery) QualityEffects.MarkTakenOver(string.Join(", ", owners), EffectId.BatteryCapacity, EffectId.BatteryEfficiency);
+                batteryOwned = false;
+            }
             if (powerOwned) powerReason = "QEverything.Energy.OtherPower".Translate().ToString();
             if (batteryOwned) batteryReason = "QEverything.Energy.OtherBattery".Translate().ToString();
             if (!powerOwned) try
@@ -65,8 +82,8 @@ namespace ConfigurableQuality
                 battery = true;
             }
             catch (Exception error) { batteryReason = error.Message; Log.Warning("QEverything battery effects unavailable: " + error.Message); }
-            bool otherGeneration = AccessTools.TypeByName("QualityPower.Patches.Patch_CompPowerTrader_PowerOutput") != null;
-            bool otherBattery = AccessTools.TypeByName("QualityPower.Patches.Patch_CompPowerBattery") != null;
+            bool otherGeneration = !tookPower && AccessTools.TypeByName("QualityPower.Patches.Patch_CompPowerTrader_PowerOutput") != null;
+            bool otherBattery = !tookBattery && AccessTools.TypeByName("QualityPower.Patches.Patch_CompPowerBattery") != null;
             QualityEffects.SetCapability(EffectId.GeneratorOutput, power && !otherGeneration, otherGeneration ? "QEverything.Energy.OtherGeneration".Translate().ToString() : powerReason, otherGeneration || powerOwned);
             QualityEffects.SetCapability(EffectId.ConsumerDemand, power, powerReason, powerOwned);
             // Quality Expanded does not change capacity, but its battery transpilers share the methods this capacity adapter rewrites.

@@ -48,6 +48,8 @@ namespace ConfigurableQuality
         }
         internal static void AddStat(StatDef stat, EffectId effect)
         {
+            if (QualityEffects.TakesOver(effect) && QualityEffects.RemoveForeignQualityParts(stat))
+                QualityEffects.MarkTakenOver("the quality curve on " + stat.defName, effect);
             bool conflict = stat?.parts?.Any(p => p is StatPart_Quality || p is QualityConsumableStatPart) == true;
             if (stat != null && !conflict)
             {

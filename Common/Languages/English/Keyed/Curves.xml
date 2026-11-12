@@ -17,6 +17,8 @@
   <QEverything.Curves.UseMedium>Use Medium</QEverything.Curves.UseMedium>
   <QEverything.Curves.On>On</QEverything.Curves.On>
   <QEverything.Curves.Off>Off</QEverything.Curves.Off>
+  <QEverything.Curves.TakeOver>Use this effect instead of the other mod's</QEverything.Curves.TakeOver>
+  <QEverything.Curves.TakeOverTip>Removes the other mod's quality scaling for this effect when the game starts, and applies this one in its place, so the bonus is never applied twice.\n\nThe effect must be switched on. Effects that share the same game code are taken over together: the three durability effects, the five equipment effects, generator output with power demand, and the two battery effects.\n\nNeeds a restart. Untick it and restart to hand the effect back.</QEverything.Curves.TakeOverTip>
   <QEverything.Curves.TierHeader>Quality</QEverything.Curves.TierHeader>
   <QEverything.Curves.FactorHeader>Multiplier</QEverything.Curves.FactorHeader>
   <QEverything.Curves.MeaningBenefit>Compared to Normal</QEverything.Curves.MeaningBenefit>

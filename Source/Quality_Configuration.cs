@@ -179,6 +179,8 @@ namespace ConfigurableQuality
     internal sealed class EffectSettings
     {
         public bool Enabled;
+        // Opt-in: replace another mod's version of this effect instead of stepping aside for it.
+        public bool TakeOver;
         public float[] Factors =
       {
  .95f,.98f,1f,1.02f,1.05f,1.1f,1.2f
@@ -186,6 +188,7 @@ namespace ConfigurableQuality
         public EffectSettings Clone() => new EffectSettings
         {
             Enabled = Enabled,
+            TakeOver = TakeOver,
             Factors = (float[])Factors.Clone()
         };
     }
@@ -252,10 +255,11 @@ namespace ConfigurableQuality
         }
         public string Serialize()
         {
+            // takeOver is written only when set, so presets saved before the option existed still round-trip exactly.
             var root = new XElement("quality", new XAttribute("schema", 1));
             root.Add(new XElement("production", typeof(ProductionSettings).GetFields().Select(f => new XElement(f.Name, Convert.ToString(f.GetValue(Production), CultureInfo.InvariantCulture)))));
             root.Add(WriteRules("assignment", Assignment), WriteRules("participation", Participation));
-            root.Add(new XElement("effects", Effects.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("effect", new XAttribute("id", p.Key), new XAttribute("enabled", p.Value.Enabled), string.Join(",", p.Value.Factors.Select(v => v.ToString("R", CultureInfo.InvariantCulture)))))));
+            root.Add(new XElement("effects", Effects.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("effect", new XAttribute("id", p.Key), new XAttribute("enabled", p.Value.Enabled), p.Value.TakeOver ? new XAttribute("takeOver", true) : null, string.Join(",", p.Value.Factors.Select(v => v.ToString("R", CultureInfo.InvariantCulture)))))));
             root.Add(new XElement("inactive", InactiveLegacy.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new XElement("item", new XAttribute("id", p.Key), p.Value))));
             root.Add(new XElement("legacyBackup", LegacyBackup), new XElement("linkedBonusCap", LinkedFurnitureBonusCap.ToString("R", CultureInfo.InvariantCulture)), new XElement("linkedPenaltyCap", LinkedFurniturePenaltyCap.ToString("R", CultureInfo.InvariantCulture)));
             root.Add(WriteRules("marketValue", MarketValue));
@@ -302,6 +306,7 @@ namespace ConfigurableQuality
                 if (string.IsNullOrEmpty(id)) continue;
                 var settings = result.Effects.TryGetValue(id, out var existing) ? existing : new EffectSettings();
                 if (bool.TryParse((string)effect.Attribute("enabled"), out bool enabled)) settings.Enabled = enabled;
+                if (bool.TryParse((string)effect.Attribute("takeOver"), out bool takeOver)) settings.TakeOver = takeOver;
                 string[] numbers = effect.Value.Split(',');
                 if (numbers.Length == 7) for (int i = 0; i < 7; i++)
                     {
