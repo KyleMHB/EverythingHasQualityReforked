@@ -2,6 +2,13 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
+## 2026-11-12
+
+### Fixed
+
+- Equipment effects (work, movement, medical, social and psyfocus bonuses on apparel and weapons) were switched off whenever any other mod patched the methods they use, even mods that only cache or tweak performance. They now step aside only for a mod that already scales the same bonus by quality, and the note on the effect names that mod's Harmony ID. Weapon cooldown and trap damage effects are no longer blocked this way either.
+- With Combat Extended, apparel work speed and move speed bonuses are scaled again.
+
 ## 2026-11-11
 
 ### Changed
