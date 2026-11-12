@@ -62,7 +62,7 @@ public class EquipmentBatch : Batch
         Curve(ctx, "cq.gear-curve-social", "Apparel_CowboyHat", StatDefOf.SocialImpact);
         Curve(ctx, "cq.gear-curve-toxic", "Apparel_ClothMask", StatDefOf.ToxicEnvironmentResistance);
 
-        // A colonist wearing the hat: its SocialImpact rises by the hat's extra offset when the worn hat's quality changes.
+        // A colonist wearing the hat: the hat's share of SocialImpact grows by the curve when the worn hat's quality changes.
         // The stat is read before SetQuality, so a cached reading would be stale unless the mod's SetQuality hook clears it.
         Kit.RemoveStartingColonists(ctx);
         var area = Kit.Area(ctx, 5, 5);
@@ -71,18 +71,27 @@ public class EquipmentBatch : Batch
         pawn.apparel.Wear(hat, dropReplacedApparel: true);
         ctx.Setup($"Developer put a Normal {hat.LabelShort} on {pawn.LabelShort}");
         yield return Wait.Ticks(2);
+        // SocialImpact multiplies (base + gear offsets) by the pawn's Social skill and capacity factors, so the hat's share of
+        // the stat is its offset times a pawn-specific factor. Comparing against the same pawn without the hat cancels that
+        // factor: (Legendary - bare) / (Normal - bare) must equal the Mild Legendary/Normal ratio.
         var social = StatDefOf.SocialImpact;
-        float before = pawn.GetStatValue(social);
-        float gearNormal = StatWorker.StatOffsetFromGear(hat, social);
+        bool wearing = pawn.apparel.Wearing(hat);
+        float withNormal = pawn.GetStatValue(social);
         hat.GetComp<CompQuality>().SetQuality(QualityCategory.Legendary, ArtGenerationContext.Colony);
         ctx.Setup($"Developer set the worn {hat.LabelShort} to Legendary");
-        float after = pawn.GetStatValue(social);
-        float expected = StatWorker.StatOffsetFromGear(hat, social) - gearNormal;
-        if (Kit.Require(ctx, "cq.gear-worn", (pawn.apparel.Wearing(hat), "the colonist wears the hat"), (expected > 0.001f, $"the Legendary hat adds more than the Normal one ({expected:0.###})")))
-            ctx.Begin("cq.gear-worn").Subject(pawn).Expect("socialImpactRise", expected.ToString("0.###"))
-                .Observe("before", before.ToString("0.###")).Observe("after", after.ToString("0.###"))
-                .Observe("socialImpactRise", (after - before).ToString("0.###")).Observe("cacheable", social.cacheable)
-                .Check(Kit.Near(after - before, expected, 0.002f), "the worn hat's quality change did not reach the colonist's SocialImpact");
+        float withLegendary = pawn.GetStatValue(social);
+        pawn.apparel.Remove(hat);
+        ctx.Setup($"Developer removed the {hat.LabelShort} to read {pawn.LabelShort}'s SocialImpact without it");
+        float bare = pawn.GetStatValue(social);
+        float expected = CqKit.MildBenefit[(int)QualityCategory.Legendary] / CqKit.MildBenefit[(int)QualityCategory.Normal];
+        float normalShare = withNormal - bare;
+        float ratio = normalShare == 0f ? 0f : (withLegendary - bare) / normalShare;
+        if (Kit.Require(ctx, "cq.gear-worn", (wearing, "the colonist wears the hat"), (normalShare > 0.01f, $"the Normal hat raises the colonist's SocialImpact ({normalShare:0.###})")))
+            ctx.Begin("cq.gear-worn").Subject(pawn).Expect("hat share Legendary/Normal", expected.ToString("0.###"))
+                .Observe("bare", bare.ToString("0.####")).Observe("withNormal", withNormal.ToString("0.####"))
+                .Observe("withLegendary", withLegendary.ToString("0.####")).Observe("hat share Legendary/Normal", ratio.ToString("0.###"))
+                .Observe("cacheable", social.cacheable)
+                .Check(Kit.Near(ratio, expected, 0.005f), "the worn hat's quality change did not reach the colonist's SocialImpact in proportion to the curve");
     }
 
     private static void ForeignHooks(BatchContext ctx)
