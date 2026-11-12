@@ -30,12 +30,14 @@ namespace ConfigurableQuality
             registered = true;
             var harmony = new Harmony(Owner);
             MethodInfo gearMethod = AccessTools.Method(typeof(StatWorker), nameof(StatWorker.StatOffsetFromGear));
-            bool cacheReady = Patch(harmony, AccessTools.Method(typeof(CompQuality), nameof(CompQuality.SetQuality)), nameof(QualityChanged), nameof(BeforeQualityChanged));
-            cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Equipped)), nameof(GearChanged));
-            cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Unequipped)), nameof(GearChanged));
+            // Cache hooks only clear stat caches, so they stack with any other mod's patches (Performance Fish patches SetQuality, for example).
+            bool cacheReady = Patch(harmony, AccessTools.Method(typeof(CompQuality), nameof(CompQuality.SetQuality)), nameof(QualityChanged), nameof(BeforeQualityChanged), shared: true);
+            cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Equipped)), nameof(GearChanged), shared: true);
+            cacheReady &= Patch(harmony, AccessTools.Method(typeof(Thing), nameof(Thing.Notify_Unequipped)), nameof(GearChanged), shared: true);
+            // Only a quality provider on the effect's own consumer counts as another mod owning it.
+            string[] gearOwners = QualityPatchOwnership.ExternalQualityOwners(gearMethod);
             bool gearReady = cacheReady && Patch(harmony, gearMethod, nameof(GearOffset));
-            // Only a foreign patch on the effect's own consumer counts as another mod owning it; shared cache hooks are patched for unrelated reasons.
-            bool gearExternal = !gearReady && gearMethod != null && QualityPatchOwnership.HasExternalPatches(gearMethod);
+            bool gearExternal = !gearReady && gearOwners.Length > 0;
             if (gearReady)
             {
                 AddGearStats(EffectId.EquipmentWork, false, "WorkSpeedGlobal", "MiningSpeed", "DeepDrillingSpeed", "MiningYield", "SmoothingSpeed", "ResearchSpeed", "AnimalGatherSpeed", "AnimalGatherYield", "PlantWorkSpeed", "PlantHarvestYield", "DrugHarvestYield", "ConstructionSpeed", "ConstructSuccessChance", "FixBrokenDownBuildingSuccessChance", "GeneralLaborSpeed", "GlobalLearningFactor");
@@ -45,7 +47,8 @@ namespace ConfigurableQuality
                 AddGearStats(EffectId.EquipmentSocial, false, "NegotiationAbility", "PawnBeauty", "ArrestSuccessChance", "TradePriceImprovement", "SocialImpact", "TameAnimalChance", "TrainAnimalChance");
                 AddGearStats(EffectId.EquipmentAbilities, false, "PsychicEntropyMax", "PsychicEntropyMaxOffset", "PsychicEntropyRecoveryRate", "PsychicEntropyRecoveryRateOffset", "MeditationFocusGain");
             }
-            foreach (var id in gearIds) RegisterGear(id, gearReady, gearExternal);
+            string gearConflict = gearExternal ? ConflictBy(gearOwners) : Text("Conflict");
+            foreach (var id in gearIds) RegisterGear(id, gearReady, gearExternal, gearConflict);
 
             foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
                 if (def.building?.turretGunDef != null) turretWeapons.Add(def.building.turretGunDef);
@@ -55,7 +58,7 @@ namespace ConfigurableQuality
                 d => d.IsRangedWeapon && !turretWeapons.Contains(d));
             var turretMethod = AccessTools.Method(typeof(Building_TurretGun), "BurstCooldownTime");
             bool turretReady = Patch(harmony, turretMethod, nameof(TurretCooldown));
-            RegisterCombat(EffectId.TurretCooldown, turretReady, null, !turretReady && turretMethod != null && QualityPatchOwnership.HasExternalPatches(turretMethod),
+            RegisterCombat(EffectId.TurretCooldown, turretReady, null, !turretReady && QualityPatchOwnership.HasExternalQualityPatches(turretMethod),
                 d => d.thingClass != null && typeof(Building_TurretGun).IsAssignableFrom(d.thingClass) && d.thingClass.Assembly == typeof(Building_TurretGun).Assembly);
             StatDef trap = StatDefOf.TrapMeleeDamage;
             bool trapReady = cacheReady;
@@ -71,14 +74,18 @@ namespace ConfigurableQuality
         private static string Text(string suffix) => ("QEverything.EquipmentCombat." + suffix).Translate();
         private static bool Enabled(EffectId id) => QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(id.ToString(), out var effect) && effect.Enabled;
         private static bool HasQuality(ThingDef def) => def.comps?.Any(c => c?.compClass != null && typeof(CompQuality).IsAssignableFrom(c.compClass)) == true;
-        private static bool Protected(StatDef stat) => stat != null && (stat.Worker.GetType().Assembly != typeof(StatWorker).Assembly ||
-            stat.parts?.Any(p => p is StatPart_Quality || p.GetType().Assembly != typeof(StatPart).Assembly || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0) == true);
+        private static string ConflictBy(string[] owners) => "QEverything.EquipmentCombat.ConflictBy".Translate(string.Join(", ", owners));
+        private static bool Protected(StatDef stat) => stat != null && (stat.Worker.GetType().Assembly != typeof(StatWorker).Assembly || HasQualityPart(stat) ||
+            stat.parts?.Any(p => p.GetType().Assembly != typeof(StatPart).Assembly) == true);
+        // Gear offsets reach a pawn stat through base StatWorker.StatOffsetFromGear, which custom workers such as Combat Extended's
+        // MoveSpeed and WorkSpeedGlobal still call. Only an existing quality part on the pawn stat would scale them twice.
+        private static bool HasQualityPart(StatDef stat) => stat?.parts?.Any(p => p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0) == true;
 
-        private static bool Patch(Harmony harmony, MethodInfo method, string postfix, string prefix = null)
+        private static bool Patch(Harmony harmony, MethodInfo method, string postfix, string prefix = null, bool shared = false)
         {
             if (method == null) return false;
-            // Unknown interceptors may already supply quality scaling. Fail closed rather than advertise arbitrary stacking.
-            if (QualityPatchOwnership.HasExternalPatches(method)) return false;
+            // A consumer that another mod already scales by quality is left to that mod; unrelated patches on it compose with this postfix.
+            if (!shared && QualityPatchOwnership.HasExternalQualityPatches(method)) return false;
             try
             {
                 harmony.Patch(method, prefix == null ? null : new HarmonyMethod(typeof(QualityEquipmentCombat), prefix),
@@ -97,10 +104,10 @@ namespace ConfigurableQuality
             foreach (string name in names)
             {
                 var stat = DefDatabase<StatDef>.GetNamedSilentFail(name);
-                if (stat != null && !Protected(stat)) gearStats[stat] = new GearStat { Stat = stat, Effect = effect, LowerIsBetter = lower };
+                if (stat != null && !HasQualityPart(stat)) gearStats[stat] = new GearStat { Stat = stat, Effect = effect, LowerIsBetter = lower };
             }
         }
-        private static void RegisterGear(EffectId id, bool ready, bool external)
+        private static void RegisterGear(EffectId id, bool ready, bool external, string conflict)
         {
             int supported = 0;
             foreach (var entry in QualityCatalog.Entries)
@@ -113,7 +120,7 @@ namespace ConfigurableQuality
                             (stat.LowerIsBetter ? offset.value < 0 : offset.value > 0)) stats.Add(stat);
                 if (!ready || stats.Count == 0)
                 {
-                    QualityEffects.SetUnsupported(id, entry.Def, Text(ready ? "NoContribution" : "Conflict"));
+                    QualityEffects.SetUnsupported(id, entry.Def, ready ? Text("NoContribution") : conflict);
                     continue;
                 }
                 supported++;
@@ -123,7 +130,7 @@ namespace ConfigurableQuality
                     list.AddRange(stats);
                 }
             }
-            QualityEffects.SetCapability(id, ready && supported > 0, Text(!ready ? "Conflict" : supported > 0 ? "GearAvailable" : "NoContribution"), external);
+            QualityEffects.SetCapability(id, ready && supported > 0, !ready ? conflict : Text(supported > 0 ? "GearAvailable" : "NoContribution"), external);
         }
         private static void AddCombatStat(EffectId id, bool ready, StatDef stat, Func<ThingDef, bool> matches)
         {

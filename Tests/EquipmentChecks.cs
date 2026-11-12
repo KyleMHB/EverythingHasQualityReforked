@@ -54,13 +54,15 @@ class EquipmentChecks
                 harmony.Patch(target, postfix: new HarmonyMethod(typeof(EquipmentChecks), nameof(Observer)));
                 if (QualityPatchOwnership.HasExternalQualityPatches(target) != expected)
                     throw new Exception("Quality provider detection for " + owner + ": expected " + expected);
+                var owners = QualityPatchOwnership.ExternalQualityOwners(target);
+                if (expected ? owners.Length != 1 || owners[0] != owner : owners.Length != 0)
+                    throw new Exception("Quality provider naming for " + owner + ": got [" + string.Join(", ", owners) + "]");
             }
             finally { harmony.Unpatch(target, HarmonyPatchType.All, owner); }
         }
         Expect("kylemhb.configurablequality.energy", false);  // this mod's own patches never block it
         Expect("rimworld.qualityexpanded", true);             // Quality Expanded's Harmony ID
-        Expect("some.unrelated.hitpoints", false);            // unrelated patches on a busy method are ignored
-        if (QualityPatchOwnership.HasExternalQualityPatches(target)) throw new Exception("Unpatched method reported a provider.");
+        Expect("some.unrelated.hitpoints", false);            // unrelated patches on a busy method are ignored        if (QualityPatchOwnership.HasExternalQualityPatches(target)) throw new Exception("Unpatched method reported a provider.");
         Console.WriteLine("Quality provider detection passed: Quality Expanded detected; own and unrelated patches ignored.");
     }
 
