@@ -31,6 +31,8 @@ python Tools/cq_test.py run cq-progression --seed 1
 python Tools/cq_test.py run cq-production --seed 1
 python Tools/cq_test.py run cq-market --seed 1
 python Tools/cq_test.py run cq-equipment --seed 1
+python Tools/cq_test.py run cq-provider --seed 1
+python Tools/cq_test.py run cq-takeover --seed 1
 python Tools/cq_test.py close-session
 python Tools/cq_test.py release-check
 ```
@@ -151,3 +153,28 @@ Runs, RimWorld 1.7, seed 1:
 - **2026-11-12, `20261112-202830-cq-equipment-s1-77f9d5ac`** (release, RimWorld 1.7.5005): `cq.gear-worn` failed. SocialImpact went 0.902 → 0.918, a rise of 0.016 against the hat's 0.02 offset difference. The colonist's Social skill factor (about 0.8) scales gear offsets; the first run's colonist had a factor of about 1.1 (rise 0.022), which passed only at the edge of the tolerance. This was a test flaw, not a mod fault, and the case was changed to the share ratio described above.
 - **2026-11-12, `20261112-202948-cq-equipment-s1-a3eaa5f1`** (release, RimWorld 1.7.5005, revised case): 5 of 5 passed. SocialImpact bare 0.8475, Normal hat 0.9323, Legendary hat 0.9492; share ratio 1.2. Release check passed afterwards.
 - **Not covered:** Combat Extended's MoveSpeed and WorkSpeedGlobal workers (CE not installed), a real quality provider and the Harmony-ID note it causes, and the cache refresh for a cacheable gear stat.
+
+### Taking over from another quality mod
+
+`DevTests/QualityProviderProbe.cs` stands in for a mod that already scales by quality. Its Harmony ID, `devtests.qualityprovider`, contains "quality", which is how the mod recognises a provider. A marker settings file switches it on. It doubles every result of `StatWorker.StatOffsetFromGear`, puts a no-op postfix on `Building_TurretGun.BurstCooldownTime`, and adds a vanilla `StatPart_Quality` with Legendary x0.5 to `RangedWeapon_Cooldown`. Both mod sets use the Progression settings (all effects on, Mild factors).
+
+**`cq-provider`** (mod set `provider`, no take-over). The mod steps aside:
+
+- **`cq.provider-gear`:** Equipment Social is handled elsewhere and its note names the probe's Harmony ID. Only the probe patches `StatOffsetFromGear`, and the cowboy hat's SocialImpact offset is 0.2 at every quality.
+- **`cq.provider-stat`:** Ranged cooldown is handled elsewhere, the probe's quality part is still on the stat and the mod added none. The revolver's cooldown relative to Normal is 1 except Legendary 0.5.
+- **`cq.provider-turret`:** Turret cooldown is handled elsewhere; only the probe patches the method.
+
+**`cq-takeover`** (mod set `takeover`: the same settings with `takeOver="true"` on `EquipmentSocial` and `RangedCooldown`):
+
+- **`cq.takeover-gear`:** Equipment Social is available and marked as taken over. The probe's patch is gone from `StatOffsetFromGear` and the mod's is there. The hat's offsets are 0.1 times the Mild benefit curve, so the bonus is applied once.
+- **`cq.takeover-stat`:** Ranged cooldown is available and taken over. The probe's quality part is gone and the mod's part is the only one of its own. The revolver's cooldown relative to Normal follows the Mild cost curve, 1.05/1.02/1/0.98/0.95/0.9/0.8.
+- **`cq.takeover-scoped`:** Turret cooldown, which is not ticked, is still handled elsewhere and the probe's turret patch stays.
+
+The cases are mechanical. They read registration state, Harmony owners and stats on made things.
+
+Runs, RimWorld 1.7, seed 1, working tree on `main` at `9feeed1` plus the take-over change:
+
+- **2026-11-12, `20261112-221636-cq-provider-s1-68b9a289`:** `cq.provider-gear` failed on a test flaw. The game capitalises the first letter of the Harmony ID in the translated note ("Devtests.qualityprovider"), and the case compared it with case. The case now ignores case. The note shows a real mod's ID the same way.
+- **2026-11-12, `20261112-221708-cq-provider-s1-2272e06b`:** 3 of 3 passed. **`20261112-221721-cq-takeover-s1-6f52f750`:** 3 of 3 passed. Hat offsets 0.095/0.098/0.1/0.102/0.105/0.11/0.12 after take-over.
+- **Regression, same build:** `cq-fresh` 3/3, `cq-progression` 6/6, `cq-production` 3/3, `cq-market` 5/5, `cq-equipment` 5/5 and `cq-settings` 5/5 passed. `release-check` passed.
+- **Not covered:** a real quality mod (Quality Expanded, Combat Extended), the hit point, power, battery and consumable take-overs, ticking the box in the editor, and handing an effect back by unticking it.

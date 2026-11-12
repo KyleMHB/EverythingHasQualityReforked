@@ -13,7 +13,9 @@
     "default": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
     "progression": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
     "market": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
-    "equipment": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
+    "equipment": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
+    "provider": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
+    "takeover": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
   },
-  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market", "cq-equipment": "equipment" }
+  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market", "cq-equipment": "equipment", "cq-provider": "provider", "cq-takeover": "takeover" }
 }
