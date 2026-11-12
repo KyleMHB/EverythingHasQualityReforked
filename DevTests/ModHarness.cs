@@ -15,6 +15,6 @@ public sealed class ModHarness : HarnessSettings
     public override string EvidenceFolder => "ConfigurableQualityTests";
     public override string[] RuntimeFolders => new[] { "About", "Common", "1.6", "1.7" };
     public override string[] RuntimeFiles => new[] { "LoadFolders.xml", "LICENSE", "build-manifest.json" };
-    public override IEnumerable<Batch> CreateBatches() => new Batch[] { new FreshBatch(), new ProgressionBatch(), new ProductionBatch(), new MarketBatch(), new UiBatch(), new SettingsSaveBatch() };
-    public override IEnumerable<string> RunAll => new[] { "cq-fresh", "cq-progression", "cq-production", "cq-market" };
+    public override IEnumerable<Batch> CreateBatches() => new Batch[] { new FreshBatch(), new ProgressionBatch(), new ProductionBatch(), new MarketBatch(), new EquipmentBatch(), new UiBatch(), new SettingsSaveBatch() };
+    public override IEnumerable<string> RunAll => new[] { "cq-fresh", "cq-progression", "cq-production", "cq-market", "cq-equipment" };
 }

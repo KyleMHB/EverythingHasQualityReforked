@@ -12,7 +12,8 @@
   "modSets": {
     "default": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
     "progression": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
-    "market": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
+    "market": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
+    "equipment": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"]
   },
-  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market" }
+  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market", "cq-equipment": "equipment" }
 }

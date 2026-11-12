@@ -1,0 +1,3 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Marker read by DevTests/ForeignPatchProbe.cs: installs unrelated foreign patches on the equipment hooks before startup. -->
+<SettingsBlock />

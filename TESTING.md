@@ -30,6 +30,7 @@ python Tools/cq_test.py run cq-fresh --seed 1
 python Tools/cq_test.py run cq-progression --seed 1
 python Tools/cq_test.py run cq-production --seed 1
 python Tools/cq_test.py run cq-market --seed 1
+python Tools/cq_test.py run cq-equipment --seed 1
 python Tools/cq_test.py close-session
 python Tools/cq_test.py release-check
 ```
@@ -126,3 +127,25 @@ Each screen is held for four seconds, so frames at 2.5 s, 6.5 s and so on show o
 - **`20261111-163216-cq-fresh-s1-f34a6908`:** 3 of 3 passed. It reused the `cq-settings` process, whose saved settings differed from defaults by then; the running configuration is fixed at startup, which `cq-settings` itself asserts.
 - **`20261111-163220-cq-progression-s1-0c0b184b`:** 6 of 6 passed. **`20261111-163233-cq-production-s1-f43a1f88`:** 3 of 3 passed. **`20261111-163237-cq-market-s1-559515c8`:** 5 of 5 passed. `release-check` passed.
 - **Not covered:** clicking and typing in either screen, a real restart after saving from the new screens (`cq-progression` shows that a settings file drives behaviour after launch), RimWorld 1.6 in game, narrow windows and a large mod list.
+
+### 2026-11-12 runs
+
+- **Environment:** RimWorld 1.7, seed 1, `main` at `4776180` (the published Workshop release, with the gear-effect conflict fix `0ce17aa`). The deployed package was the one uploaded to the Workshop.
+- **Checks:** 1.6 and 1.7 Release builds had 0 warnings; all eight check programs passed, including `check-game-adapters.ps1` (19 IL transformations).
+- **`20261112-185455-cq-fresh-s1-cbaec1bf`:** 3 of 3 passed. **`20261112-185521-cq-settings-s1-617014d9`:** 5 of 5 passed. **`20261112-185525-cq-progression-s1-cf06b73c`:** 6 of 6 passed. **`20261112-185539-cq-production-s1-f961609d`:** 3 of 3 passed. **`20261112-185543-cq-market-s1-2458b6d4`:** 5 of 5 passed. `release-check` passed.
+- **Not covered by these five:** the equipment effects. `cq-equipment` below was added for that.
+
+### Equipment effects alongside other mods' patches
+
+**`cq-equipment`** (mod set `equipment`: the Progression settings plus `Mod_ConfigurableQuality_ForeignPatchProbe.xml`). The marker makes `DevTests/ForeignPatchProbe.cs`, a `Mod` subclass in the developer DLL, put no-op postfixes owned by `devtests.foreigncache` on `CompQuality.SetQuality`, `Thing.Notify_Equipped`, `Thing.Notify_Unequipped` and `StatWorker.StatOffsetFromGear` before the mod's startup registration. This is the situation from the Steam report (Performance Fish patches `SetQuality`).
+
+- **`cq.foreign-hooks`:** the probe ran before the mod owned any of the four methods, and both now patch each one.
+- **`cq.gear-available`:** Equipment Social and Movement, melee and ranged cooldown and trap damage are available. No gear effect is marked as handled elsewhere or carries the conflict note. Work, Medicine and Abilities are honestly unavailable (no Core item adds those offsets).
+- **`cq.gear-curve-social`/`cq.gear-curve-toxic`:** `StatOffsetFromGear` for `Apparel_CowboyHat` SocialImpact (+0.10) and `Apparel_ClothMask` ToxicEnvironmentResistance (+0.5) follow the Mild curve relative to Normal.
+- **`cq.gear-worn`:** a colonist's SocialImpact rises by the hat's extra offset when the worn hat goes from Normal to Legendary. SocialImpact is not cacheable, so this does not show the `SetQuality` cache refresh working.
+
+Runs, RimWorld 1.7, seed 1:
+
+- **2026-11-12, `20261112-190314-cq-equipment-s1-80507c3e`** (release `4776180`): 5 of 5 passed. Offsets 0.095/0.098/0.1/0.102/0.105/0.11/0.12 and 0.475/…/0.6; worn SocialImpact 1.174 → 1.196.
+- **2026-11-12, `20261112-190355-cq-equipment-s1-ef179f84`** (negative control, pre-fix `a5b8bf0`): 2 failed, 3 skipped. The mod never patched the equip hooks or `StatOffsetFromGear`, all five gear effects were marked as handled elsewhere, and cooldowns and trap damage were unavailable, matching the Steam report. The release package was redeployed afterwards.
+- **Not covered:** Combat Extended's MoveSpeed and WorkSpeedGlobal workers (CE not installed), a real quality provider and the Harmony-ID note it causes, and the cache refresh for a cacheable gear stat.
