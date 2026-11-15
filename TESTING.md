@@ -20,20 +20,14 @@ From the repository root, with the local .NET 10 SDK in `.dotnet/sdk10` for the 
 - **Install comparison:** `devtests.json` sets `runtimeRoot` to `artifacts/package/ConfigurableQuality`, so the installed mod is compared with the built package, not the repository layout.
 - **Install folder:** tests use a separate `Mods/ConfigurableQuality` install with package ID `KyleMHB.ConfigurableQuality`. An older `Cozarkian.QualityFramework` build in `Mods/EverythingHasQualityReforked` can stay in the player's own mod list.
 
-Settings only apply after a restart, so each batch has its own mod set and launch, and `run-all` is refused. Run the batches separately:
+Settings and the probe mods only take effect at startup, so each mod set gets its own launch and `run-all` is refused. Name the batches in one `run`: it groups them by mod set, so `cq-fresh` with `cq-settings` and `cq-progression` with `cq-production` each share a launch (seven launches in all). Leave the session open afterwards; close it only before rebuilding or `release-check`, or when the user wants RimWorld closed:
 
 ```powershell
 .\package-local.ps1 -ManagedPath E:\Steam\steamapps\common\RimWorld -DotNetPath .dotnet\sdk10\dotnet.exe
 .\deploy.ps1 -Destination E:\Steam\steamapps\common\RimWorld\Mods\ConfigurableQuality
 dotnet build DevTests/ConfigurableQuality.DevTests.csproj -c Release
-python Tools/cq_test.py run cq-fresh --seed 1
-python Tools/cq_test.py run cq-progression --seed 1
-python Tools/cq_test.py run cq-production --seed 1
-python Tools/cq_test.py run cq-market --seed 1
-python Tools/cq_test.py run cq-equipment --seed 1
-python Tools/cq_test.py run cq-provider --seed 1
-python Tools/cq_test.py run cq-takeover --seed 1
-python Tools/cq_test.py run cq-mechbionics --seed 1
+python Tools/cq_test.py run cq-fresh cq-settings cq-progression cq-production cq-market cq-equipment cq-provider cq-takeover cq-mechbionics --seed 1
+# Before release only: the open session keeps the developer DLLs in the mod folder.
 python Tools/cq_test.py close-session
 python Tools/cq_test.py release-check
 ```
@@ -202,3 +196,4 @@ Runs, RimWorld 1.7.5005, seed 1, working tree on `main` at `34d3ad3` plus the me
 - **Checks:** 1.6 and 1.7 Release builds had 0 warnings; `check-local.ps1` (7 programs) and `check-game-adapters.ps1` (19 IL transformations) passed. `SettingsChecks` now expects fourteen quality-limit groups, with Prosthetics and bionics capped at Legendary.
 - **Not covered:** gestation (`Bill_ProductionMech.CreateProducts`) and its mechanitor skill roll, the inspect-pane and health-tab quality labels, Elite Bionics Framework hit points, Quality Mechanoids and Quality Bionics Remastered (both 1.6 only), modded recipe workers, and RimWorld 1.6 in game.
 - **Missing-mod label, after the commit:** the grey "Needs Combat Extended" and "Needs Elite Bionics Framework" lines were built (1.6 and 1.7, 0 warnings) and `check-local.ps1` passed (7 programs). `cq-mechbionics` passed 6 of 6 on that build (`20261115-185418-cq-mechbionics-s1-3e4aec19`). With the labels case added and the detail panel no longer repeating the mod name, it passed 7 of 7 (`20261115-190511-cq-mechbionics-s1-95203b60`). Window captures from that run show both labels in grey in the effect list.
+- **Older presets and Progression re-export:** `ParseSnapshot` now adds production fields and effects that a preset predates, at their defaults, before its strict round-trip check. `PresetChecks` loads a preset without `bodyPartQuality` and `MechWork` and finds both off; the existing corruption cases are still rejected. `check-local.ps1` passed (7 programs), and the 1.6 and 1.7 builds had 0 warnings. The Progression settings files were re-exported. On this build `cq-settings` 5/5, `cq-progression` 6/6, `cq-mechbionics` 7/7, `cq-fresh` 3/3, `cq-production` 3/3, `cq-market` 5/5, `cq-equipment` 5/5, `cq-provider` 3/3 and `cq-takeover` 3/3 passed (`20261115-202147` to `20261115-202400`). `release-check` passed.
