@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using HarmonyLib;
 using RimWorld;
@@ -17,6 +18,8 @@ namespace ConfigurableQuality.DevTests;
 //   shoulder's efficiency is the arm's partEfficiency x1.2. Installing a Normal arm over it returns the old arm as a Legendary item
 //   through the vanilla removal path, and the new part reads x1.
 // - After a save and reload, a spawned Masterwork mech and a Good installed arm keep their quality, and the arm still reads x1.02.
+// - The effect list names the missing mods: part hit points reads "Needs Elite Bionics Framework" and the Combat Extended effects
+//   "Needs Combat Extended". The case opens the advanced editor on each for a few seconds so the window can be captured.
 // Mechanical: calls the real installer and removal code on a spawned colonist. Not covered: gestation, Elite Bionics Framework,
 // Quality Mechanoids and Quality Bionics Remastered.
 public class MechBionicsBatch : Batch
@@ -26,7 +29,7 @@ public class MechBionicsBatch : Batch
     public override int MapSize => 75;
     public override IReadOnlyList<PlannedCase> Plan { get; } = new[]
     {
-        "cq.mechbionics-available", "cq.mech-generated", "cq.mech-stat", "cq.bionic-install", "cq.bionic-reinstall", "cq.mechbionics-reload",
+        "cq.mechbionics-available", "cq.mech-generated", "cq.mech-stat", "cq.bionic-install", "cq.bionic-reinstall", "cq.mechbionics-reload", "cq.mechbionics-labels",
     }.Select(id => new PlannedCase(id, Levels.Mechanical)).ToArray();
 
     private static readonly Type EffectId = AccessTools.TypeByName("ConfigurableQuality.EffectId");
@@ -52,6 +55,7 @@ public class MechBionicsBatch : Batch
             yield break;
         }
         Available(ctx);
+        foreach (var wait in Labels(ctx)) yield return wait;
         Mech(ctx);
         Kit.RemoveStartingColonists(ctx);
         var area = Kit.Area(ctx, 5, 5);
@@ -96,6 +100,33 @@ public class MechBionicsBatch : Batch
         var off = on.Where(id => !Call<bool>("Available", id)).ToList();
         c.Check(off.Count == 0 && !Call<bool>("Available", "BionicHitPoints") && Call<bool>("NoItems", "BionicHitPoints"),
             $"mechanoid or part effects are not registered as expected (unavailable: {string.Join(",", off)})");
+    }
+
+    // Opens the advanced editor on each effect and holds it for a few seconds. The engine's own screenshot call writes nothing in 1.7,
+    // so a "label-ready" marker in the run folder lets an outside window capture take the picture for a person to look at.
+    private static IEnumerable<Wait> Labels(BatchContext ctx)
+    {
+        var editorType = AccessTools.TypeByName("ConfigurableQuality.Window_QualityOptions");
+        string pointer = Path.Combine(TestRunner.EvidenceRoot, "active.txt");
+        string runDir = File.Exists(pointer) ? File.ReadAllText(pointer).Trim() : TestRunner.EvidenceRoot;
+        var c = ctx.Begin("cq.mechbionics-labels").Expect("BionicHitPoints", "Needs Elite Bionics Framework").Expect("CeRange", "Needs Combat Extended");
+        var labels = new Dictionary<string, string>();
+        foreach (var (id, search) in new[] { ("BionicHitPoints", "Installed bionics"), ("CeRange", "Combat Extended") })
+        {
+            labels[id] = Call<string>("StatusLabel", id);
+            c.Observe(id, labels[id]);
+            var editor = (Window)Activator.CreateInstance(editorType);
+            Find.WindowStack.Add(editor);
+            AccessTools.Method(editorType, "SelectEffect").Invoke(editor, new[] { Effect(id) });
+            AccessTools.Field(editorType, "effectSearch").SetValue(editor, search);
+            yield return Wait.Frames(5);
+            File.WriteAllText(Path.Combine(runDir, "label-ready-" + id + ".txt"), id);
+            yield return Wait.Seconds(5);
+            Find.WindowStack.TryRemove(editor, false);
+            yield return Wait.Frames(2);
+        }
+        c.Check(labels["BionicHitPoints"] == "Needs Elite Bionics Framework" && labels["CeRange"] == "Needs Combat Extended",
+            "the effect list does not name the missing mod");
     }
 
     private static void Mech(BatchContext ctx)
