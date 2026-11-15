@@ -17,6 +17,7 @@
   <QEverything.Advanced.NoResults>Nothing matches. Try another search.</QEverything.Advanced.NoResults>
   <QEverything.Advanced.AdapterUnavailable>Not available in this game</QEverything.Advanced.AdapterUnavailable>
   <QEverything.Advanced.AdapterNoItems>No items use this in your game</QEverything.Advanced.AdapterNoItems>
+  <QEverything.Advanced.AdapterNeedsMod>Needs {0}</QEverything.Advanced.AdapterNeedsMod>
   <QEverything.Advanced.AdapterExternal>Handled by another mod</QEverything.Advanced.AdapterExternal>
   <QEverything.Advanced.PresetIntro>Check the changes. Nothing is saved until you save.</QEverything.Advanced.PresetIntro>
   <QEverything.Advanced.EnableCount>Effects switched on: {0}</QEverything.Advanced.EnableCount>

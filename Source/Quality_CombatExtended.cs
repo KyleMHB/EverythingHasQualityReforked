@@ -54,7 +54,7 @@ namespace ConfigurableQuality
                 var id = pair.Key;
                 if (!loaded)
                 {
-                    QualityEffects.SetCapability(id, false, Text("CeMissing"), noItems: true);
+                    QualityEffects.SetCapability(id, false, Text("CeMissing"), neededMod: "Combat Extended");
                     continue;
                 }
                 var owned = ceOwned[id] = new List<StatDef>();

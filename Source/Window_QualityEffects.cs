@@ -64,7 +64,7 @@ namespace ConfigurableQuality
                 if (!available)
                 {
                     // Nothing to act on is not a fault, so it is not drawn as a warning.
-                    GUI.color = QualityEffects.NoItems(id) ? Color.gray : WarnColor; Widgets.Label(new Rect(32, y + 30, view.width - 32, 22), A(QualityEffects.StatusKey(id))); GUI.color = color;
+                    GUI.color = QualityEffects.NoItems(id) ? Color.gray : WarnColor; Widgets.Label(new Rect(32, y + 30, view.width - 32, 22), QualityEffects.StatusLabel(id)); GUI.color = color;
                     TooltipHandler.TipRegion(new Rect(32, y, view.width - 32, rowHeight), QualityEffects.Reason(id));
                 }
                 y += rowHeight;
@@ -79,7 +79,7 @@ namespace ConfigurableQuality
             var choice = Editor.ClassifyEffectCurve(id);
             bool cost = QualityEffectCatalog.IsCost(id), available = QualityEffects.Available(id);
             float width = Math.Min(rect.width - 18, 720);
-            string help = (cost ? T("CostCurve") : T("BenefitCurve")) + (available ? "" : "\n" + A(QualityEffects.StatusKey(id)) + ": " + QualityEffects.Reason(id));
+            string help = (cost ? T("CostCurve") : T("BenefitCurve")) + (available ? "" : "\n" + QualityEffects.StatusLabel(id) + ": " + QualityEffects.Reason(id));
             float helpHeight = Text.CalcHeight(help, width) + 12;
             string strengthText = choice.Base == CurveBase.Custom ? E("CustomHelp") : E("Strength") + ": " + choice.Strength.ToString("0.00", CultureInfo.InvariantCulture) + "x";
             float strengthHeight = Math.Max(28, Text.CalcHeight(strengthText, width));

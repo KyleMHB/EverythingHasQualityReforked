@@ -75,7 +75,7 @@ namespace ConfigurableQuality
         // Hit points need Elite Bionics Framework, which gives each body part its own maximum. It is found by name, so it stays optional.
         private static void RegisterHitPoints(Harmony harmony, bool transfer, string missing)
         {
-            if (!ModsConfig.IsActive(EbfId)) { QualityEffects.SetCapability(EffectId.BionicHitPoints, false, Text("NeedsEbf"), noItems: true); return; }
+            if (!ModsConfig.IsActive(EbfId)) { QualityEffects.SetCapability(EffectId.BionicHitPoints, false, Text("NeedsEbf"), neededMod: "Elite Bionics Framework"); return; }
             if (parts.Count == 0) { QualityEffects.SetCapability(EffectId.BionicHitPoints, false, Text("NoParts"), noItems: true); return; }
             if (!transfer) { QualityEffects.SetCapability(EffectId.BionicHitPoints, false, missing); return; }
             // Current EBF builds route every part maximum through EBFEndpoints; older ones only through VanillaExtender. Patching one avoids scaling twice.

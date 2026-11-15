@@ -20,7 +20,7 @@ namespace ConfigurableQuality
             };
             float contentWidth = rect.width - 18;
             var diagnostics = QualityPatchUtility.Statuses.OrderBy(p => p.Key).Select(p => p.Key + ": " + T(p.Value ? "PatchVerified" : "NativeFallback"))
-                .Concat(Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Select(id => T("Effect." + id) + ": " + (QualityEffects.Available(id) ? T("Available") : QualityEffects.NoItems(id) ? A("AdapterNoItems") : T("Unavailable")) + " / " + QualityEffects.Reason(id))).ToArray();
+                .Concat(Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Select(id => T("Effect." + id) + ": " + (QualityEffects.Available(id) ? T("Available") : QualityEffects.NoItems(id) ? QualityEffects.StatusLabel(id) : T("Unavailable")) + " / " + QualityEffects.Reason(id))).ToArray();
             float diagnosticHeight = diagnostics.Sum(text => Math.Max(56, Text.CalcHeight(text, contentWidth)) + 6);
             float baseHeight = 140 + Text.CalcHeight(C("PolicyHelp"), contentWidth) + rows.Sum(row => 40 + (expandedCompatibility.Contains(row.Item1) ? Text.CalcHeight(row.Item3, contentWidth - 12) + 16 : 0)) + 130;
             var view = new Rect(0, 0, contentWidth, Math.Max(rect.height, baseHeight + (showDiagnostics ? 46 + diagnosticHeight : 0) + (showLegacy ? 34 + Draft.InactiveLegacy.Count * 30 : 0)));

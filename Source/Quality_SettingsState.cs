@@ -201,8 +201,13 @@ namespace ConfigurableQuality
         // External marks an effect that another mod already supplies, so the UI can say why it is unavailable.
         private static readonly HashSet<EffectId> noItems = new HashSet<EffectId>();
         // noItems marks an effect whose adapter works but that no loaded item uses, so the UI does not present it as a fault.
-        public static void SetCapability(EffectId id, bool supported, string reason, bool handledElsewhere = false, bool noItems = false)
+        // neededMod names a missing optional mod; such an effect also counts as having nothing to act on.
+        private static readonly Dictionary<EffectId, string> neededMods = new Dictionary<EffectId, string>();
+        public static void SetCapability(EffectId id, bool supported, string reason, bool handledElsewhere = false, bool noItems = false, string neededMod = null)
         {
+            noItems |= neededMod != null;
+            if (!supported && !handledElsewhere && neededMod != null) neededMods[id] = neededMod;
+            else neededMods.Remove(id);
             if (supported) available.Add(id);
             else available.Remove(id);
             if (!supported && handledElsewhere) external.Add(id);
@@ -215,6 +220,10 @@ namespace ConfigurableQuality
         public static bool NoItems(EffectId id) => noItems.Contains(id);
         // Suffix of the label that says why an unavailable effect is off.
         public static string StatusKey(EffectId id) => HandledElsewhere(id) ? "AdapterExternal" : NoItems(id) ? "AdapterNoItems" : "AdapterUnavailable";
+        // The short grey or warning line under an unavailable effect: a missing mod is named, so the player knows what to install.
+        public static string StatusLabel(EffectId id) => neededMods.TryGetValue(id, out var mod)
+            ? "QEverything.Advanced.AdapterNeedsMod".Translate(mod).ToString()
+            : ("QEverything.Advanced." + StatusKey(id)).Translate().ToString();
         private static readonly HashSet<EffectId> takenOver = new HashSet<EffectId>();
         // The player asked this effect to replace another mod's version. Only an effect that is switched on takes over,
         // so switching it off hands the other mod's scaling back after a restart.

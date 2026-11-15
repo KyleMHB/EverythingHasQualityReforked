@@ -16,6 +16,7 @@ Agent read route: read only the newest relevant release; locate older versions b
 ### Changed
 
 - The Compatibility tab lists installed bionics as supported.
+- An effect that needs a mod you don't have now says so in grey under its name, for example "Needs Combat Extended" or "Needs Elite Bionics Framework". It used to read "No items use this in your game".
 
 ### Fixed
 
