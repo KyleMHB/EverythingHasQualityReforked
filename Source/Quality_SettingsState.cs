@@ -250,5 +250,12 @@ namespace ConfigurableQuality
             int tier = (int)quality.Quality;
             return tier >= 0 && tier < effect.Factors.Length ? effect.Factors[tier] : 1f;
         }
+        // For pawns and installed parts, which keep their quality outside CompQuality and outside the item catalog.
+        public static float TierFactor(EffectId id, int tier)
+        {
+            int index = (int)id;
+            if (index < 0 || index >= effectKeys.Length || !QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(effectKeys[index], out var effect) || !effect.Enabled) return 1f;
+            return tier >= 0 && tier < effect.Factors.Length ? effect.Factors[tier] : 1f;
+        }
     }
 }

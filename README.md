@@ -36,7 +36,7 @@ Individual item rules override categories, categories override groups, and group
 
 Changes to ticked items apply to every ticked item, including ones hidden by the current search. **Select all shown** ticks everything listed. Use **Show selection** before applying a change and **Undo** to reverse it. **Discard changes**, under **More…**, restores the saved settings.
 
-Support details for individual items show potentially relevant effects and recorded exclusions. Supported factory and Processor Framework outputs retain their own quality policies. Storage capacity and installed-bionic effects are omitted. See [the settings and removal guide](docs/quality-guide.md) for effect limits, preset details and production rules.
+Support details for individual items show potentially relevant effects and recorded exclusions. Supported factory and Processor Framework outputs retain their own quality policies. Mechanoids and installed body parts can also have quality. Storage capacity effects are omitted. See [the settings and removal guide](docs/quality-guide.md) for effect limits, preset details and production rules.
 
 Settings use RimWorld's standard mod-settings file for config sharing. Save before exporting and restart after importing. See [settings sharing](docs/settings-sharing.md) for the tools used by Progression.
 

@@ -113,7 +113,7 @@ namespace ConfigurableQuality
             EndGesture();
             return Edit(c => { foreach (EffectId id in Enum.GetValues(typeof(EffectId))) c.Effects[id.ToString()].Enabled = false; });
         }
-        private static readonly string[] limitGroups = { "Edifice", "Work", "Security", "Stuff", "Ing", "Tasty", "Meal", "Drug", "Med", "Manuf", "Apparel", "Weapon", "Shell" };
+        private static readonly string[] limitGroups = { "Edifice", "Work", "Security", "Stuff", "Ing", "Tasty", "Meal", "Drug", "Med", "Manuf", "Apparel", "Weapon", "Shell", "BodyPart" };
         public IReadOnlyList<QualityLimit> QualityLimits(bool defaults = false)
         {
             var production = defaults ? new ProductionSettings() : session.Draft.Production;

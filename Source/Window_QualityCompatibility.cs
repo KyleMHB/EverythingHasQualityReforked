@@ -14,7 +14,7 @@ namespace ConfigurableQuality
             {
                 Tuple.Create(A("AvailableEffects"), Enum.GetValues(typeof(EffectId)).Cast<EffectId>().Count(QualityEffects.Available) + "/" + Enum.GetValues(typeof(EffectId)).Length, A("CompatibilitySummary")),
                 Tuple.Create(A("Storage"), A("Omitted"), T("StorageOmitted")),
-                Tuple.Create(A("Bionics"), A("Deferred"), T("BionicsDeferred")),
+                Tuple.Create(A("Bionics"), A("Supported"), T("BionicsSupported")),
                 Tuple.Create(T("ProgressionPreset"), A("PreviewBeforeApplying"), C("ProgressionSummary") + "\n\n" + QualityProgression.HygieneStatus.Translate().ToString() + "\n\n" + string.Join("\n", QualityNativeOutput.Status)),
                 Tuple.Create("Improve This", A("NativePreserved"), T("ImproveThisUnavailable"))
             };

@@ -33,6 +33,7 @@ python Tools/cq_test.py run cq-market --seed 1
 python Tools/cq_test.py run cq-equipment --seed 1
 python Tools/cq_test.py run cq-provider --seed 1
 python Tools/cq_test.py run cq-takeover --seed 1
+python Tools/cq_test.py run cq-mechbionics --seed 1
 python Tools/cq_test.py close-session
 python Tools/cq_test.py release-check
 ```
@@ -179,3 +180,23 @@ Runs, RimWorld 1.7, seed 1, working tree on `main` at `9feeed1` plus the take-ov
 - **Regression, same build:** `cq-fresh` 3/3, `cq-progression` 6/6, `cq-production` 3/3, `cq-market` 5/5, `cq-equipment` 5/5 and `cq-settings` 5/5 passed. `release-check` passed.
 - **2026-11-13, Combat Extended effects added (working tree on `891d56c`):** `cq-fresh` 3/3 (`20261113-091146-cq-fresh-s1-61c4c36a`), `cq-equipment` 5/5 (`20261113-091207-cq-equipment-s1-5f94e14b`) and `cq-settings` 5/5 (`20261113-091220-cq-settings-s1-07209084`) passed on RimWorld 1.7.5005 without Combat Extended. The five Combat Extended effects have not run in game: Combat Extended supports 1.6 only and the local install is 1.7. Their stat names come from its 1.6 definitions (Workshop 2890901044, downloaded 2026-11-13).
 - **Not covered:** a real quality mod (Quality Expanded, Combat Extended), the hit point, power, battery and consumable take-overs, ticking the box in the editor, and handing an effect back by unticking it.
+
+### Mechanoid and installed-part quality
+
+**`cq-mechbionics`** (mod set `mechbionics`: Core, Biotech, Harmony and this mod; settings `DevTests/modsettings/mechbionics`, the Progression settings plus the six mechanoid and installed-part effects on with Mild factors and the Prosthetics and bionics group on):
+
+- **`cq.mechbionics-available`:** the four mechanoid effects and part efficiency are available. Part hit points is unavailable with nothing to act on, because Elite Bionics Framework is not loaded.
+- **`cq.mech-generated`:** a `Mech_Lancer` from `PawnGenerator.GeneratePawn` has a rolled quality.
+- **`cq.mech-stat`:** the mod's contribution to that mech's MoveSpeed is 0.95/1/1.2 at Awful/Normal/Legendary, and to MeleeCooldownFactor (lower is better) 1/0.95, 1, 1/1.2.
+- **`cq.bionic-install`:** `Recipe_InstallArtificialBodyPart.ApplyOnPawn` with a Legendary `BionicArm` and no surgeon (vanilla skips the failure roll) gives the installed part Legendary; the shoulder's `CalculatePartEfficiency` is 1.25 × 1.2.
+- **`cq.bionic-reinstall`:** installing a Normal arm over it returns the old arm through `MedicalRecipesUtility.SpawnThingsFromHediffs` as one Legendary item, and the new part reads 1.25.
+- **`cq.mechbionics-reload`:** after a save and reload, a spawned Masterwork mech and a Good installed arm keep their quality, and the arm reads 1.25 × 1.02.
+
+The cases are mechanical: they call the real generator, installer and removal code and set quality through the mod's comps by reflection.
+
+Runs, RimWorld 1.7.5005, seed 1, working tree on `main` at `34d3ad3` plus the mechanoid and bionics change:
+
+- **2026-11-15, `20261115-162318-cq-mechbionics-s1-164c5ef3`:** 5 of 5 passed (before the reload case was added). **`20261115-162421-cq-mechbionics-s1-5660bd65`:** 6 of 6 passed. MoveSpeed 0.95/1/1.2, MeleeCooldownFactor 1.053/1/0.833, arm efficiency 1.5 installed, 1.25 after reinstall, 1.275 after reload.
+- **Regression, same build:** `cq-fresh` 3/3, `cq-progression` 6/6, `cq-production` 3/3, `cq-market` 5/5, `cq-equipment` 5/5, `cq-provider` 3/3, `cq-takeover` 3/3 and `cq-settings` 5/5 passed (`20261115-162440` to `20261115-162559`). These ran with the six new effects off. `release-check` passed.
+- **Checks:** 1.6 and 1.7 Release builds had 0 warnings; `check-local.ps1` (7 programs) and `check-game-adapters.ps1` (19 IL transformations) passed. `SettingsChecks` now expects fourteen quality-limit groups, with Prosthetics and bionics capped at Legendary.
+- **Not covered:** gestation (`Bill_ProductionMech.CreateProducts`) and its mechanitor skill roll, the inspect-pane and health-tab quality labels, Elite Bionics Framework hit points, Quality Mechanoids and Quality Bionics Remastered (both 1.6 only), modded recipe workers, and RimWorld 1.6 in game.

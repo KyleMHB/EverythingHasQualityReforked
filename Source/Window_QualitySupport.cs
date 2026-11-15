@@ -89,6 +89,9 @@ namespace ConfigurableQuality
                 case EffectId.CeAccuracy:
                 case EffectId.CeMelee:
                 case EffectId.CeApparel: return ModsConfig.IsActive(QualityEquipmentCombat.CombatExtendedId) && QualityEquipmentCombat.CombatExtendedCandidate(id, def);
+                // Mechanoid effects act on pawns, never on catalog items.
+                case EffectId.BionicEfficiency:
+                case EffectId.BionicHitPoints: return QualityBionics.IsPartItem(def);
                 default: return false;
             }
         }

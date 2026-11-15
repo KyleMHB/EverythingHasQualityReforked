@@ -98,7 +98,9 @@ namespace ConfigurableQuality
             stat.parts?.Any(p => p.GetType().Assembly != typeof(StatPart).Assembly) == true);
         // Gear offsets reach a pawn stat through base StatWorker.StatOffsetFromGear, which custom workers such as Combat Extended's
         // MoveSpeed and WorkSpeedGlobal still call. Only an existing quality part on the pawn stat would scale them twice.
-        private static bool HasQualityPart(StatDef stat) => stat?.parts?.Any(p => p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0) == true;
+        // Parts that scale a mech by its own quality (this mod's and Quality Mechanoids' StatPart_MechQuality) never touch gear offsets.
+        private static bool HasQualityPart(StatDef stat) => stat?.parts?.Any(p => p.GetType().Assembly != typeof(QualityEquipmentCombat).Assembly && !QualityMechanoids.IsMechQualityPart(p)
+            && (p is StatPart_Quality || p.GetType().Name.IndexOf("Quality", StringComparison.OrdinalIgnoreCase) >= 0)) == true;
 
         private static bool Patch(Harmony harmony, MethodInfo method, string postfix, string prefix = null, bool shared = false)
         {

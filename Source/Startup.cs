@@ -35,6 +35,8 @@ namespace ConfigurableQuality
             QualityConsumableEffects.Register();
             QualityEquipmentCombat.Register();
             QualityLinkedFurniture.Register();
+            QualityMechanoids.Register();
+            QualityBionics.Register();
             if (QualityCatalog.Entries.Any(e => QualityCatalog.Assigned(e.Def))) QualityNativeOutput.Register();
         }
 

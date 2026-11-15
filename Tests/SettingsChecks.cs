@@ -38,9 +38,9 @@ partial class SettingsChecks
         session.Draft.Production.edificeQuality = true;
         string beforeLimits = session.Draft.Serialize();
         var defaults = editor.QualityLimits(true);
-        Check(defaults.Count == 13 && defaults.Single(r => r.Group == "Ing").Minimum == 2
-            && defaults.Single(r => r.Group == "Weapon").Maximum == 6 && defaults.Single(r => r.Group == "Apparel").Maximum == 6
-            && defaults.Where(r => r.Group != "Weapon" && r.Group != "Apparel").All(r => r.Maximum == 4), "preview uses actual thirteen group defaults");
+        Check(defaults.Count == 14 && defaults.Single(r => r.Group == "Ing").Minimum == 2
+            && defaults.Single(r => r.Group == "Weapon").Maximum == 6 && defaults.Single(r => r.Group == "Apparel").Maximum == 6 && defaults.Single(r => r.Group == "BodyPart").Maximum == 6
+            && defaults.Where(r => r.Group != "Weapon" && r.Group != "Apparel" && r.Group != "BodyPart").All(r => r.Maximum == 4), "preview uses actual fourteen group defaults");
         Check(beforeLimits == session.Draft.Serialize() && !editor.CanUndo, "previewing range defaults does not edit draft");
         Check(!editor.SetQualityLimit("Ing", 5, 4) && !editor.SetQualityLimit("Ing", -1, 4) && !editor.SetQualityLimit("Ing", 0, 7), "range command rejects inverted and invalid tiers");
         foreach (var range in defaults) Check(editor.SetQualityLimit(range.Group, 3, 3), "each range accepts exact equal tier bounds");
@@ -48,7 +48,7 @@ partial class SettingsChecks
         Check(editor.RestoreQualityLimitDefaults() && editor.QualityLimits().Single(r => r.Group == "Ing").Minimum == 2
             && editor.QualityLimits().Single(r => r.Group == "Edifice").Maximum == 4, "restore applies actual defaults");
         Check(session.Draft.Serialize() == beforeLimits, "range restore preserves supply, switches, legacy fields and assignment choices exactly");
-        Check(editor.Undo() && session.Draft.Serialize() == customLimits, "all thirteen default restorations undo together");
+        Check(editor.Undo() && session.Draft.Serialize() == customLimits, "all fourteen default restorations undo together");
         string activeBeforeSave = session.Active.Serialize();
         Check(editor.Save().Count == 0 && session.Saved.Serialize() == customLimits && session.Active.Serialize() == activeBeforeSave, "production Save affects next restart only");
     }

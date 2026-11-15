@@ -21,7 +21,8 @@ namespace ConfigurableQuality
         Meal,
         TastyIngredient,
         Ingredient,
-        Manufactured
+        Manufactured,
+        BodyPart
     }
 
     internal static class QualityDefUtility
@@ -122,6 +123,12 @@ namespace ConfigurableQuality
                 return QualityBucket.Manufactured;
             }
 
+            // Last, so a modded part that already sits in another group keeps that group and its quality.
+            if (QualityBionics.IsPartItem(def))
+            {
+                return QualityBucket.BodyPart;
+            }
+
             return QualityBucket.None;
         }
 
@@ -160,6 +167,8 @@ namespace ConfigurableQuality
                     return ModSettings_ConfigurableQuality.minIngQuality;
                 case QualityBucket.Manufactured:
                     return ModSettings_ConfigurableQuality.minManufQuality;
+                case QualityBucket.BodyPart:
+                    return ModSettings_ConfigurableQuality.minBodyPartQuality;
                 default:
                     return 0;
             }
@@ -200,6 +209,8 @@ namespace ConfigurableQuality
                     return ModSettings_ConfigurableQuality.maxIngQuality;
                 case QualityBucket.Manufactured:
                     return ModSettings_ConfigurableQuality.maxManufQuality;
+                case QualityBucket.BodyPart:
+                    return ModSettings_ConfigurableQuality.maxBodyPartQuality;
                 default:
                     return (int)QualityCategory.Legendary;
             }

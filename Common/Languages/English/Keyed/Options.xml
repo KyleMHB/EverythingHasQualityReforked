@@ -34,7 +34,7 @@
   <QEverything.Options.LinkedBonusCap>Linked furniture total bonus cap (maximum 0.02)</QEverything.Options.LinkedBonusCap>
   <QEverything.Options.LinkedPenaltyCap>Linked furniture total penalty cap (maximum 0.005)</QEverything.Options.LinkedPenaltyCap>
   <QEverything.Options.StorageOmitted>Storage capacity omitted: Adaptive Storage requires coordinated per-instance acceptance, hauling and overflow support; its partial integration would be unsafe.</QEverything.Options.StorageOmitted>
-  <QEverything.Options.BionicsDeferred>Quality does not change installed bionics. Installing or removing a part cannot reliably keep the item's quality, so this mod leaves bionics alone. A dedicated bionics quality mod can run alongside it.</QEverything.Options.BionicsDeferred>
+  <QEverything.Options.BionicsSupported>An installed part keeps the quality of the item it came from, from peg legs to archotech, and the item gets that quality back when the part is removed. Quality scales how well the part works and, with Elite Bionics Framework, its hit points. When Quality Bionics Remastered is loaded, that mod handles installed parts instead.</QEverything.Options.BionicsSupported>
   <QEverything.Options.InactiveLegacy>Per-item choices kept from an older version</QEverything.Options.InactiveLegacy>
   <QEverything.Options.RecoverLegacy>Bring them back as item exceptions…</QEverything.Options.RecoverLegacy>
   <QEverything.Options.ClosePrompt>You have unsaved changes.</QEverything.Options.ClosePrompt>
@@ -52,6 +52,7 @@
   <QEverything.Options.Group.TastyIngredient>Tasty ingredients</QEverything.Options.Group.TastyIngredient>
   <QEverything.Options.Group.Ingredient>Ingredients</QEverything.Options.Group.Ingredient>
   <QEverything.Options.Group.Manufactured>Manufactured goods</QEverything.Options.Group.Manufactured>
+  <QEverything.Options.Group.BodyPart>Prosthetics and bionics</QEverything.Options.Group.BodyPart>
   <QEverything.Options.Effect.BuildingDurability>Building maximum hit points</QEverything.Options.Effect.BuildingDurability>
   <QEverything.Options.Effect.WeaponDurability>Weapon maximum hit points</QEverything.Options.Effect.WeaponDurability>
   <QEverything.Options.Effect.ApparelDurability>Apparel maximum hit points</QEverything.Options.Effect.ApparelDurability>
@@ -78,6 +79,12 @@
   <QEverything.Options.Effect.CeAccuracy>Sights and shot spread</QEverything.Options.Effect.CeAccuracy>
   <QEverything.Options.Effect.CeMelee>Melee penetration and parrying</QEverything.Options.Effect.CeMelee>
   <QEverything.Options.Effect.CeApparel>Worn bulk and night vision</QEverything.Options.Effect.CeApparel>
+  <QEverything.Options.Effect.MechWork>Mechanoid work, movement and carrying</QEverything.Options.Effect.MechWork>
+  <QEverything.Options.Effect.MechCombat>Mechanoid accuracy, damage and attack speed</QEverything.Options.Effect.MechCombat>
+  <QEverything.Options.Effect.MechArmor>Mechanoid armor</QEverything.Options.Effect.MechArmor>
+  <QEverything.Options.Effect.MechEnergy>Mechanoid energy use</QEverything.Options.Effect.MechEnergy>
+  <QEverything.Options.Effect.BionicEfficiency>Installed part efficiency</QEverything.Options.Effect.BionicEfficiency>
+  <QEverything.Options.Effect.BionicHitPoints>Installed part hit points</QEverything.Options.Effect.BionicHitPoints>
   <QEverything.Options.Effect.RangedCooldown>Ranged weapon cooldown</QEverything.Options.Effect.RangedCooldown>
   <QEverything.Options.Effect.TurretCooldown>Turret cooldown</QEverything.Options.Effect.TurretCooldown>
   <QEverything.Options.Effect.TrapDamage>Trap damage</QEverything.Options.Effect.TrapDamage>

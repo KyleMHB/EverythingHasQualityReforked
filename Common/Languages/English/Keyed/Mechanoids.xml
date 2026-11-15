@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Mechanoids.Available>Scales a mechanoid's own stats by its quality. A gestated mech gets its quality from its mechanitor's Crafting skill, and a creative inspiration counts. Other mechs, such as raiders, get a random quality, mostly Normal or Good. Stats where lower is better, such as energy use, are divided by the factor. Mechs made while every mechanoid effect was off have no quality and stay unchanged.</QEverything.Mechanoids.Available>
+  <QEverything.Mechanoids.Partial>Scales the stats in this group that Quality Mechanoids leaves alone. The rest stay with Quality Mechanoids unless this effect takes over.</QEverything.Mechanoids.Partial>
+  <QEverything.Mechanoids.Foreign>Quality Mechanoids already scales these stats. Tick the take-over option to use this mod's strengths instead.</QEverything.Mechanoids.Foreign>
+  <QEverything.Mechanoids.NoMechs>No mechanoids are loaded.</QEverything.Mechanoids.NoMechs>
+  <QEverything.Mechanoids.NoStats>None of these mechanoid stats exist in your game. The energy stats come with Biotech.</QEverything.Mechanoids.NoStats>
+  <QEverything.Mechanoids.Conflict>The hook that gives new mechanoids their quality could not be installed, so this effect is off.</QEverything.Mechanoids.Conflict>
+  <QEverything.Mechanoids.Inspect>Quality: {0}</QEverything.Mechanoids.Inspect>
+  <QEverything.Mechanoids.Explanation>Mech quality ({0}): x{1}</QEverything.Mechanoids.Explanation>
+</LanguageData>

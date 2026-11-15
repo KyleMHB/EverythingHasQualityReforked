@@ -76,6 +76,9 @@ namespace ConfigurableQuality
         public static bool shellQuality;
         public static int minShellQuality;
         public static int maxShellQuality;
+        public static bool bodyPartQuality;
+        public static int minBodyPartQuality;
+        public static int maxBodyPartQuality;
 
         public static bool indivStuff;
         public static bool indivBuildings;

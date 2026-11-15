@@ -156,6 +156,9 @@ namespace ConfigurableQuality
         public bool shellQuality = false;
         public int minShellQuality = 0;
         public int maxShellQuality = 4;
+        public bool bodyPartQuality = false;
+        public int minBodyPartQuality = 0;
+        public int maxBodyPartQuality = 6;
         public bool multSupplyFactor = false;
         public float awfulSupplyFactor = .8f;
         public float poorSupplyFactor = .9f;
@@ -175,7 +178,9 @@ namespace ConfigurableQuality
     {
         BuildingDurability, WeaponDurability, ApparelDurability, WorktableSpeed, ResearchSpeed, DoorSpeed, GeneratorOutput, ConsumerDemand, BatteryCapacity, BatteryEfficiency, FoodNutrition, FoodPoisoningRisk, MedicinePotency, DrugStrength, DrugDuration, EquipmentWork, EquipmentMovement, EquipmentMedicine, EquipmentSocial, EquipmentAbilities, MeleeCooldown, RangedCooldown, TurretCooldown, TrapDamage, LinkedFurniture,
         // Appended so saved settings and the family ranges of the effects above keep their meaning.
-        CeRange, CeHandling, CeAccuracy, CeMelee, CeApparel
+        CeRange, CeHandling, CeAccuracy, CeMelee, CeApparel,
+        MechWork, MechCombat, MechArmor, MechEnergy,
+        BionicEfficiency, BionicHitPoints
     }
 
     internal sealed class EffectSettings
@@ -220,6 +225,8 @@ namespace ConfigurableQuality
         internal void EnablePresetProduction()
         {
             Production = ProductionSettings.LegacyDefaults();
+            // Not a legacy group: old settings never gave parts quality, but a preset that turns on the bionics effects should.
+            Production.bodyPartQuality = true;
             foreach (var pair in GroupFields) Assignment.Groups[pair.Key] = (bool)typeof(ProductionSettings).GetField(pair.Value).GetValue(Production);
         }
         public QualityConfiguration Clone() => new QualityConfiguration
@@ -347,7 +354,7 @@ namespace ConfigurableQuality
             { "Apparel", "apparelQuality" }, { "Drug", "drugQuality" },
             { "Medicine", "medQuality" }, { "Meal", "mealQuality" },
             { "TastyIngredient", "ingredientQuality" }, { "Ingredient", "ingredientQuality" },
-            { "Manufactured", "manufQuality" }
+            { "Manufactured", "manufQuality" }, { "BodyPart", "bodyPartQuality" }
         };
 
         public static QualityConfiguration MigrateLegacyXml(string xml)

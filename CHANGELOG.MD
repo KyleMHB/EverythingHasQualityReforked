@@ -2,6 +2,25 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
+## 2026-11-15
+
+### Added
+
+- Mechanoids can have quality. A gestated mech gets it from its mechanitor's Crafting skill, and a creative inspiration counts. Other mechs, such as raiders, get a random quality, mostly Normal or Good. Saves keep the quality.
+- Four mechanoid effects in their own group: work, movement and carrying; accuracy, damage and attack speed; armor; energy use. They start off. Where a lower number is better, such as energy use, the stat is divided by the factor. Mechs made while every mechanoid effect is off get no quality and stay as they are.
+- Installed body parts keep their quality. Installing a part copies the item's quality into the body, and removing it gives the item back with that quality. This covers every replacement part that returns an item when removed: peg legs, hook hands, prosthetics, bionics and archotech parts, including those from other mods such as EPOE.
+- A "Prosthetics and bionics" item group so these parts can have quality. It starts off; the built-in presets switch it on.
+- Two installed-part effects: part efficiency and part hit points. Hit points need Elite Bionics Framework. The mod looks for it by name, so it is not a dependency.
+- With Quality Mechanoids loaded, the stats it already scales show as handled by that mod. Tick "Use this effect instead of the other mod's" to take them over. With Quality Bionics Remastered loaded, the installed-part effects stay off.
+
+### Changed
+
+- The Compatibility tab lists installed bionics as supported.
+
+### Fixed
+
+- With Quality Mechanoids loaded, equipment effects no longer drop move speed, work speed, carrying capacity and several medical and social bonuses. The mod read Quality Mechanoids' mech scaling as another mod scaling gear by quality.
+
 ## 2026-11-13
 
 ### Added

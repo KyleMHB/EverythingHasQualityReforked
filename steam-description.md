@@ -84,7 +84,7 @@ Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]
 
 The renamed package is KyleMHB.ConfigurableQuality. Select the renamed mod instead of enabling both copies. Existing settings are copied on first launch. The Workshop item is unchanged.
 
-Excluding assignment preserves native quality; only the separate removal rules remove it. Storage-capacity and installed-bionic effects are omitted. Multiplayer is unverified.
+Excluding assignment preserves native quality; only the separate removal rules remove it. Mechanoids and installed body parts can also have quality. Storage-capacity effects are omitted. Multiplayer is unverified.
 
 Quality separates stacks by tier and can increase stack counts. Back up saves before removing quality support or uninstalling. Saved tiers can be lost; reducing durability or battery capacity can clamp excess HP or charge.
 

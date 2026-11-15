@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <QEverything.Bionics.EfficiencyAvailable>Scales how well an installed part works, such as sight, moving or manipulation, by the quality of the item that was installed. Parts need quality first, so turn on the Prosthetics and bionics group. Parts installed before that, or from an item without quality, stay unchanged.</QEverything.Bionics.EfficiencyAvailable>
+  <QEverything.Bionics.HitPointsAvailable>Scales an installed part's maximum hit points through Elite Bionics Framework. This stacks with the framework's own part bonuses.</QEverything.Bionics.HitPointsAvailable>
+  <QEverything.Bionics.NeedsEbf>Needs Elite Bionics Framework, which is not loaded. Without it, a body part has no hit point maximum of its own to scale.</QEverything.Bionics.NeedsEbf>
+  <QEverything.Bionics.EbfChanged>Elite Bionics Framework is loaded, but its part hit point method was not found. This version of the framework may not be supported.</QEverything.Bionics.EbfChanged>
+  <QEverything.Bionics.Foreign>Quality Bionics Remastered already scales installed parts. This effect stays off so quality is not applied twice.</QEverything.Bionics.Foreign>
+  <QEverything.Bionics.NoParts>No replacement body parts are loaded.</QEverything.Bionics.NoParts>
+  <QEverything.Bionics.TransferConflict>The surgery hooks that carry an item's quality into the body could not be installed, so this effect is off.</QEverything.Bionics.TransferConflict>
+  <QEverything.Bionics.Conflict>The part efficiency calculation could not be patched, so this effect is off.</QEverything.Bionics.Conflict>
+</LanguageData>

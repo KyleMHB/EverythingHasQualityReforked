@@ -12,6 +12,7 @@
   <QEverything.Advanced.Equipment>Equipment bonuses</QEverything.Advanced.Equipment>
   <QEverything.Advanced.Combat>Combat</QEverything.Advanced.Combat>
   <QEverything.Advanced.CombatExtended>Combat Extended</QEverything.Advanced.CombatExtended>
+  <QEverything.Advanced.Mechanoids>Mechanoids</QEverything.Advanced.Mechanoids>
   <QEverything.Advanced.Furniture>Linked furniture</QEverything.Advanced.Furniture>
   <QEverything.Advanced.NoResults>Nothing matches. Try another search.</QEverything.Advanced.NoResults>
   <QEverything.Advanced.AdapterUnavailable>Not available in this game</QEverything.Advanced.AdapterUnavailable>
@@ -27,6 +28,7 @@
   <QEverything.Advanced.Bionics>Installed bionics</QEverything.Advanced.Bionics>
   <QEverything.Advanced.Omitted>Not included</QEverything.Advanced.Omitted>
   <QEverything.Advanced.Deferred>Not supported</QEverything.Advanced.Deferred>
+  <QEverything.Advanced.Supported>Supported</QEverything.Advanced.Supported>
   <QEverything.Advanced.PreviewBeforeApplying>Shows changes before applying</QEverything.Advanced.PreviewBeforeApplying>
   <QEverything.Advanced.NativePreserved>Its own quality is kept</QEverything.Advanced.NativePreserved>
   <QEverything.Advanced.Ingredients>Ingredients and worktables</QEverything.Advanced.Ingredients>
@@ -75,6 +77,7 @@
   <QEverything.Advanced.Limit.Apparel>Apparel</QEverything.Advanced.Limit.Apparel>
   <QEverything.Advanced.Limit.Weapon>Weapons</QEverything.Advanced.Limit.Weapon>
   <QEverything.Advanced.Limit.Shell>Shells</QEverything.Advanced.Limit.Shell>
+  <QEverything.Advanced.Limit.BodyPart>Prosthetics and bionics</QEverything.Advanced.Limit.BodyPart>
   <QEverything.Advanced.CompatibilitySummary>How many of this mod's effects can work with the mods you have loaded. An effect that works may still not fit every modded item.</QEverything.Advanced.CompatibilitySummary>
   <QEverything.Advanced.AvailableEffects>Effects that work in this game</QEverything.Advanced.AvailableEffects>
   <QEverything.Advanced.HideLegacy>Hide old settings</QEverything.Advanced.HideLegacy>
