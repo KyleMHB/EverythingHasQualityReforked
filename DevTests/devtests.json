@@ -16,7 +16,8 @@
     "equipment": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
     "provider": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
     "takeover": ["brrainz.harmony", "ludeon.rimworld", "kylemhb.configurablequality"],
-    "mechbionics": ["brrainz.harmony", "ludeon.rimworld", "ludeon.rimworld.biotech", "kylemhb.configurablequality"]
+    "mechbionics": ["brrainz.harmony", "ludeon.rimworld", "ludeon.rimworld.biotech", "kylemhb.configurablequality"],
+    "ebf": ["brrainz.harmony", "ludeon.rimworld", "unlimitedhugs.hugslib", "v1024.ebframework", "kylemhb.configurablequality"]
   },
-  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market", "cq-equipment": "equipment", "cq-provider": "provider", "cq-takeover": "takeover", "cq-mechbionics": "mechbionics" }
+  "batchModSets": { "cq-progression": "progression", "cq-production": "progression", "cq-market": "market", "cq-equipment": "equipment", "cq-provider": "provider", "cq-takeover": "takeover", "cq-mechbionics": "mechbionics", "cq-ebf": "ebf" }
 }

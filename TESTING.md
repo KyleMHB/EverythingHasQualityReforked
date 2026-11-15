@@ -26,7 +26,7 @@ Settings and the probe mods only take effect at startup, so each mod set gets it
 .\package-local.ps1 -ManagedPath E:\Steam\steamapps\common\RimWorld -DotNetPath .dotnet\sdk10\dotnet.exe
 .\deploy.ps1 -Destination E:\Steam\steamapps\common\RimWorld\Mods\ConfigurableQuality
 dotnet build DevTests/ConfigurableQuality.DevTests.csproj -c Release
-python Tools/cq_test.py run cq-fresh cq-settings cq-progression cq-production cq-market cq-equipment cq-provider cq-takeover cq-mechbionics --seed 1
+python Tools/cq_test.py run cq-fresh cq-settings cq-progression cq-production cq-market cq-equipment cq-provider cq-takeover cq-mechbionics cq-ebf --seed 1
 # Before release only: the open session keeps the developer DLLs in the mod folder.
 python Tools/cq_test.py close-session
 python Tools/cq_test.py release-check
@@ -184,6 +184,7 @@ Runs, RimWorld 1.7, seed 1, working tree on `main` at `9feeed1` plus the take-ov
 - **`cq.mech-stat`:** the mod's contribution to that mech's MoveSpeed is 0.95/1/1.2 at Awful/Normal/Legendary, and to MeleeCooldownFactor (lower is better) 1/0.95, 1, 1/1.2.
 - **`cq.bionic-install`:** `Recipe_InstallArtificialBodyPart.ApplyOnPawn` with a Legendary `BionicArm` and no surgeon (vanilla skips the failure roll) gives the installed part Legendary; the shoulder's `CalculatePartEfficiency` is 1.25 × 1.2.
 - **`cq.bionic-reinstall`:** installing a Normal arm over it returns the old arm through `MedicalRecipesUtility.SpawnThingsFromHediffs` as one Legendary item, and the new part reads 1.25.
+- **`cq.mech-gestated`:** with the colonist bound as mechanitor, `Bill_ProductionMech.CreateProducts` for `Mech_Lifter` is called twenty times at Crafting 0 and twenty at Crafting 20 (no gestator building, inspiration ended first). Every mech gets a quality, and the skill-20 mean is at least two levels above the skill-0 mean.
 - **`cq.mechbionics-labels`:** the effect list's grey line reads "Needs Elite Bionics Framework" for part hit points and "Needs Combat Extended" for the Combat Extended effects. The case opens the advanced editor on each for five seconds and writes a `label-ready-<effect>.txt` marker into the run folder. RimWorld 1.7's own screenshot call writes nothing, so a person who wants pictures runs a window capture outside the game that watches for those markers.
 - **`cq.mechbionics-reload`:** after a save and reload, a spawned Masterwork mech and a Good installed arm keep their quality, and the arm reads 1.25 × 1.02.
 
@@ -194,6 +195,17 @@ Runs, RimWorld 1.7.5005, seed 1, working tree on `main` at `34d3ad3` plus the me
 - **2026-11-15, `20261115-162318-cq-mechbionics-s1-164c5ef3`:** 5 of 5 passed (before the reload case was added). **`20261115-162421-cq-mechbionics-s1-5660bd65`:** 6 of 6 passed. MoveSpeed 0.95/1/1.2, MeleeCooldownFactor 1.053/1/0.833, arm efficiency 1.5 installed, 1.25 after reinstall, 1.275 after reload.
 - **Regression, same build:** `cq-fresh` 3/3, `cq-progression` 6/6, `cq-production` 3/3, `cq-market` 5/5, `cq-equipment` 5/5, `cq-provider` 3/3, `cq-takeover` 3/3 and `cq-settings` 5/5 passed (`20261115-162440` to `20261115-162559`). These ran with the six new effects off. `release-check` passed.
 - **Checks:** 1.6 and 1.7 Release builds had 0 warnings; `check-local.ps1` (7 programs) and `check-game-adapters.ps1` (19 IL transformations) passed. `SettingsChecks` now expects fourteen quality-limit groups, with Prosthetics and bionics capped at Legendary.
-- **Not covered:** gestation (`Bill_ProductionMech.CreateProducts`) and its mechanitor skill roll, the inspect-pane and health-tab quality labels, Elite Bionics Framework hit points, Quality Mechanoids and Quality Bionics Remastered (both 1.6 only), modded recipe workers, and RimWorld 1.6 in game.
+- **Not covered:** gestation through a real gestator and a creative inspiration, the inspect-pane and health-tab quality labels, Quality Mechanoids and Quality Bionics Remastered (both 1.6 only), modded recipe workers, and RimWorld 1.6 in game.
 - **Missing-mod label, after the commit:** the grey "Needs Combat Extended" and "Needs Elite Bionics Framework" lines were built (1.6 and 1.7, 0 warnings) and `check-local.ps1` passed (7 programs). `cq-mechbionics` passed 6 of 6 on that build (`20261115-185418-cq-mechbionics-s1-3e4aec19`). With the labels case added and the detail panel no longer repeating the mod name, it passed 7 of 7 (`20261115-190511-cq-mechbionics-s1-95203b60`). Window captures from that run show both labels in grey in the effect list.
 - **Older presets and Progression re-export:** `ParseSnapshot` now adds production fields and effects that a preset predates, at their defaults, before its strict round-trip check. `PresetChecks` loads a preset without `bodyPartQuality` and `MechWork` and finds both off; the existing corruption cases are still rejected. `check-local.ps1` passed (7 programs), and the 1.6 and 1.7 builds had 0 warnings. The Progression settings files were re-exported. On this build `cq-settings` 5/5, `cq-progression` 6/6, `cq-mechbionics` 7/7, `cq-fresh` 3/3, `cq-production` 3/3, `cq-market` 5/5, `cq-equipment` 5/5, `cq-provider` 3/3 and `cq-takeover` 3/3 passed (`20261115-202147` to `20261115-202400`). `release-check` passed.
+- **Gestation case, 2026-11-15, `20261115-205825-cq-mechbionics-s1-96077e40`:** 8 of 8 passed. Skill 0 gave Awful and Poor (one Normal), mean 0.5; skill 20 gave Good to Masterwork, mean 3.85.
+
+**`cq-ebf`** (mod set `ebf`: Harmony, Core, HugsLib, Elite Bionics Framework and this mod, in that order; settings `DevTests/modsettings/ebf`, a copy of the `mechbionics` settings with part hit points on at Mild):
+
+- **`cq.ebf-available`:** the part hit points effect is available with Elite Bionics Framework loaded.
+- **`cq.ebf-hitpoints`:** a bionic arm installed through `Recipe_InstallArtificialBodyPart.ApplyOnPawn`; `EBF.EBFEndpoints.GetMaxHealthWithEBF(shoulder, pawn, false)` at Awful, Normal and Legendary reads the Normal value x0.95 and x1.2, rounded.
+
+Runs, RimWorld 1.7.5005, seed 1, Elite Bionics Framework from Workshop item 1665403571 (its v1.6 folder) and HugsLib 818773962:
+
+- **2026-11-15, `20261115-205906-cq-ebf-s1-eca57846`:** 2 of 2 passed. Shoulder maximum 28 / 30 / 36 at Awful, Normal, Legendary.
+- **Not covered:** the health tab, damage against the new maximum, EBF's older `VanillaExtender` route, and RimWorld 1.6.

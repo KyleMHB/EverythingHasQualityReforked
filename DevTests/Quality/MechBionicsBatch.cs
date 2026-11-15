@@ -20,8 +20,11 @@ namespace ConfigurableQuality.DevTests;
 // - After a save and reload, a spawned Masterwork mech and a Good installed arm keep their quality, and the arm still reads x1.02.
 // - The effect list names the missing mods: part hit points reads "Needs Elite Bionics Framework" and the Combat Extended effects
 //   "Needs Combat Extended". The case opens the advanced editor on each for a few seconds so the window can be captured.
-// Mechanical: calls the real installer and removal code on a spawned colonist. Not covered: gestation, Elite Bionics Framework,
-// Quality Mechanoids and Quality Bionics Remastered.
+// - A gestated mech takes its quality from the mechanitor's Crafting skill: twenty lifters from a skill-20 mechanitor average at
+//   least two quality levels above twenty from a skill-0 one, and every one has a quality.
+// Mechanical: calls the real installer and removal code on a spawned colonist, and the gestation bill's own CreateProducts with
+// the colonist bound as its mechanitor (no gestator building). Not covered: Elite Bionics Framework (batch cq-ebf), creative
+// inspiration, Quality Mechanoids and Quality Bionics Remastered.
 public class MechBionicsBatch : Batch
 {
     public override string Id => "cq-mechbionics";
@@ -29,7 +32,7 @@ public class MechBionicsBatch : Batch
     public override int MapSize => 75;
     public override IReadOnlyList<PlannedCase> Plan { get; } = new[]
     {
-        "cq.mechbionics-available", "cq.mech-generated", "cq.mech-stat", "cq.bionic-install", "cq.bionic-reinstall", "cq.mechbionics-reload", "cq.mechbionics-labels",
+        "cq.mechbionics-available", "cq.mech-generated", "cq.mech-stat", "cq.bionic-install", "cq.bionic-reinstall", "cq.mechbionics-reload", "cq.mechbionics-labels", "cq.mech-gestated",
     }.Select(id => new PlannedCase(id, Levels.Mechanical)).ToArray();
 
     private static readonly Type EffectId = AccessTools.TypeByName("ConfigurableQuality.EffectId");
@@ -37,15 +40,15 @@ public class MechBionicsBatch : Batch
     private static readonly Type MechComp = AccessTools.TypeByName("ConfigurableQuality.CompMechQuality");
     private static readonly Type PartComp = AccessTools.TypeByName("ConfigurableQuality.HediffComp_PartQuality");
 
-    private static object Effect(string id) => Enum.Parse(EffectId, id);
-    private static T Call<T>(string method, string id) => (T)AccessTools.Method(Effects, method).Invoke(null, new[] { Effect(id) });
+    internal static object Effect(string id) => Enum.Parse(EffectId, id);
+    internal static T Call<T>(string method, string id) => (T)AccessTools.Method(Effects, method).Invoke(null, new[] { Effect(id) });
     private static readonly float[] Mild = CqKit.MildBenefit;
 
     private static ThingComp MechQuality(Pawn pawn) => pawn.AllComps.FirstOrDefault(c => c.GetType() == MechComp);
-    private static HediffComp PartQuality(Hediff hediff) => (hediff as HediffWithComps)?.comps?.FirstOrDefault(c => c.GetType() == PartComp);
-    private static bool IsSet(object comp) => comp != null && (bool)AccessTools.Property(comp.GetType(), "IsSet").GetValue(comp);
-    private static QualityCategory Quality(object comp) => (QualityCategory)AccessTools.Property(comp.GetType(), "Quality").GetValue(comp);
-    private static void SetQuality(object comp, QualityCategory quality) => AccessTools.Property(comp.GetType(), "Quality").SetValue(comp, quality);
+    internal static HediffComp PartQuality(Hediff hediff) => (hediff as HediffWithComps)?.comps?.FirstOrDefault(c => c.GetType() == PartComp);
+    internal static bool IsSet(object comp) => comp != null && (bool)AccessTools.Property(comp.GetType(), "IsSet").GetValue(comp);
+    internal static QualityCategory Quality(object comp) => (QualityCategory)AccessTools.Property(comp.GetType(), "Quality").GetValue(comp);
+    internal static void SetQuality(object comp, QualityCategory quality) => AccessTools.Property(comp.GetType(), "Quality").SetValue(comp, quality);
 
     public override IEnumerable<Wait> Segment(int index, BatchContext ctx)
     {
@@ -61,6 +64,7 @@ public class MechBionicsBatch : Batch
         var area = Kit.Area(ctx, 5, 5);
         var pawn = Kit.Worker(ctx, area.CenterCell, WorkTypeDefOf.Hauling);
         yield return Wait.Ticks(2);
+        Gestated(ctx, pawn);
         if (!Bionics(ctx, pawn)) yield break;
 
         var mech = PawnGenerator.GeneratePawn(new PawnGenerationRequest(DefDatabase<PawnKindDef>.GetNamed("Mech_Lancer"), Faction.OfPlayer));
@@ -155,6 +159,41 @@ public class MechBionicsBatch : Batch
             .Check(move.Zip(expectMove, (a, b) => Kit.Near(a, b, 0.001f)).All(x => x) && cooldown.Zip(expectCooldown, (a, b) => Kit.Near(a, b, 0.001f)).All(x => x),
                 "the mech's own stats do not follow its quality");
         mech.Destroy();
+    }
+
+    // The quality roll is random, so it compares averages: the skill-0 and skill-20 curves sit about four levels apart.
+    private static void Gestated(BatchContext ctx, Pawn mechanitor)
+    {
+        const int count = 20;
+        var recipe = DefDatabase<RecipeDef>.AllDefsListForReading.FirstOrDefault(r => r.ProducedThingDef?.defName == "Mech_Lifter")
+            ?? DefDatabase<RecipeDef>.AllDefsListForReading.FirstOrDefault(r => r.ProducedThingDef?.race?.IsMechanoid == true);
+        var crafting = mechanitor.skills?.GetSkill(SkillDefOf.Crafting);
+        if (!Kit.Require(ctx, "cq.mech-gestated", (recipe != null, "a mech gestation recipe exists"), (crafting != null, "the colonist has a Crafting skill"))) return;
+        if (mechanitor.Inspired) mechanitor.mindState.inspirationHandler.EndInspiration(mechanitor.Inspiration);
+        var bound = AccessTools.Field(typeof(Bill_Mech), "boundPawn");
+        List<QualityCategory?> Gestate(int level)
+        {
+            crafting.Level = level;
+            var results = new List<QualityCategory?>();
+            for (int i = 0; i < count; i++)
+            {
+                var bill = new Bill_ProductionMech(recipe);
+                bound.SetValue(bill, mechanitor);
+                var mech = bill.CreateProducts() as Pawn;
+                var comp = mech == null ? null : MechQuality(mech);
+                results.Add(IsSet(comp) ? Quality(comp) : (QualityCategory?)null);
+                if (mech != null && !mech.Destroyed) mech.Destroy();
+            }
+            return results;
+        }
+        var low = Gestate(0);
+        var high = Gestate(20);
+        ctx.Setup($"Developer bound {mechanitor.LabelShort} to {count * 2} {recipe.ProducedThingDef.label} gestation bills, Crafting 0 then 20, and called CreateProducts");
+        double Mean(List<QualityCategory?> q) => q.Where(x => x != null).Select(x => (double)(int)x.Value).DefaultIfEmpty(-1).Average();
+        string Show(List<QualityCategory?> q) => string.Join(",", q.Select(x => x?.ToString() ?? "unset"));
+        ctx.Begin("cq.mech-gestated").Subject(mechanitor).Expect("quality", "set on every mech").Expect("mean, skill 20 minus skill 0", "at least 2 levels")
+            .Observe("skill 0", Show(low)).Observe("skill 20", Show(high)).Observe("means", $"{Mean(low):0.##} / {Mean(high):0.##}")
+            .Check(low.Concat(high).All(x => x != null) && Mean(high) - Mean(low) >= 2, "a gestated mech's quality does not follow its mechanitor's Crafting skill");
     }
 
     private static bool Bionics(BatchContext ctx, Pawn pawn)
