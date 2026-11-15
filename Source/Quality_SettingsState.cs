@@ -220,6 +220,7 @@ namespace ConfigurableQuality
         public static bool NoItems(EffectId id) => noItems.Contains(id);
         // Suffix of the label that says why an unavailable effect is off.
         public static string StatusKey(EffectId id) => HandledElsewhere(id) ? "AdapterExternal" : NoItems(id) ? "AdapterNoItems" : "AdapterUnavailable";
+        public static bool NeedsMod(EffectId id) => neededMods.ContainsKey(id);
         // The short grey or warning line under an unavailable effect: a missing mod is named, so the player knows what to install.
         public static string StatusLabel(EffectId id) => neededMods.TryGetValue(id, out var mod)
             ? "QEverything.Advanced.AdapterNeedsMod".Translate(mod).ToString()

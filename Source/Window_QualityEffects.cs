@@ -79,7 +79,7 @@ namespace ConfigurableQuality
             var choice = Editor.ClassifyEffectCurve(id);
             bool cost = QualityEffectCatalog.IsCost(id), available = QualityEffects.Available(id);
             float width = Math.Min(rect.width - 18, 720);
-            string help = (cost ? T("CostCurve") : T("BenefitCurve")) + (available ? "" : "\n" + QualityEffects.StatusLabel(id) + ": " + QualityEffects.Reason(id));
+            string help = (cost ? T("CostCurve") : T("BenefitCurve")) + (available ? "" : "\n" + (QualityEffects.NeedsMod(id) ? "" : QualityEffects.StatusLabel(id) + ": ") + QualityEffects.Reason(id));
             float helpHeight = Text.CalcHeight(help, width) + 12;
             string strengthText = choice.Base == CurveBase.Custom ? E("CustomHelp") : E("Strength") + ": " + choice.Strength.ToString("0.00", CultureInfo.InvariantCulture) + "x";
             float strengthHeight = Math.Max(28, Text.CalcHeight(strengthText, width));
