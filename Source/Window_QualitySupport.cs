@@ -84,6 +84,11 @@ namespace ConfigurableQuality
                 case EffectId.TurretCooldown: return Is<Building_TurretGun>(def);
                 case EffectId.TrapDamage: return Is<Building_TrapDamager>(def);
                 case EffectId.LinkedFurniture: return def.defName == "Dresser" || def.defName == "EndTable";
+                case EffectId.CeRange:
+                case EffectId.CeHandling:
+                case EffectId.CeAccuracy:
+                case EffectId.CeMelee:
+                case EffectId.CeApparel: return ModsConfig.IsActive(QualityEquipmentCombat.CombatExtendedId) && QualityEquipmentCombat.CombatExtendedCandidate(id, def);
                 default: return false;
             }
         }

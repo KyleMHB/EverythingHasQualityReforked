@@ -173,7 +173,9 @@ namespace ConfigurableQuality
 
     internal enum EffectId
     {
-        BuildingDurability, WeaponDurability, ApparelDurability, WorktableSpeed, ResearchSpeed, DoorSpeed, GeneratorOutput, ConsumerDemand, BatteryCapacity, BatteryEfficiency, FoodNutrition, FoodPoisoningRisk, MedicinePotency, DrugStrength, DrugDuration, EquipmentWork, EquipmentMovement, EquipmentMedicine, EquipmentSocial, EquipmentAbilities, MeleeCooldown, RangedCooldown, TurretCooldown, TrapDamage, LinkedFurniture
+        BuildingDurability, WeaponDurability, ApparelDurability, WorktableSpeed, ResearchSpeed, DoorSpeed, GeneratorOutput, ConsumerDemand, BatteryCapacity, BatteryEfficiency, FoodNutrition, FoodPoisoningRisk, MedicinePotency, DrugStrength, DrugDuration, EquipmentWork, EquipmentMovement, EquipmentMedicine, EquipmentSocial, EquipmentAbilities, MeleeCooldown, RangedCooldown, TurretCooldown, TrapDamage, LinkedFurniture,
+        // Appended so saved settings and the family ranges of the effects above keep their meaning.
+        CeRange, CeHandling, CeAccuracy, CeMelee, CeApparel
     }
 
     internal sealed class EffectSettings

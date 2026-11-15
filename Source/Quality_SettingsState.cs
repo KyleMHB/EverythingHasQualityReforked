@@ -199,15 +199,22 @@ namespace ConfigurableQuality
         private static readonly HashSet<EffectId> available = new HashSet<EffectId>();
         private static readonly HashSet<EffectId> external = new HashSet<EffectId>();
         // External marks an effect that another mod already supplies, so the UI can say why it is unavailable.
-        public static void SetCapability(EffectId id, bool supported, string reason, bool handledElsewhere = false)
+        private static readonly HashSet<EffectId> noItems = new HashSet<EffectId>();
+        // noItems marks an effect whose adapter works but that no loaded item uses, so the UI does not present it as a fault.
+        public static void SetCapability(EffectId id, bool supported, string reason, bool handledElsewhere = false, bool noItems = false)
         {
             if (supported) available.Add(id);
             else available.Remove(id);
             if (!supported && handledElsewhere) external.Add(id);
             else external.Remove(id);
+            if (!supported && !handledElsewhere && noItems) QualityEffects.noItems.Add(id);
+            else QualityEffects.noItems.Remove(id);
             reasons[id] = reason;
         }
         public static bool HandledElsewhere(EffectId id) => external.Contains(id);
+        public static bool NoItems(EffectId id) => noItems.Contains(id);
+        // Suffix of the label that says why an unavailable effect is off.
+        public static string StatusKey(EffectId id) => HandledElsewhere(id) ? "AdapterExternal" : NoItems(id) ? "AdapterNoItems" : "AdapterUnavailable";
         private static readonly HashSet<EffectId> takenOver = new HashSet<EffectId>();
         // The player asked this effect to replace another mod's version. Only an effect that is switched on takes over,
         // so switching it off hands the other mod's scaling back after a restart.

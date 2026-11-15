@@ -2,6 +2,24 @@
 
 Agent read route: read only the newest relevant release; locate older versions by searching `^## ` headings.
 
+## 2026-11-13
+
+### Added
+
+- Five effects for Combat Extended, in their own group. They start off, and say "Needs Combat Extended" when it is not loaded.
+  - Ranged weapon range.
+  - Aim time, reload, sway and recoil.
+  - Sights and shot spread.
+  - Melee penetration and parrying.
+  - Worn bulk and night vision.
+- A higher factor is always better in these effects. Where a lower number is better, such as recoil, the mod divides the stat by the factor.
+- Combat Extended already scales the last three groups by quality, so they show as handled by another mod. Tick "Use this effect instead of the other mod's" and restart to use this mod's strengths for them.
+
+### Changed
+
+- An effect with nothing to act on now reads "No items use this in your game" in grey instead of the warning "Not available in this game". Equipment work and medical bonuses show this in a game with no gear that gives those bonuses, and switch on when a mod adds such gear.
+- The Compatibility tab says installed bionics are "Not supported" instead of "Deferred", with a plainer explanation.
+
 ## 2026-11-12
 
 ### Added

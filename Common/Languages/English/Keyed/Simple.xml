@@ -17,7 +17,7 @@
   <QEverything.Simple.EffectsHeading>What quality changes</QEverything.Simple.EffectsHeading>
   <QEverything.Simple.EffectsHint>Better quality gives a bigger bonus. Strength follows the preset.</QEverything.Simple.EffectsHint>
   <QEverything.Simple.EffectCount>{0} of {1} on</QEverything.Simple.EffectCount>
-  <QEverything.Simple.EffectUnavailable>{0} of these cannot work in this game or are handled by another mod. Switching them on has no effect.</QEverything.Simple.EffectUnavailable>
+  <QEverything.Simple.EffectUnavailable>{0} of these have nothing to act on in your game or are handled by another mod. Switching them on has no effect.</QEverything.Simple.EffectUnavailable>
   <QEverything.Simple.MarketValue>Quality changes market value</QEverything.Simple.MarketValue>
   <QEverything.Simple.MarketValueTip>When off, quality no longer raises or lowers an item's price or your colony wealth. Other mods' own quality pricing is left alone.</QEverything.Simple.MarketValueTip>
   <QEverything.Simple.OpenEditor>Advanced editor…</QEverything.Simple.OpenEditor>

@@ -34,7 +34,7 @@
   <QEverything.Options.LinkedBonusCap>Linked furniture total bonus cap (maximum 0.02)</QEverything.Options.LinkedBonusCap>
   <QEverything.Options.LinkedPenaltyCap>Linked furniture total penalty cap (maximum 0.005)</QEverything.Options.LinkedPenaltyCap>
   <QEverything.Options.StorageOmitted>Storage capacity omitted: Adaptive Storage requires coordinated per-instance acceptance, hauling and overflow support; its partial integration would be unsafe.</QEverything.Options.StorageOmitted>
-  <QEverything.Options.BionicsDeferred>Installed bionics deferred: framework-free surgery and removal do not preserve exact item quality and body-part identity safely.</QEverything.Options.BionicsDeferred>
+  <QEverything.Options.BionicsDeferred>Quality does not change installed bionics. Installing or removing a part cannot reliably keep the item's quality, so this mod leaves bionics alone. A dedicated bionics quality mod can run alongside it.</QEverything.Options.BionicsDeferred>
   <QEverything.Options.InactiveLegacy>Per-item choices kept from an older version</QEverything.Options.InactiveLegacy>
   <QEverything.Options.RecoverLegacy>Bring them back as item exceptions…</QEverything.Options.RecoverLegacy>
   <QEverything.Options.ClosePrompt>You have unsaved changes.</QEverything.Options.ClosePrompt>
@@ -73,6 +73,11 @@
   <QEverything.Options.Effect.EquipmentSocial>Equipment: social, trade and animals</QEverything.Options.Effect.EquipmentSocial>
   <QEverything.Options.Effect.EquipmentAbilities>Equipment: abilities and psycasting</QEverything.Options.Effect.EquipmentAbilities>
   <QEverything.Options.Effect.MeleeCooldown>Melee weapon cooldown</QEverything.Options.Effect.MeleeCooldown>
+  <QEverything.Options.Effect.CeRange>Ranged weapon range</QEverything.Options.Effect.CeRange>
+  <QEverything.Options.Effect.CeHandling>Aim time, reload, sway and recoil</QEverything.Options.Effect.CeHandling>
+  <QEverything.Options.Effect.CeAccuracy>Sights and shot spread</QEverything.Options.Effect.CeAccuracy>
+  <QEverything.Options.Effect.CeMelee>Melee penetration and parrying</QEverything.Options.Effect.CeMelee>
+  <QEverything.Options.Effect.CeApparel>Worn bulk and night vision</QEverything.Options.Effect.CeApparel>
   <QEverything.Options.Effect.RangedCooldown>Ranged weapon cooldown</QEverything.Options.Effect.RangedCooldown>
   <QEverything.Options.Effect.TurretCooldown>Turret cooldown</QEverything.Options.Effect.TurretCooldown>
   <QEverything.Options.Effect.TrapDamage>Trap damage</QEverything.Options.Effect.TrapDamage>

@@ -8,7 +8,7 @@ using Verse;
 
 namespace ConfigurableQuality
 {
-    internal static class QualityEquipmentCombat
+    internal static partial class QualityEquipmentCombat
     {
         private const string Owner = "kylemhb.configurablequality";
         private sealed class GearStat
@@ -78,6 +78,7 @@ namespace ConfigurableQuality
                 if (trap.parts == null) trap.parts = new List<StatPart>();
                 trap.parts.Add(new StatPart_QualityTrapDamage { parentStat = trap });
             }
+            RegisterCombatExtended(cacheReady);
         }
 
         private static string Text(string suffix) => ("QEverything.EquipmentCombat." + suffix).Translate();
@@ -148,7 +149,7 @@ namespace ConfigurableQuality
                     list.AddRange(stats);
                 }
             }
-            QualityEffects.SetCapability(id, ready && supported > 0, !ready ? conflict : Text(supported > 0 ? "GearAvailable" : "NoContribution"), external);
+            QualityEffects.SetCapability(id, ready && supported > 0, !ready ? conflict : Text(supported > 0 ? "GearAvailable" : "NoContribution"), external, ready && supported == 0);
         }
         private static void AddCombatStat(EffectId id, bool ready, StatDef stat, Func<ThingDef, bool> matches)
         {
@@ -173,7 +174,7 @@ namespace ConfigurableQuality
             QualityEffects.SetCapability(id, ready && !protectedCurve && supported > 0,
                 Text(protectedCurve ? "NativeCurve" : !ready ? "Conflict" : "CombatAvailable"),
                 // Vanilla cooldown and trap stats have no quality part (checked on 1.7), so a protected curve is another mod's.
-                protectedCurve || external);
+                protectedCurve || external, ready && !protectedCurve && supported == 0);
         }
         internal static float Factor(EffectId id, Thing thing) => thing != null && activeTargets.TryGetValue(id, out var defs) && defs.Contains(thing.def) ? QualityEffects.Factor(id, thing) : 1f;
 
@@ -198,6 +199,7 @@ namespace ConfigurableQuality
             if (activeTargets.TryGetValue(EffectId.TrapDamage, out var traps) && traps.Contains(gear.def)) StatDefOf.TrapMeleeDamage.Worker.ClearCacheForThing(gear);
             if (activeTargets.TryGetValue(EffectId.MeleeCooldown, out var melee) && melee.Contains(gear.def)) StatDefOf.MeleeWeapon_CooldownMultiplier.Worker.ClearCacheForThing(gear);
             if (activeTargets.TryGetValue(EffectId.RangedCooldown, out var ranged) && ranged.Contains(gear.def)) StatDefOf.RangedWeapon_Cooldown.Worker.ClearCacheForThing(gear);
+            ClearCombatExtended(gear);
             if (!activeGear.ContainsKey(gear.def)) return;
             var holder = gear.ParentHolder;
             ClearWearer(gear, holder is Pawn_EquipmentTracker equipment ? equipment.pawn : holder is Pawn_ApparelTracker apparel ? apparel.pawn : null);

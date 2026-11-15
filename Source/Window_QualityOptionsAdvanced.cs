@@ -19,7 +19,7 @@ namespace ConfigurableQuality
         internal static string Family(EffectId id)
         {
             int n = (int)id;
-            return n < 3 ? "Durability" : n < 6 ? "Work" : n < 10 ? "Power" : n < 15 ? "Consumables" : n < 20 ? "Equipment" : n < 24 ? "Combat" : "Furniture";
+            return n < 3 ? "Durability" : n < 6 ? "Work" : n < 10 ? "Power" : n < 15 ? "Consumables" : n < 20 ? "Equipment" : n < 24 ? "Combat" : n < 25 ? "Furniture" : "CombatExtended";
         }
 
         private void OpenPreset(bool progression, bool medium = false) => OpenBuiltinPreset(progression, medium, RememberPreset);

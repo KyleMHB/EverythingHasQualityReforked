@@ -29,7 +29,7 @@ namespace ConfigurableQuality
                 QualityEffects.SetUnsupported(EffectId.LinkedFurniture, def, supported ? null : unsupported);
                 if (supported) sources.Add(def, kind);
             }
-            QualityEffects.SetCapability(EffectId.LinkedFurniture, sources.Count > 0, "QEverything.Furniture.Support".Translate());
+            QualityEffects.SetCapability(EffectId.LinkedFurniture, sources.Count > 0, "QEverything.Furniture.Support".Translate(), noItems: sources.Count == 0);
             active = sources.Count > 0 && QualitySettingsState.ActiveSnapshot.Effects.TryGetValue(nameof(EffectId.LinkedFurniture), out var effect) && effect.Enabled;
             if (!active) return;
             var harmony = new Harmony("kylemhb.configurablequality.furniture");

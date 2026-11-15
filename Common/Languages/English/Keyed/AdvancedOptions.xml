@@ -11,9 +11,11 @@
   <QEverything.Advanced.Consumables>Food, medicine and drugs</QEverything.Advanced.Consumables>
   <QEverything.Advanced.Equipment>Equipment bonuses</QEverything.Advanced.Equipment>
   <QEverything.Advanced.Combat>Combat</QEverything.Advanced.Combat>
+  <QEverything.Advanced.CombatExtended>Combat Extended</QEverything.Advanced.CombatExtended>
   <QEverything.Advanced.Furniture>Linked furniture</QEverything.Advanced.Furniture>
   <QEverything.Advanced.NoResults>Nothing matches. Try another search.</QEverything.Advanced.NoResults>
   <QEverything.Advanced.AdapterUnavailable>Not available in this game</QEverything.Advanced.AdapterUnavailable>
+  <QEverything.Advanced.AdapterNoItems>No items use this in your game</QEverything.Advanced.AdapterNoItems>
   <QEverything.Advanced.AdapterExternal>Handled by another mod</QEverything.Advanced.AdapterExternal>
   <QEverything.Advanced.PresetIntro>Check the changes. Nothing is saved until you save.</QEverything.Advanced.PresetIntro>
   <QEverything.Advanced.EnableCount>Effects switched on: {0}</QEverything.Advanced.EnableCount>
@@ -24,7 +26,7 @@
   <QEverything.Advanced.Storage>Storage capacity</QEverything.Advanced.Storage>
   <QEverything.Advanced.Bionics>Installed bionics</QEverything.Advanced.Bionics>
   <QEverything.Advanced.Omitted>Not included</QEverything.Advanced.Omitted>
-  <QEverything.Advanced.Deferred>Deferred</QEverything.Advanced.Deferred>
+  <QEverything.Advanced.Deferred>Not supported</QEverything.Advanced.Deferred>
   <QEverything.Advanced.PreviewBeforeApplying>Shows changes before applying</QEverything.Advanced.PreviewBeforeApplying>
   <QEverything.Advanced.NativePreserved>Its own quality is kept</QEverything.Advanced.NativePreserved>
   <QEverything.Advanced.Ingredients>Ingredients and worktables</QEverything.Advanced.Ingredients>
