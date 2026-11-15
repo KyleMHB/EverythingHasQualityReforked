@@ -334,12 +334,27 @@ namespace ConfigurableQuality
         public static QualityConfiguration ParseSnapshot(string xml)
         {
             if (string.IsNullOrWhiteSpace(xml)) throw new FormatException("Empty preset.");
-            var original = XElement.Parse(xml);
-            var parsed = Parse(xml);
+            var original = AddLaterFields(XElement.Parse(xml));
+            var parsed = Parse(original.ToString(SaveOptions.DisableFormatting));
             if (parsed.RecoveredFields.Count != 0 || parsed.Validate().Count != 0 ||
                 !XNode.DeepEquals(SnapshotShape(original), SnapshotShape(XElement.Parse(parsed.Serialize()))))
                 throw new FormatException("Preset is incomplete, invalid or contains unsupported data. Restore a complete preset file.");
             return parsed;
+        }
+        // A preset saved before a production field or effect existed lacks it. Adding it at its fresh-install default (group off,
+        // effect off) keeps the player's preset loadable; a section that is missing outright is still treated as damage.
+        private static XElement AddLaterFields(XElement root)
+        {
+            var defaults = XElement.Parse(new QualityConfiguration().Serialize());
+            var production = root.Element("production");
+            if (production != null)
+                foreach (var field in defaults.Element("production").Elements())
+                    if (production.Element(field.Name) == null) production.Add(new XElement(field));
+            var effects = root.Element("effects");
+            if (effects != null)
+                foreach (var effect in defaults.Element("effects").Elements())
+                    if (!effects.Elements().Any(e => (string)e.Attribute("id") == (string)effect.Attribute("id"))) effects.Add(new XElement(effect));
+            return root;
         }
         // Comparing the parser's complete round trip catches every silently skipped, duplicated,
         // defaulted or unknown schema field without introducing a second value parser.

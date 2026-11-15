@@ -58,6 +58,12 @@ partial class SettingsChecks
                 File.WriteAllText(Path.Combine(directory, "broken.xml"), xml.ToString());
                 Rejected(() => store.Load("broken"), "strict snapshot rejects silent recovery or omitted data");
             }
+            var older = XElement.Parse(original);
+            older.Element("production").Element("bodyPartQuality").Remove();
+            older.Element("effects").Elements().First(e => (string)e.Attribute("id") == "MechWork").Remove();
+            File.WriteAllText(Path.Combine(directory, "older.xml"), older.ToString());
+            var upgraded = store.Load("older");
+            Check(!upgraded.Production.bodyPartQuality && !upgraded.Effects["MechWork"].Enabled, "preset saved before a field or effect existed loads with it at its default");
             foreach (string bad in new[] { "", "<quality>", "<quality schema='1'/>" })
             { File.WriteAllText(Path.Combine(directory, "broken.xml"), bad); Rejected(() => store.Load("broken"), "strict snapshot rejects incomplete document"); }
             source.Effects["FutureEffect"].Factors[0] = float.NaN;

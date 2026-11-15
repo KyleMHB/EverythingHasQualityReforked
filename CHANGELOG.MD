@@ -16,10 +16,12 @@ Agent read route: read only the newest relevant release; locate older versions b
 ### Changed
 
 - The Compatibility tab lists installed bionics as supported.
+- The Progression preset turns on the mechanoid and installed-part effects and the "Prosthetics and bionics" group, with Mild factors.
 - An effect that needs a mod you don't have now says so in grey under its name, for example "Needs Combat Extended" or "Needs Elite Bionics Framework". It used to read "No items use this in your game".
 
 ### Fixed
 
+- Presets saved with an earlier version still load. Settings that did not exist yet, such as the new effects and the "Prosthetics and bionics" group, start off.
 - With Quality Mechanoids loaded, equipment effects no longer drop move speed, work speed, carrying capacity and several medical and social bonuses. The mod read Quality Mechanoids' mech scaling as another mod scaling gear by quality.
 
 ## 2026-11-13
