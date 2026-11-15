@@ -8,38 +8,43 @@ Add quality to selected items or leave it off. You can also remove standard qual
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/main/docs/images/workshop/quality-choices.png[/img]
 
-Vanilla removal starts off. It removes native quality bonuses and price scaling too. Back up first; saved quality values can be lost.
+Vanilla removal starts off. It removes native quality bonuses and price scaling too.
 
 [h2]Choose what quality does[/h2]
 Assignment and effects have separate controls. Enable durability without work speed, combine effects, and choose their targets. Effects cover durability, work, research, doors, power, batteries, food, medicine, supported drug benefits, equipment bonuses, combat cooldowns, trap damage and selected linked furniture.
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/main/docs/images/workshop/quality-effects.png[/img]
 
+[h2]Mechanoids, bionics and Combat Extended[/h2]
+Gestated mechs take quality from their mechanitor's Crafting skill; other mechs are mostly Normal or Good. Quality can scale their work, combat, armor and energy use.
+
+Installed body parts keep the quality of the item installed, and removing one gives the item back. Quality can scale part efficiency and, with Elite Bionics Framework, part hit points.
+
+Combat Extended adds five effects, including range, recoil and spread. These all start off. Stats that Combat Extended or Quality Mechanoids already scale stay with that mod unless you take them over. Quality Bionics Remastered, if loaded, handles installed parts.
+
 [h2]Control quality prices and colony wealth[/h2]
 Disable price scaling globally or for selected groups, categories or item types. Quality tiers and enabled effects stay. This removes quality premiums and discounts from market value, including building wealth. Material value, condition and other price modifiers still apply.
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/main/docs/images/workshop/quality-wealth.png[/img]
-
-Price rules cover added quality and standard quality on eligible vanilla and expansion items. Other mods' native quality and custom components stay protected. These rules affect trade valuation as well as wealth.
 
 [h2]Set broad rules, then make exceptions[/h2]
 Item exceptions override categories, categories override groups, and groups override the global default. Assignment, effects, prices and vanilla removal have separate rules. Rules select item types, not placed objects or material variants.
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/main/docs/images/workshop/quality-rules.png[/img]
 
-In the advanced editor, search by name, filter by source mod, change one item or tick several and change them together, and undo any change.
+The advanced editor has search, a source-mod filter, bulk changes and undo.
 
 [h2]Set the strength for every tier[/h2]
-Preview Mild, Medium or Progression, then edit each tier's factor. A durability factor of 2.5 means 2.5 times base HP; a cooldown factor of 0.4 means 40% of base cooldown. Each factor is the multiplier itself.
+Preview Mild, Medium or Progression, then edit each tier's factor. A durability factor of 2.5 means 2.5 times base HP; a cooldown factor of 0.4 means 40% of base cooldown.
 
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/main/docs/images/workshop/quality-strength.png[/img]
 
 Presets enable standard assignment groups, production settings and effects. Item/category exceptions stay. Market-value and vanilla-removal rules stay unchanged. Production separately controls materials, worktables, skills, inspirations and quality limits.
 
 [h1]See the scaling[/h1]
-[i]Charts use Medium added effects. HP percentages are relative to Normal, before whole-number rounding. Market values show native quality factors at full condition, before gain caps and rounding. Actual trade prices also depend on negotiation.[/i]
+[i]Charts use Medium added effects. HP percentages are relative to Normal, before whole-number rounding. Market values show native quality factors at full condition, before gain caps and rounding.[/i]
 
-White inputs show durability factors. Cooldown has its own reciprocal Medium factors; durability and cooldown remain independently configurable.
+White inputs show durability factors. Cooldown has its own reciprocal Medium factors.
 
 [h2]Granite walls that take more damage[/h2]
 Building durability enabled, from Awful to Legendary.
@@ -63,7 +68,7 @@ Building durability enabled alongside vanilla rest effectiveness. No linked furn
 [h2]Progression modpack support[/h2]
 [img]https://raw.githubusercontent.com/KyleMHB/EverythingHasQualityReforked/refs/heads/main/docs/images/workshop/progression-support.png[/img]
 
-The Progression preset uses Mild factors and respects Prisoner Jumpsuits - No Quality and Dubs Bad Hygiene's QualityComps setting. Supported factory and Processor Framework outputs keep their native quality policies. Research and load order stay under the pack's control.
+The Progression preset uses Mild factors, turns on the mechanoid and installed-part effects, and respects Prisoner Jumpsuits - No Quality and Dubs Bad Hygiene's QualityComps setting. Supported factory and Processor Framework outputs keep their native quality policies. Research and load order stay under the pack's control.
 
 Choose the built-in preset, or install the optional [url=https://github.com/KyleMHB/EverythingHasQualityReforked/tree/main/Presets/Progression]Auto Mod Config preset[/url]. The export changes only this mod's settings, keeping price scaling enabled and vanilla removal disabled. Applying it replaces this mod's configuration snapshot; export your settings first.
 
@@ -77,14 +82,14 @@ Choose the built-in preset, or install the optional [url=https://github.com/Kyle
 [*]For single items, exact numbers, crafting rules and your own presets, open Advanced editor and finish with Save and close.
 [/list]
 
-Save before exporting through a config-sharing mod. Imported settings apply after restart. Changes to ticked items include ticked items hidden by the search; Show selection lists them all.
+Save before exporting through a config-sharing mod. Imported settings apply after restart.
 
 [h1]Requirements and save safety[/h1]
 Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]Harmony[/url], loaded first.
 
 The renamed package is KyleMHB.ConfigurableQuality. Select the renamed mod instead of enabling both copies. Existing settings are copied on first launch. The Workshop item is unchanged.
 
-Excluding assignment preserves native quality; only the separate removal rules remove it. Mechanoids and installed body parts can also have quality. Storage-capacity effects are omitted. Multiplayer is unverified.
+Excluding assignment preserves native quality; only the separate removal rules remove it. Elite Bionics Framework and Combat Extended are optional. Storage-capacity effects are omitted. Multiplayer is unverified.
 
 Quality separates stacks by tier and can increase stack counts. Back up saves before removing quality support or uninstalling. Saved tiers can be lost; reducing durability or battery capacity can clamp excess HP or charge.
 
