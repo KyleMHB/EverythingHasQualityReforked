@@ -209,3 +209,18 @@ Runs, RimWorld 1.7.5005, seed 1, Elite Bionics Framework from Workshop item 1665
 
 - **2026-11-15, `20261115-205906-cq-ebf-s1-eca57846`:** 2 of 2 passed. Shoulder maximum 28 / 30 / 36 at Awful, Normal, Legendary.
 - **Not covered:** the health tab, damage against the new maximum, EBF's older `VanillaExtender` route, and RimWorld 1.6.
+
+### Combat Extended reload
+
+A Steam comment (2026-11-21) reported that the reload part of "Aim time, reload, sway and recoil" does nothing. The player's evidence was the pawn's Reload speed tooltip, which shows 4.00 s base reload for both a Legendary and an Awful M16A4. That tooltip is the pawn's stat and is not Combat Extended's own text; it never reads the weapon's hidden `CE_RangedWeapon_ReloadFactor`, which is the stat this mod scales and which Combat Extended's `JobDriver_Reload` multiplies into the reload wait.
+
+**`cq-ce`** (mod set `ce`: Harmony, Core, Combat Extended and this mod; settings `DevTests/modsettings/ce`, the `ebf` settings plus `CeHandling` on at Mild):
+
+- **`cq.ce-available`:** the effect is available and the mod's stat part is on `CE_RangedWeapon_ReloadFactor`.
+- **`cq.ce-reload-factor`:** `Gun_AssaultRifle`'s reload factor is 1/0.95, 1 and 1/1.2 at Awful, Normal and Legendary.
+- **`cq.ce-reload-job`:** Combat Extended's `ReloadWeapon` job, started on a colonist holding the rifle with ammunition, waits the Normal duration ×1/0.95 at Awful and ×1/1.2 at Legendary, within 2 ticks.
+
+The cases are mechanical: the job is started directly and its wait toil's length is read; the reload is not run to the end.
+
+- **2026-11-21, `20261121-010524-cq-ce-s1-d77ccb35`:** 3 of 3 passed on RimWorld 1.7.5014 with Combat Extended 16.7.4 (Workshop 2890901044, which lists only 1.6 but loaded). Reload factor 1.053/1/0.833; reload wait 211/200/167 ticks.
+- **Not covered:** the other four Combat Extended effects, the tooltip mod the player uses, and RimWorld 1.6.
